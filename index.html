@@ -74,7 +74,9 @@ window.addEventListener('DOMContentLoaded',function(){
 }
 html,body{height:100%}
 body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--tx);font-size:14px;overflow:hidden}
-#app{display:flex;height:100vh}
+/* 100dvh 跟随地址栏收合；老浏览器不认就回落到 100vh。
+   用 100vh 时手机地址栏一收，可视区变高，刚滚好的位置就留在半中间了 */
+#app{display:flex;height:100vh;height:100dvh}
 /* nav */
 #nav{width:190px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0}
 .brand{padding:16px 16px 12px;border-bottom:1px solid var(--line)}
@@ -141,6 +143,8 @@ button.sm{padding:4px 9px;font-size:12px}
 .msg .body .act{color:var(--tx3);font-size:.9em;font-style:normal;background:rgba(136,135,128,.1);border-radius:4px;padding:1px 6px;margin:0 1px}
 .msg .body p.actp{margin:0 0 10px;padding-left:10px;border-left:2px solid var(--line2)}
 .msg .body p.actp .act{background:none;padding:0;margin:0}
+/* 字体缺字：点状下划线 + 悬停可见码位，让人知道是「这个字显示不出来」而不是「导师坏了」 */
+.msg .body .noglyph{border-bottom:1px dotted #BA7517;cursor:help}
 #inbar{border-top:1px solid var(--line);background:var(--panel);padding:11px 24px;flex-shrink:0}
 #inbar .wrap{display:flex;gap:8px;align-items:flex-end}
 /* 语音 */
@@ -628,6 +632,12 @@ const QDENS={
   one:"【提问纪律】一次回复最多只提出一个问题。问完就停下等我回答，不要一口气列出两三个问题让我排队。确实需要连续追问时，只挑最关键的那一个先问，其余的等我答完再决定要不要问。",
   few:"【提问纪律】一次回复最多提出 2–3 个递进的小问题，并在末尾用一句「先答第 1 个」告诉我从哪儿开始。"
 };
+/* 提问的分量：问什么，比问几个更影响听课体验。
+   「5 − 3×2 等于几」这种一步出数的算术，学生不是不会，是被拉低了强度——
+   注意力花在算术上，真正该练的判断（动哪一行、系数取几）反而没被考到。
+   例外留给「这一节练的就是算」的场合，否则会把速算、手算训练一起禁掉。 */
+const QDIFF="【提问的分量】你考的是判断，不是算术。像「5 − 3×2」「1 + 2」这种一步就能出数的加减乘除，你自己算完直接写出来，不要拿来问我——我要练的不是这个，问了只是把注意力从正事上挪开。要问就问选择和判断：「该动第几行／第几列」「系数取几、为什么取这个数」「这个枢轴为什么能用」「下一步往哪走」。"
+  +"\n例外只有两种：这一节的核心能力本身就在这个计算上（速算、单位换算、矩阵乘法手算、数值稳定性估算），或者我明确说了想自己动手算。这时才算，而且要一次要一整行／一整列的结果，不要让我一个元素一个元素地报。";
 /* 动作/神态描写：导师说话时顺带写一小句旁白（*推了推眼镜*），渲染成浅色小字，读起来像「有个人在陪你学」。
    和提问密度一样属于「输出风格」，本机一份，与课程、教材、人格都无关。
    约定：单星号只写旁白，强调一律用 **双星号** —— 所以渲染时可以把 <em> 直接当成旁白处理。 */
@@ -849,6 +859,23 @@ document.querySelectorAll('.nv button').forEach(function(b){b.onclick=function()
 
 /* ---------- markdown ---------- */
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]})}
+/* 模型有时不写 $...$，而是直接吐 Unicode 的「数学样式字母」（𝑘 𝐦 𝒙）和上下标（₀ ² ⁻¹）。
+   这些字形在中文系统字体里普遍缺席，浏览器只能画一个空方框——看起来像「导师坏了」，其实一个字都没错。
+   这里统一归一化成普通 ASCII：NFKD 会按 Unicode 的 <font> 分解表自己还原，不用手写映射表。
+   关键：只对这几段做 NFKD。对整串做会把中文全角标点也拆掉——已验证「，」会被拆成「,」。 */
+const GLYPH_INVIS=/[\u00AD\u200B-\u200F\u2060\uFE00-\uFE0F\uFEFF]/g;   /* 零宽、软连字符、变体选择符 */
+const GLYPH_BMP=/[\u00B2\u00B3\u00B9\u2070-\u209F\u2100-\u214F\u2160-\u217F\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A]/g;
+const GLYPH_SMP=/[\u{1D400}-\u{1D7FF}]/gu;                              /* 数学样式字母，在辅助平面 */
+/* 归一化之后仍可能剩下本机没有字形的字符（私用区、罕见区块），标出来让人一眼看出是缺字而非出错 */
+const GLYPH_BAD=/[\uE000-\uF8FF\u2E80-\u2FDF\u31C0-\u31EF\u{1D400}-\u{1D7FF}\u{1F100}-\u{1F1FF}]/gu;
+/* 同一条规则的非全局版本：给 .test() 当守卫用（/g 的 lastIndex 会在多次 test 之间残留） */
+const GLYPH_BAD_Q=/[\uE000-\uF8FF\u2E80-\u2FDF\u31C0-\u31EF\u{1D400}-\u{1D7FF}\u{1F100}-\u{1F1FF}]/u;
+function normGlyph(t){
+  return String(t)
+    .replace(GLYPH_INVIS,'')
+    .replace(GLYPH_BMP,function(c){return c.normalize('NFKD')})
+    .replace(GLYPH_SMP,function(c){return c.normalize('NFKD')||c});
+}
 /* 兜底：KaTeX 没加载时，把 LaTeX 转成勉强能读的文本，而不是甩一堆 \frac 给用户 */
 const GK={alpha:'α',beta:'β',gamma:'γ',delta:'δ',epsilon:'ε',varepsilon:'ε',zeta:'ζ',eta:'η',theta:'θ',
  iota:'ι',kappa:'κ',lambda:'λ',mu:'μ',nu:'ν',xi:'ξ',pi:'π',rho:'ρ',sigma:'σ',tau:'τ',upsilon:'υ',
@@ -873,7 +900,7 @@ function niceTex(s){
   return t;
 }
 function md(src){
-  let s=String(src);const st=[];
+  let s=normGlyph(String(src));const st=[];
   /* 模型常用 \(...\) / \[...\]，统一成 $ 形式 */
   s=s.replace(/\\\[([\s\S]+?)\\\]/g,'$$$$$1$$$$').replace(/\\\(([\s\S]+?)\\\)/g,'$$$1$$');
   if(typeof katex!=='undefined'){
@@ -899,6 +926,16 @@ function md(src){
   if(h.indexOf('<em>')>=0){
     h=h.replace(/<em>([\s\S]*?)<\/em>/g,'<span class="act">$1</span>');
     h=h.replace(/<p><span class="act">([\s\S]*?)<\/span><\/p>/g,'<p class="actp"><span class="act">$1</span></p>');
+  }
+  /* 缺字检查：归一化之后还剩下的可疑字符（私用区、罕见区块）标出来。
+     只处理标签之间的文本，不碰 HTML；此刻 KaTeX 还是 %%M 占位符，公式不受影响。 */
+  if(GLYPH_BAD_Q.test(h)){
+    h=h.replace(/>([^<]+)</g,function(m,txt){
+      return '>'+txt.replace(GLYPH_BAD,function(c){
+        return '<span class="noglyph" title="这个字符本机字体显示不出来：U+'
+          +c.codePointAt(0).toString(16).toUpperCase()+'">'+c+'</span>';
+      })+'<';
+    });
   }
   return h.replace(/%%M(\d+)%%/g,function(m,i){return st[(+i)-1]!==undefined?st[(+i)-1]:''});
 }
@@ -1377,6 +1414,28 @@ function addMsg(role,txt,idx){
   return d.querySelector('.body');
 }
 function reloadMsgs(){$('mw').innerHTML='';MS.forEach(function(m,i){addMsg(m.r,m.c,i)})}
+/* ---------- 停在最后一次对话 ----------
+   刷新后要落回最后一条，但只滚一次是不够的：公式从备用源后到、字体与图片回流、
+   手机地址栏收合都会让内容变高，滚完的位置就留在半中间。
+   做法是滚到底之后再「钉住」一小段时间，期间内容一变高就跟到底；
+   用户自己一翻（滚轮 / 触摸 / 按键）立刻松手，绝不把人从历史里拽回来。 */
+let PINB=false,PINBT=0,PINRO=null;
+function toBottom(){const m=$('msgs');if(m)m.scrollTop=m.scrollHeight}
+function pinBottom(ms){
+  PINB=true;toBottom();
+  clearTimeout(PINBT);PINBT=setTimeout(function(){PINB=false},ms||2600);
+  const mw=$('mw');
+  if(!PINRO&&mw&&typeof ResizeObserver==='function'){
+    try{PINRO=new ResizeObserver(function(){if(PINB)toBottom()});PINRO.observe(mw)}catch(e){PINRO=null}
+  }
+}
+function unpin(){PINB=false;clearTimeout(PINBT)}
+['wheel','touchstart','keydown'].forEach(function(t){
+  $('msgs').addEventListener(t,unpin,{passive:true});
+});
+/* 地址栏收合 / 旋屏 / 软键盘：可视区高度一变就跟到底（只在钉住期间） */
+window.addEventListener('resize',function(){if(PINB)toBottom()});
+window.addEventListener('orientationchange',function(){pinBottom(1200)});
 /* 就地编辑自己说过的话：改完重发，之后的内容截断后重新回答 */
 function startEdit(i){
   const m=MS[i];if(!m||m.r!=='user')return;
@@ -1414,11 +1473,27 @@ function sysMsg(){
     +'\n\n'+ME
     +'\n\n'+(PACE[PA]||PACE.mid)
     +'\n\n'+(QDENS[QDEN]||QDENS.one)
+    +'\n\n'+QDIFF
     +'\n\n【输出格式硬要求】'
     +'数学式一律用 $行内$ 或 $$独立成行$$ 包裹，禁止输出裸露的 LaTeX 命令，禁止用 \\( \\) 或 \\[ \\]；'
     +'第一次出现某个符号时必须顺带说明它念什么、表示什么（例如“ε（epsilon，任意给定的小正数）”）；'
     +'能用一句话说清的地方不要堆符号；关键推导分步写，每步用文字点明在做什么。'
+    +'变量名和下标一律用普通英文字母（k、m、a₁ 写成 $a_1$）；'
+    +'不要直接粘贴数学样式的 Unicode 字母（𝑘 𝐦 𝒙）、上下标字符（₀ ² ⁻¹）或表情符号来代替数学符号——'
+    +'中文系统字体里没有这些字形，会显示成一个空方框；'
+    +'也不要用 □ ◇ 这类方块充当占位符，要把你指的东西直接写出来。'
     +'\n\n'+(ACTS[ACT]||ACTS.mid)
+    /* 用词把方向带偏，比算错更难救：学生只能照字面做，你说错一句，他就朝错方向想很久。
+       这条是硬要求，不随人格与模式变。 */
+    +'\n\n【下指令前先自检】你要我做的每一步操作，发出去之前先自己核一遍：'
+    +'\n- 点名具体对象。说变换就写「第 2 行」，说列就写「第 1 列」；'
+    +'禁止用「某一行」「某一列」「某一个」这种不点名的说法代替——你不点名，我只能猜，一猜就偏。'
+    +'\n- 术语与方向必须一致。行变换 / 列变换、按行展开 / 按列展开、对哪个变量求导，'
+    +'三者要和你这一步的目标指向同一个对象；一句话里同时出现「行」和「列」时，确认两边说的是同一件事。'
+    +'\n- 操作式要能直接验算。写了「第 i 行 ← ……」就把结果先自己算一遍再发；算不出来就说明这句话还没想清。'
+    +'\n- 一旦发现前面哪句说错了：第一句先明确「是我刚才说错了，不是你做错了」，再说正确说法，'
+    +'并讲清按错方向做过的那几步作废、从哪一步重来。不要只用「一处更正」轻轻带过——'
+    +'我可能已经顺着错的方向想了很久，你不点破，我会以为是我自己理解错了。'
     +'\n\n【教材依据】这门课当前使用：'+getBkn()+'。涉及定理表述、符号约定、例题编号时以该教材为准。'
     +(COURSE&&COURSE!=='__free'?'\n本轮所属教材文件：'+COURSE:'')
     /* 模式放最后：它决定本轮行为，要求高于人格的默认习惯 */
@@ -1981,6 +2056,7 @@ renderPs();renderModes();applyHabit();renderChips();updTok();renderSym();renderT
 vLoad();
 MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();
+if(MS.length)pinBottom();   /* 有记录：刷新后直接落回最后一次对话 */
 if(!MS.length)addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n- **教材**：进「教材」点「载入全部内置教材」，一次拿到高数八上 + 线代合编本；也可点「仅高数」/「仅线代」，或自己导入 md / pdf / epub。然后把正在学的那节勾上\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。');
 (async function(){
   CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)});
@@ -1996,6 +2072,7 @@ if(!MS.length)addMsg('assistant','先到「设置」填一个模型接口并保�
 /* 公式库若是从备用源延迟加载成功的，加载完重画一遍，把之前裸着的 LaTeX 补上 */
 window.addEventListener('katexready',function(){
   reloadMsgs();renderCards&&renderCards();renderBook();
+  if(PINB)toBottom();
   if(curCh&&typeof showSec==='function')showSec(curCh);
   toast(window.__kx?'公式渲染已就绪':'公式渲染库加载失败，已转为可读文本模式');
 });
