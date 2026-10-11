@@ -2,8 +2,9 @@
 
 一个**纯前端、零后端**的 AI 陪学站。把教材丢进去，选一位导师，它会按你选的"这一轮干什么"带你学——而不是一上来就把答案讲给你听。
 
-- **在线体验**：https://gaoshu-xuexi.app.workbuddy.host/
-- **技术形态**：单个 `index.html`（约 113 KB）。无框架、无构建、无后端、无依赖安装
+- **在线体验**：https://lucid-miracle-t.github.io/ai-study-buddy/
+- **备用入口**：https://gaoshu-xuexi.app.workbuddy.host/
+- **技术形态**：单个 `index.html`（约 114 KB）。无框架、无构建、无后端、无依赖安装
 
 ---
 
