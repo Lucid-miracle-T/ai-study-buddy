@@ -1,21 +1,17 @@
 /* 刷新后停在最后一次对话
  *
- * 背景：用户反馈「刷新后记录恢复时不会自动停在最后一次对话」。
+ * 背景：用户两次反馈「刷新后不会自动停在最后一次对话」。第一次按「启动时滚一次 + 钉一小会儿」
+ * 修，用户说还是不行。于是上真浏览器实测（Edge headless + CDP，scripts/probe_scroll.mjs），
+ * 复现出两个真根因——都不是「没滚」：
+ *   1. 滚的那一刻内容还差 28px 没长完（字体度量到位后兄弟栏变高，把 #msgs 挤矮了）。
+ *      滚完位置就留在半中间，之后再没人补。
+ *   2. 只盯 #mw（内容盒子）会漏掉「兄弟栏变高 → #msgs 变矮」：那时 #mw 尺寸没变，
+ *      ResizeObserver 不回调，可位置已经不在底上了。
+ *   还有第三个、最隐蔽的：scroll 事件是异步派发的，我们滚完那一刻内容常常还没长完，
+ *   事件回来时「已在底部」已是 false —— 会把自己滚的误判成用户滚的，跟随当场被关掉。
  *
- * 根因两条，都不在「没滚」而在「滚了但白滚」：
- *   1. #app 用 height:100vh。手机上地址栏收合后可视区变高，#msgs 的
- *      clientHeight 跟着变，开机那一刻滚到底的位置就不在底上了。
- *   2. 公式从备用源后到、字体回流会让内容变高 —— 只在启动时滚一次，
- *      位置就留在半中间（jsdom 测不了布局，这条靠「钉住」机制保证）。
- *
- * 所以断言七件事：
- *   1. 有记录时启动就滚到底
- *   2. 启动后处于「钉住」状态（内容后长高还会跟到底）
- *   3. 内容变高 → 跟到底；用户一翻 → 立刻松手，不再拽人
- *   4. 钉住有期限，过一会儿自动松开（不会永久劫持滚动）
- *   5. 可视区高度变化（resize）时，钉住期间跟到底
- *   6. 公式备源就绪（katexready）时，钉住期间再拉回底
- *   7. 全新用户没有记录 → 不钉，别把欢迎语也锁在滚动逻辑里
+ * 本测试守住这套逻辑。jsdom 没有布局，scrollTop/scrollHeight 恒为 0，
+ * 所以把这两个属性换成可写替身，并塞一个假 ResizeObserver 把回调捞出来手动触发。
  */
 const fs = require('fs');
 const path = require('path');
@@ -65,10 +61,12 @@ function boot(preset) {
     url: 'https://x.test/', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc,
     beforeParse(win) {
       installIDB(win);
-      /* jsdom 不带 ResizeObserver；给一个假的，把回调捞出来手动触发 */
+      /* jsdom 不带 ResizeObserver：给一个假的，记录盯了谁、把回调捞出来手动触发 */
       win.ResizeObserver = function (cb) {
-        win.__rocb = cb;
-        this.observe = function () {}; this.disconnect = function () {}; this.unobserve = function () {};
+        win.__ro = win.__ro || { cbs: [], targets: [] };
+        win.__ro.cbs.push(cb);
+        this.observe = function (el) { win.__ro.targets.push(el && el.id); };
+        this.disconnect = function () {}; this.unobserve = function () {};
       };
       win.confirm = () => true; win.alert = () => {};
       win.open = () => null;
@@ -80,19 +78,6 @@ function boot(preset) {
   return { wnd: dom.window, errs };
 }
 
-/* jsdom 没有布局，scrollTop/scrollHeight 恒为 0。把这两个属性改成可写的替身，
-   才测得出「滚到底」这件事到底有没有发生。 */
-function fakeScroll(wnd) {
-  const m = wnd.document.getElementById('msgs');
-  const st = { top: 0, height: 1200, client: 400 };
-  Object.defineProperty(m, 'scrollHeight', { get: () => st.height, configurable: true });
-  Object.defineProperty(m, 'clientHeight', { get: () => st.client, configurable: true });
-  Object.defineProperty(m, 'scrollTop', {
-    get: () => st.top, set: v => { st.top = v; }, configurable: true
-  });
-  return st;
-}
-
 (async () => {
   const out = [], errors = [];
   const log = s => out.push(s);
@@ -100,80 +85,151 @@ function fakeScroll(wnd) {
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const SRC = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
-  /* === 1. 有记录：启动就落回最后一次对话 === */
-  log('=== 1. 有记录时启动即到底 ===');
+  const b = boot({ 'gx.msgs.__free': JSON.stringify(MSGS) });
+  const wnd = b.wnd;
+  const ev = s => { try { return wnd.eval(s) } catch (e) { errors.push('eval: ' + e.message); return undefined } };
+  await wait(700);
+  const doc = wnd.document;
+  const m = doc.getElementById('msgs');
+
+  /* jsdom 没有布局：scrollTop/scrollHeight/clientHeight 换成可写替身 */
+  const st = { top: 0, height: 1200, client: 400 };
+  Object.defineProperty(m, 'scrollHeight', { get: () => st.height, configurable: true });
+  Object.defineProperty(m, 'clientHeight', { get: () => st.client, configurable: true });
+  Object.defineProperty(m, 'scrollTop', { get: () => st.top, set: v => { st.top = v; }, configurable: true });
+  const fireRO = () => (wnd.__ro ? wnd.__ro.cbs.forEach(cb => cb()) : 0);
+  const fireScroll = () => m.dispatchEvent(new wnd.Event('scroll'));
+  const gesture = t => m.dispatchEvent(new wnd.Event(t));
+
+  /* === 1. 启动就落回最后一次对话 === */
+  log('=== 1. 启动即到底 ===');
+  ok(ev('MS.length') === 3, '三条记录都恢复了（实际 ' + ev('MS.length') + '）');
+  ok(ev('PINB') === true, '启动后处于跟随状态');
+  ok(ev('typeof toBottom') === 'function' && ev('typeof settleBottom') === 'function', 'toBottom / settleBottom 已挂上');
   {
-    const b = boot({ 'gx.msgs.__free': JSON.stringify(MSGS) });
-    const wnd = b.wnd, ev = s => { try { return wnd.eval(s) } catch (e) { errors.push('eval: ' + e.message) } };
-    await wait(700);
-    ok(ev('MS.length') === 3, '三条记录都恢复了（实际 ' + ev('MS.length') + '）');
-    ok(!!wnd.document.getElementById('msgs'), '消息容器在');
-    ok(ev('PINB') === true, '启动后处于「钉住」状态（内容后长高会跟到底）');
-    ok(typeof ev('toBottom') === 'function' && typeof ev('pinBottom') === 'function', 'toBottom / pinBottom 已挂上');
-    if (b.errs.length) errors.push(...b.errs);
+    /* 启动是「逐帧跟一小会儿」而不是滚一次：把内容改高，等几帧看它自己有没有跟上 */
+    st.height = 5000;
+    await wait(120);
+    ok(st.top === 5000, '启动后自动跟到新的底部（top=' + st.top + '）');
+  }
+  if (b.errs.length) errors.push(...b.errs);
 
-    /* === 2. 内容变高 → 跟到底 === */
-    log('');
-    log('=== 2. 会后长高的内容也跟着到底 ===');
-    const st = fakeScroll(wnd);
-    ev('pinBottom()');                       /* 重钉一次，确保替换后立刻到底 */
-    ok(st.top === st.height, '滚到底（top=' + st.top + ' / height=' + st.height + '）');
-    st.height = 2600;                        /* 公式渲染完，内容长高 */
-    ev('__rocb && __rocb()');
-    ok(st.top === st.height, '内容长高后仍停在最后一条（top=' + st.top + '）');
+  /* === 2. 两个盒子都要盯（这次丢 28px 的直接原因）=== */
+  log('');
+  log('=== 2. 盯住两个盒子 ===');
+  {
+    const tg = (wnd.__ro && wnd.__ro.targets) || [];
+    ok(tg.indexOf('msgs') >= 0, 'ResizeObserver 盯了消息容器 #msgs（实际 ' + JSON.stringify(tg) + '）');
+    ok(tg.indexOf('mw') >= 0, '也盯了内容盒子 #mw');
+    ok(/ro\.observe\(\$\('msgs'\)\);ro\.observe\(\$\('mw'\)\)/.test(SRC),
+      '两处都 observe —— 只盯 #mw 会漏掉「兄弟栏变高把 #msgs 挤矮」');
+  }
 
-    /* === 3. 用户一翻就松手 === */
-    log('');
-    log('=== 3. 用户自己翻历史时不再被拽回 ===');
-    wnd.document.getElementById('msgs').dispatchEvent(new wnd.Event('wheel'));
-    ok(ev('PINB') === false, '一滚就松开（PINB=false）');
-    st.top = 300;                            /* 用户翻到上面读 */
-    st.height = 4000;
-    ev('__rocb && __rocb()');
-    ok(st.top === 300, '松开后内容再长高也不动用户的位置（top=' + st.top + '）');
+  /* === 3. 长高 / 变矮都跟着走 === */
+  log('');
+  log('=== 3. 内容长高、容器变矮都跟到底 ===');
+  {
+    ev('unpin()'); await wait(60);              /* 先把手动跟随关掉，避免逐帧循环干扰 */
+    ev('pinBottom()');
+    ok(st.top === st.height, '滚到底（top=' + st.top + ' / h=' + st.height + '）');
+    st.height = 6600; fireRO();
+    ok(st.top === 6600, '内容长高 → 跟到底（top=' + st.top + '）');
+    st.client = 300; fireRO();                  /* 容器变矮：等效于兄弟栏变高 */
+    ok(st.top === 6600, '容器变矮也不掉队（top=' + st.top + '）');
+    st.client = 400;
+  }
+
+  /* === 4. 我们自己的 scroll 事件不许关掉跟随 === */
+  log('');
+  log('=== 4. 自己的滚动不算用户操作 ===');
+  {
+    ev('pinBottom()');
+    fireScroll();                               /* 位置 == 我们刚滚到的位置 */
+    ok(ev('PINB') === true, '位置停在我们滚到的地方 → 跟随不被误关');
+    st.height = 7200; fireRO();
+    ok(st.top === 7200, '还能继续跟上（top=' + st.top + '）');
+  }
+
+  /* === 5. 用户的手一动就松手 === */
+  log('');
+  log('=== 5. 用户一动手立刻松手 ===');
+  {
+    gesture('wheel');
+    ok(ev('PINB') === false, '滚轮一动就松开');
+    ev('pinBottom()');
+    gesture('touchstart');
+    ok(ev('PINB') === false, '触摸也一样（手机上没有 wheel 事件）');
+  }
+
+  /* === 6. 自己滚走就不动他，滚回来又接上 === */
+  log('');
+  log('=== 6. 翻历史时不被拽回来 ===');
+  {
+    ev('pinBottom()');
+    st.top = 300; fireScroll();                 /* 用户滚到上面 */
+    ok(ev('PINB') === false, '离开底部 → 松手');
+    st.height = 9000; fireRO();
+    ok(st.top === 300, '内容再长高也不动他（top=' + st.top + '）');
     wnd.dispatchEvent(new wnd.Event('resize'));
-    ok(st.top === 300, '松开后窗口尺寸变化也不动（top=' + st.top + '）');
+    ok(st.top === 300, '窗口尺寸变化也不动他（top=' + st.top + '）');
+    st.top = st.height; fireScroll();           /* 自己滚回底部 */
+    ok(ev('PINB') === true, '滚回底部 → 跟随接回来');
+    ev('unpin()'); await wait(60);
+  }
 
-    /* === 4. 钉住有期限 === */
-    log('');
-    log('=== 4. 钉住会自动松开，不永久劫持滚动 ===');
-    ev('pinBottom(60)');
-    ok(ev('PINB') === true, '钉住中');
-    await wait(140);
-    ok(ev('PINB') === false, '到期自动松开');
+  /* === 7. 没跟随时重画不许踹人 === */
+  log('');
+  log('=== 7. 晚到的公式重画时不踹人 ===');
+  {
+    st.top = 300;
+    ev('reloadMsgs()');
+    ok(st.top === 300, '没跟随时重画保住用户读到的地方（top=' + st.top + '）');
+    ev('pinBottom()');
+    ev('reloadMsgs()');
+    ok(st.top === st.height, '跟随时重画则落到最新一条');
+    ev('unpin()'); await wait(60);
+  }
 
-    /* === 5. resize / katexready 跟着到底 === */
-    log('');
-    log('=== 5. 地址栏收合与公式后到都能跟上 ===');
-    ev('pinBottom(2000)');
-    st.top = 0; st.height = 5000;
-    wnd.dispatchEvent(new wnd.Event('resize'));
-    ok(st.top === st.height, '可视区高度变了 → 跟到底');
-    st.top = 0;
-    wnd.dispatchEvent(new wnd.Event('katexready'));      /* 备用源公式渲染完成 → 重画消息 */
-    await wait(20);
-    ok(st.top === st.height, '公式就绪重画后仍停在最后一条（top=' + st.top + '）');
+  /* === 8. 逐帧跟随：松手就停 === */
+  log('');
+  log('=== 8. 逐帧跟一小会儿，松手就停 ===');
+  {
+    ev('pinBottom();followFor(300)');
+    st.height = 12000;
+    await wait(150);
+    ok(st.top === 12000, '跟随时逐帧补到底（top=' + st.top + '）');
     ev('unpin()');
+    st.height = 14000;
+    await wait(150);
+    ok(st.top === 12000, '松手后循环停下，不再改动位置（top=' + st.top + '）');
   }
 
-  /* === 6. 全新用户不钉 === */
+  /* === 9. 自己发话就恢复跟随 === */
   log('');
-  log('=== 6. 全新用户没有记录就不钉 ===');
+  log('=== 9. 自己发了话就恢复跟随 ===');
   {
-    const b = boot();
-    await wait(700);
-    const wnd = b.wnd;
-    /* 欢迎语只画在 DOM 里，不进 MS（MS 只记真实对话），所以数气泡 */
-    ok(wnd.document.querySelectorAll('#mw .msg').length >= 1, '欢迎语照常出现');
-    ok(wnd.eval('PINB') === false, '没有历史记录时不做「停在最后一条」');
+    ev('unpin();$("key").value="k";$("base").value="https://x.test/v1";$("model").value="m"');
+    ok(ev('PINB') === false, '前提：现在是松手状态');
+    ev('ask("测试一句")');
+    ok(ev('PINB') === true, '提问后恢复跟随 —— 自己发的问，就该看到回答');
+    ev('unpin()'); await wait(60);
   }
 
-  /* === 7. 手机地址栏：100vh 才是根因 === */
+  /* === 10. 全新用户不钉 === */
   log('');
-  log('=== 7. 布局高度跟随可视区 ===');
-  ok(/height:100vh;height:100dvh/.test(SRC), '#app 用 100dvh 跟随地址栏收合，并留 100vh 回落');
-  ok(/orientationchange/.test(SRC), '旋屏后重新停到最后一条');
-  ok(/addEventListener\('wheel'|addEventListener\(t,unpin/.test(SRC), '滚轮/触摸/按键都能松开钉住');
+  log('=== 10. 全新用户没有记录就不跟 ===');
+  {
+    const b2 = boot();
+    await wait(700);
+    ok(b2.wnd.document.querySelectorAll('#mw .msg').length >= 1, '欢迎语照常出现');
+    ok(b2.wnd.eval('PINB') === false, '没有历史记录时不做「停在最后一条」');
+  }
+
+  /* === 11. 布局高度跟随可视区 === */
+  log('');
+  log('=== 11. 布局高度跟随可视区 ===');
+  ok(/height:100vh;height:100dvh/.test(SRC), '#app 用 100dvh，并留 100vh 回落');
+  ok(/orientationchange/.test(SRC), '旋屏后仍在跟随时重新到底');
 
   log('');
   if (errors.length) { console.log(out.join('\n')); console.log(''); console.log('失败 ' + errors.length + ' 项：'); errors.forEach(e => console.log('  ✗ ' + e)); process.exit(1); }

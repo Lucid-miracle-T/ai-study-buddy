@@ -224,6 +224,10 @@ input.ck{width:auto;flex-shrink:0}
 .crow .q{font-weight:500;margin-bottom:3px}
 .crow .a{color:var(--tx2);font-size:12.5px}
 .crow .m{font-size:11px;color:var(--tx3);margin-top:5px;display:flex;gap:10px}
+/* 列表里的公式跟随正文字号，独立公式不要撑出大块空白 */
+.crow .katex{font-size:.97em}
+.crow .katex-display{margin:2px 0}
+.crow .katex-display>.katex{font-size:1em}
 /* progress view */
 #prog{flex:1;overflow-y:auto;padding:20px 24px}
 .ptab{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;margin-bottom:16px}
@@ -241,6 +245,14 @@ select.sm2{width:auto;padding:3px 7px;font-size:12px}
 .card2{border:1px solid var(--line);border-radius:10px;background:#fff;padding:16px 18px;margin-bottom:14px;max-width:760px}
 .card2 h2{font-size:14px;font-weight:500;margin-bottom:2px}
 .card2 .hint{font-size:12px;color:var(--tx3);margin-bottom:10px;line-height:1.7}
+/* 课程管理（设置页）：一门课一行，记录统计 + 两个按钮 */
+.crs{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-bottom:7px}
+.crs .nm{flex:1;min-width:0;font-size:13px;font-weight:500}
+.crs .nm .meta{font-size:11px;color:var(--tx3);font-weight:400;margin-top:3px;line-height:1.5}
+.crs .cur{background:var(--blue-bg);color:var(--blue);border-radius:5px;padding:2px 6px;font-size:11px;font-weight:400;margin-left:5px}
+.crs .bts{display:flex;gap:6px;flex-shrink:0;align-items:center}
+button.dgr{color:#A32D2D;border-color:#F09595}
+@media (max-width:720px){.crs{flex-wrap:wrap}.crs .bts{width:100%;justify-content:flex-end}}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
 details{margin-top:10px}
 summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
@@ -261,6 +273,26 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
 .ctab.on{background:var(--blue-bg);border-color:#378ADD;color:#0C447C;font-weight:500}
 .ctab .n{font-size:11px;color:var(--tx3);margin-left:5px;font-weight:400}
 .ctab.on .n{color:#185FA5}
+/* 课程内的「节」：课程标签＝一本书（少而稳），节＝一次学习（可以很多）。
+   这样「一本书一个标签、一节课一个节」，标签不会随学习进度无限增长。 */
+#stabs{display:flex;align-items:center;gap:6px;padding:6px 12px;background:#fff;
+       border-bottom:1px solid var(--line);overflow-x:auto;flex-shrink:0;-webkit-overflow-scrolling:touch}
+#stabs .lb{font-size:11px;color:var(--tx3);flex-shrink:0;margin-right:2px}
+.stab{padding:3px 10px;border:1px solid var(--line);border-radius:14px;background:#fff;cursor:pointer;
+      font-size:11.5px;color:var(--tx2);white-space:nowrap;flex-shrink:0;font-family:inherit}
+.stab:hover{background:#f7f6f2}
+.stab.on{background:var(--green-bg);border-color:#97C459;color:#27500A;font-weight:500}
+.stab .n{font-size:10.5px;color:var(--tx3);margin-left:4px;font-weight:400}
+.stab.on .n{color:#3B6D11}
+.stab.new{border-style:dashed;color:var(--tx3)}
+.stab.new:hover{color:var(--blue);border-color:#378ADD}
+/* 节的小菜单（右键 / 长按） */
+#smenu{position:fixed;z-index:60;background:#fff;border:1px solid var(--line2);border-radius:9px;
+       box-shadow:0 6px 18px rgba(0,0,0,.12);padding:4px;display:flex;flex-direction:column;min-width:136px}
+#smenu button{border:none;background:none;text-align:left;padding:7px 10px;border-radius:6px;
+       font-size:12.5px;color:var(--tx);cursor:pointer;font-family:inherit}
+#smenu button:hover{background:#f1efe8}
+#smenu button[data-a="del"]{color:#A32D2D}
 /* ===== 手机端适配（≤720px）===== */
 @media (max-width:720px){
   #app{flex-direction:column;height:100dvh}
@@ -331,6 +363,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
 
   <div id="stage">
     <div id="ctabs"></div>
+    <div id="stabs"></div>
     <!-- 上课 -->
     <section class="view on" id="v-lesson">
       <div class="bar">
@@ -426,6 +459,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
     <section class="view" id="v-card">
       <div class="bar">
         <span class="tag" id="due">待复习 0</span>
+        <select id="cse" class="sm2" title="只看某一节学到的卡"></select>
         <span class="sp"></span>
         <button class="sm pri" id="review">开始复习</button>
         <button class="sm" id="newc">手动加卡</button>
@@ -552,6 +586,13 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
             —— 学线代、概率论、C 语言都适用。换教材只需要：这里改书名 → 教材页导入 → 左上角切到那门课。<br><br>
             内置了 3 位数学家和 5 位鸣潮角色。想要别的，在「加自己的人设」里填一段提示词就行。
           </div>
+        </div>
+        <div class="card2">
+          <h2>课程管理</h2>
+          <div class="hint">课程是从教材推出来的：载入哪本教材，课程栏就多一门课。<br>
+            <b>清空记录</b>只把这门课的对话、闪卡、掌握进度归零，教材和勾选的章节留着，随时能重新开课；
+            <b>删除课程</b>连教材正文一起移除，这门课从课程栏消失（内置教材之后还能再载入回来）。</div>
+          <div id="courselist"></div>
         </div>
         <div class="card2">
           <h2>数据</h2>
@@ -771,8 +812,50 @@ function loadCourseData(){
     CTX=old2.filter(function(k){return COURSE==='__free'||k.indexOf(COURSE+'#')===0});
     if(CTX.length)LS.s(ctxKey(),CTX);
   }
+  loadSess();
+  loadCsel();
 }
+/* 闪卡也按节分：默认看全部，也可以只看某一节攒下来的卡 */
+function cselKey(){return 'csel.'+COURSE}
+function loadCsel(){const v=LS.g(cselKey(),'all');CARD_S=(v==='all'||sessOf(v))?v:'all'}
 function saveCourseData(){LS.s(prKey(),PR);LS.s(ctxKey(),CTX)}
+/* ---------- 「节」：课程内部的学习单元 ----------
+   课程标签＝一本书（少而稳），节＝一次学习（想开多少开多少）。
+   这样「标签无穷无尽」和「旧内容找不到」两件事同时解决：
+   翻回第 2 节，看到的就是那一节的对话，闪卡也按节分开。
+   消息上带 s（节 id）；老记录没有 s，一律归到第一节 —— 升级不改写任何历史数据。 */
+let SESS=[],CURS='',CARD_S='all';
+function sessKey(){return 'sess.'+COURSE}
+function newSid(){return 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,4)}
+function loadSess(){
+  let a=LS.g(sessKey(),null);
+  if(!Array.isArray(a)||!a.length){a=[{id:newSid(),t:Date.now(),title:''}];LS.s(sessKey(),a)}
+  SESS=a;
+  const c=LS.g('cur.'+COURSE,null);
+  CURS=(c&&a.some(function(x){return x.id===c}))?c:a[a.length-1].id;
+}
+function saveSess(){LS.s(sessKey(),SESS);LS.s('cur.'+COURSE,CURS)}
+/* 消息、闪卡都带节 id；没有的（升级前的旧数据）算第一节 */
+function sid(o){return (o&&o.s)||(SESS[0]&&SESS[0].id)||''}
+function sessOf(id){return SESS.filter(function(x){return x.id===id})[0]||null}
+function sessIdx(id){for(let i=0;i<SESS.length;i++)if(SESS[i].id===id)return i;return -1}
+function curMsgs(){return MS.filter(function(m){return sid(m)===CURS})}
+/* 节名：优先用你起的名字，其次用这一节第一条正常提问的前 12 字——比「第 3 节」好找得多。
+   点「开始今天的一课」发出去的那句开场白是机械指令，拿它当名字没意义，跳过。 */
+function sessAuto(id){
+  const us=MS.filter(function(m){return sid(m)===id&&m.r==='user'});
+  for(let i=0;i<us.length;i++){
+    const t=String(us[i].c).replace(/[#*`>\s]+/g,' ').trim();
+    if(t.length<60&&!/(按你的方式开场|本轮模式|请你做一份「下课小结」)/.test(t))return t.slice(0,12);
+  }
+  return '';
+}
+function sessLabel(id){
+  const i=sessIdx(id),s=sessOf(id);
+  if(!s)return '这一节';
+  const t=s.title||sessAuto(id);
+  return '第 '+(i+1)+' 节'+(t?' · '+t:'');
+}
 function cname(k){
   if(k==='__free')return '自由问答';
   const p=packByKey(k);if(p)return p.name;   /* 内置包课程直接读包名，加减包不用再改这里 */
@@ -837,6 +920,90 @@ function renderCTabs(fs){
   box.querySelectorAll('.ctab').forEach(function(b){
     b.onclick=function(){switchCourse(b.dataset.c)};
   });
+}
+/* ---------- 节条（课程标签下面一行）---------- */
+function renderSTabs(){
+  const box=$('stabs');if(!box)return;
+  let h='<span class="lb">节</span>';
+  SESS.forEach(function(s,i){
+    const n=MS.filter(function(m){return sid(m)===s.id}).length;
+    const t=s.title||sessAuto(s.id);
+    h+='<button class="stab'+(CURS===s.id?' on':'')+'" data-s="'+esc(s.id)+'" title="'
+      +esc('第 '+(i+1)+' 节'+(t?' · '+t:'')+'（'+n+' 条对话）\n右键或长按可改名、删除')+'">'
+      +esc('第 '+(i+1)+' 节'+(t?' · '+t:''))+(n?'<span class="n">'+n+'</span>':'')+'</button>';
+  });
+  h+='<button class="stab new" id="newsess" title="开一节新的：对话各自独立，互不干扰，旧节随时点回来看">＋ 新一节</button>';
+  box.innerHTML=h;
+  box.querySelectorAll('.stab[data-s]').forEach(function(b){
+    b.onclick=function(){switchSess(b.dataset.s)};
+    b.oncontextmenu=function(e){e.preventDefault();sessMenu(b.dataset.s,b)};
+  });
+  const nb=$('newsess');if(nb)nb.onclick=function(){newSess()};
+  bindLongPress(box);
+}
+/* 长按（手机上等同右键）→ 改名 / 删除这一节 */
+function bindLongPress(box){
+  let tm=null;
+  box.addEventListener('touchstart',function(e){
+    const b=e.target.closest?e.target.closest('.stab[data-s]'):null;if(!b)return;
+    tm=setTimeout(function(){tm=null;sessMenu(b.dataset.s,b)},600);
+  },{passive:true});
+  ['touchend','touchmove','touchcancel'].forEach(function(t){
+    box.addEventListener(t,function(){if(tm){clearTimeout(tm);tm=null}},{passive:true});
+  });
+}
+function sessMenu(id,anchor){
+  const old=$('smenu');if(old)old.remove();
+  const s=sessOf(id);if(!s)return;
+  const m=document.createElement('div');m.id='smenu';
+  m.innerHTML='<button data-a="rn">改名</button><button data-a="del">删除这一节</button><button data-a="cx">取消</button>';
+  document.body.appendChild(m);
+  const r=anchor?anchor.getBoundingClientRect():{left:20,bottom:80};
+  m.style.left=Math.max(8,Math.min(r.left,window.innerWidth-160))+'px';
+  m.style.top=Math.min(r.bottom+4,window.innerHeight-110)+'px';
+  m.querySelectorAll('button').forEach(function(b){
+    b.onclick=function(ev){
+      ev.stopPropagation();m.remove();
+      if(b.dataset.a==='rn'){
+        const t=prompt('这一节叫什么？（留空＝按第一条提问自动命名）',s.title||'');
+        if(t===null)return;
+        s.title=t.trim();saveSess();renderSTabs();toast(s.title?'已改名':'已恢复自动命名');
+      }
+      if(b.dataset.a==='del')delSess(id);
+    };
+  });
+  setTimeout(function(){
+    document.addEventListener('click',function h(){m.remove();document.removeEventListener('click',h)});
+  },0);
+}
+function switchSess(id){
+  if(id===CURS)return;
+  saveMs();
+  CURS=id;saveSess();
+  reloadMsgs();renderSTabs();renderCards();
+  settleBottom(900);
+  toast('已切到「'+sessLabel(id)+'」');
+}
+/* 开新一节。当前节还是空的就直接用它——免得连点两下多出一串空节 */
+function newSess(silent){
+  if(!curMsgs().length){if(!silent)toast('这一节还没开始，直接在这儿上就行');return CURS}
+  saveMs();
+  SESS.push({id:newSid(),t:Date.now(),title:''});
+  CURS=SESS[SESS.length-1].id;saveSess();
+  renderSTabs();reloadMsgs();renderCards();
+  if(!silent)toast('已开第 '+SESS.length+' 节 · 前面几节随时点回去看');
+  return CURS;
+}
+function delSess(id){
+  const n=MS.filter(function(m){return sid(m)===id}).length;
+  if(n&&!confirm('删除「'+sessLabel(id)+'」？\n\n这一节的 '+n+' 条对话会被删掉；闪卡、教材、其他节都不受影响。'))return;
+  MS=MS.filter(function(m){return sid(m)!==id});
+  SESS=SESS.filter(function(x){return x.id!==id});
+  if(!SESS.length)SESS=[{id:newSid(),t:Date.now(),title:''}];
+  if(CURS===id)CURS=SESS[SESS.length-1].id;
+  saveSess();saveMs();
+  reloadMsgs();renderSTabs();renderCards();
+  toast('已删除那一节');
 }
 loadCourseData();
 
@@ -967,9 +1134,84 @@ async function addFile(file,src){
   if(pk){migratePack(pk.key,pk.files)}
   if(COURSE==='__free'){COURSE=pk?pk.key:file;LS.s('course',COURSE);loadCourseData();MS=LS.g(msKey(),[])||[];updateCourses()}
 }
-async function removeFile(file){
-  for(const c of await IDB.all())if(c.file===file)await IDB.del(c.id)
-  CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)});renderBook();updateCourses();
+/* ---------- 课程管理（设置页）----------
+   「课程」是从教材推出来的，所以「删课程」实质是删那门课的教材正文。
+   但多数时候人只是想重新开始，不想连教材一起丢掉 —— 所以给两个按钮，
+   各自说清动的是什么，别让人靠自己猜。 */
+function cstat(k,files){
+  /* 记录按「课程键」存（内置包＝包键，单文件＝文件名）。迁移前的老数据散在分册键下，
+     沿用课程标签栏那套回退：只有课程键完全没有记录时才去聚合分册键，否则会重复计数。 */
+  const hasOwn=LS.g('msgs.'+k,null)!==null||LS.g('prog.'+k,null)!==null;
+  const src=hasOwn?[k]:files;
+  let ms=0,done=0;
+  src.forEach(function(f){
+    ms+=(LS.g('msgs.'+f,[])||[]).length;
+    const pr=LS.g('prog.'+f,null)||{};
+    Object.keys(pr).forEach(function(x){if(pr[x]===2)done++});
+  });
+  return {sec:CH.filter(function(c){return files.indexOf(c.file)>=0}).length,
+          ms:ms,done:done,
+          cd:CD.filter(function(c){return c.c&&(c.c===k||files.indexOf(c.c)>=0)}).length};
+}
+function renderCourseMgmt(){
+  const box=$('courselist');if(!box)return;
+  box.innerHTML='';
+  courseList().gs.forEach(function(g){
+    const files=g.f.length?g.f:[];
+    const s=cstat(g.k,files);
+    const row=document.createElement('div');row.className='crs';
+    const nm=document.createElement('div');nm.className='nm';
+    nm.innerHTML=esc(cname(g.k))+(g.k===COURSE?'<span class="cur">当前</span>':'')
+      +'<div class="meta">'+(files.length?files.length+' 册教材 · ':'')+'教材 '+s.sec+' 节 · 对话 '+s.ms+' 条 · 闪卡 '+s.cd+' 张 · 掌握 '+s.done+' 节</div>';
+    const bts=document.createElement('div');bts.className='bts';
+    const b1=document.createElement('button');b1.className='sm';b1.textContent='清空记录';
+    b1.title='保留教材和勾选，只把对话、闪卡、掌握进度归零';
+    b1.onclick=function(){clearCourse(g)};
+    bts.appendChild(b1);
+    if(files.length){
+      const b2=document.createElement('button');b2.className='sm dgr';b2.textContent='删除课程';
+      b2.title='连教材正文一起移除，这门课从课程栏消失';
+      b2.onclick=function(){dropCourse(g)};
+      bts.appendChild(b2);
+    }else{
+      const sp=document.createElement('span');sp.className='tag';sp.textContent='没有教材，不能删除';
+      sp.title='自由问答不挂教材，只能清空记录';
+      bts.appendChild(sp);
+    }
+    row.appendChild(nm);row.appendChild(bts);box.appendChild(row);
+  });
+}
+function clearCourse(g){
+  const files=g.f.length?g.f:[];
+  const s=cstat(g.k,files);
+  if(!confirm('清空「'+cname(g.k)+'」的记录？\n\n会清掉：对话 '+s.ms+' 条、闪卡 '+s.cd+' 张、掌握进度 '+s.done+' 节。\n教材和勾选的章节留着，随时可以重新开课。'))return;
+  [g.k].concat(files).forEach(function(x){
+    localStorage.removeItem(P+'msgs.'+x);localStorage.removeItem(P+'prog.'+x);
+  });
+  CD=CD.filter(function(c){return !(c.c&&(c.c===g.k||files.indexOf(c.c)>=0))});LS.s('cards',CD);
+  if(COURSE===g.k){MS=[];PR={};saveMs();saveCourseData();reloadMsgs()}
+  renderCards&&renderCards();renderBook();
+  toast('已清空「'+cname(g.k)+'」的记录，教材还留着');
+}
+async function dropCourse(g){
+  const files=g.f.slice();
+  if(!files.length)return;
+  const s=cstat(g.k,files),built=PACKS.some(function(p){return p.key===g.k});
+  if(!confirm('删除课程「'+cname(g.k)+'」？\n\n会删掉：教材 '+files.length+' 册（'+s.sec+' 节）、对话 '+s.ms+' 条、闪卡 '+s.cd+' 张、掌握进度 '+s.done+' 节。课程会从课程栏消失。'
+    +(built?'\n\n这是内置教材，之后点「载入全部内置教材」（或对应的「仅高数 / 仅线代 / 仅 C 语言」）还能载入回来。':'')
+    +'\n\n删掉的记录不可恢复，重要的话先在下面导出一份。'))return;
+  for(const c of await IDB.all())if(files.indexOf(c.file)>=0)await IDB.del(c.id);
+  CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)});
+  [g.k].concat(files).forEach(function(x){
+    ['msgs.','prog.','ctx.','bkn.'].forEach(function(px){localStorage.removeItem(P+px+x)});
+  });
+  CD=CD.filter(function(c){return !(c.c&&(c.c===g.k||files.indexOf(c.c)>=0))});LS.s('cards',CD);
+  if(COURSE===g.k){
+    COURSE='__free';LS.s('course',COURSE);
+    loadCourseData();MS=LS.g(msKey(),[])||[];reloadMsgs();
+  }
+  renderBook();renderCards&&renderCards();
+  toast('已删除课程「'+cname(g.k)+'」');
 }
 /* 载入某个内置教材包（默认全部） */
 async function autoLoad(btn,pk){
@@ -1083,11 +1325,29 @@ function updateCourses(){
   /* 设置页的教材名跟随当前课程 */
   const bl=$('bkncourse');if(bl)bl.textContent=cname(COURSE);
   const bi=$('bkn');if(bi&&document.activeElement!==bi)bi.value=getBkn();
+  renderSTabs();
+  renderCourseMgmt();
 }
 /* 目录树/正文标题里带 $公式$ 的，走渲染器，避免裸 LaTeX 像乱码 */
 function titleHtml(t){
   if(String(t).indexOf('$')<0)return esc(t);
-  return md(t).replace(/^<p>/,'').replace(/<\/p>\s*$/,'');
+  return md(t).replace(/^\s*<p>/,'').replace(/<\/p>\s*$/,'');
+}
+/* 列表摘要要截断，但不能切在 $...$ 中间——半个公式渲染出来是乱码。
+   先找出所有完整公式的区间：若截断点落在某个公式内部，短公式就整个保留（宁可长一点也不留半截），
+   长公式则退到公式之前。 */
+function clipTex(s,n){
+  s=String(s).replace(/\s+/g,' ').trim();
+  if(s.length<=n)return s;
+  let cut=n;const re=/\$\$[\s\S]*?\$\$|\$[^$\n]*?\$/g;let m;
+  while((m=re.exec(s))){
+    const a=m.index,b=m.index+m[0].length;
+    if(a<cut&&b>cut){cut=(b-a<=70&&b<=n+70)?b:a;break}
+    if(a>=cut)break;
+  }
+  /* 整条开头就是一个长公式：摘要没地方站，索性原样显示，别给个光秃秃的「…」 */
+  if(!cut)return s;
+  return s.slice(0,cut).replace(/[\s\\]+$/,'')+'…';
 }
 /* 目录折叠状态（会话内记忆）。课程层默认展开；分册层默认只展开正在读的那本，
    否则十几本分册的所有章节平铺一列，找一节要滚很久。 */
@@ -1410,38 +1670,73 @@ function addMsg(role,txt,idx){
     b.onclick=function(e){e.stopPropagation();const t=this.closest('.msg').__txt;if(t)speak(t)};
     w.appendChild(b);
   }
-  $('mw').appendChild(d);$('msgs').scrollTop=$('msgs').scrollHeight;
+  $('mw').appendChild(d);if(PINB)toBottom();
   return d.querySelector('.body');
 }
-function reloadMsgs(){$('mw').innerHTML='';MS.forEach(function(m,i){addMsg(m.r,m.c,i)})}
-/* ---------- 停在最后一次对话 ----------
-   刷新后要落回最后一条，但只滚一次是不够的：公式从备用源后到、字体与图片回流、
-   手机地址栏收合都会让内容变高，滚完的位置就留在半中间。
-   做法是滚到底之后再「钉住」一小段时间，期间内容一变高就跟到底；
-   用户自己一翻（滚轮 / 触摸 / 按键）立刻松手，绝不把人从历史里拽回来。 */
-let PINB=false,PINBT=0,PINRO=null;
-function toBottom(){const m=$('msgs');if(m)m.scrollTop=m.scrollHeight}
-function pinBottom(ms){
-  PINB=true;toBottom();
-  clearTimeout(PINBT);PINBT=setTimeout(function(){PINB=false},ms||2600);
-  const mw=$('mw');
-  if(!PINRO&&mw&&typeof ResizeObserver==='function'){
-    try{PINRO=new ResizeObserver(function(){if(PINB)toBottom()});PINRO.observe(mw)}catch(e){PINRO=null}
-  }
+/* 重画全部消息。没在跟随时保住用户读到的地方——晚到的公式一渲染就会走这条路，
+   不加判断会把正在翻历史的他一脚踹回底部。 */
+function reloadMsgs(){
+  const m=$('msgs'),keep=m?m.scrollTop:0;
+  $('mw').innerHTML='';
+  /* 只画当前这一节。其他节的对话仍在 MS 里（存着、能回看），只是不在这一屏 */
+  MS.forEach(function(x,i){if(sid(x)===CURS)addMsg(x.r,x.c,i)});
+  if(!curMsgs().length&&!BUSY)$('mw').innerHTML='<div class="empty" id="sempty">这一节还没开始。<br>点上面「开始今天的一课」，或者直接在下面提问。</div>';
+  if(PINB)toBottom();else if(m)m.scrollTop=keep;
 }
-function unpin(){PINB=false;clearTimeout(PINBT)}
-['wheel','touchstart','keydown'].forEach(function(t){
+/* ---------- 停在最后一次对话 ----------
+   刷新后要落回最后一条，但「启动时滚一次」是不够的 —— 实测（Edge headless + CDP）：
+     · 滚的那一刻内容还差 28px 没长完（字体度量到位后，兄弟栏变高把 #msgs 挤矮），
+       滚完位置就留在半中间，之后再没人补；
+     · 只盯 #mw（内容盒子）会漏掉「兄弟栏变高 → #msgs 变矮」这种情况：
+       #mw 尺寸根本没变，ResizeObserver 不会回调，可位置已经不在底上了。
+   所以三件事一起做：盯两个盒子、用「位置」决定是否跟随（而不是计时器）、
+   启动后逐帧跟一小会儿。用户一往上翻就停手，不把人从历史里拽回来。 */
+let PINB=false,AUTOTOP=-1,BUSY=false;
+function isBottom(){const m=$('msgs');if(!m)return true;return m.scrollHeight-m.scrollTop-m.clientHeight<=24}
+function toBottom(){const m=$('msgs');if(!m)return;m.scrollTop=m.scrollHeight;AUTOTOP=m.scrollTop}
+function pinBottom(){PINB=true;toBottom()}
+function unpin(){PINB=false}
+/* 用户的手一动就立刻松手。不能等 scroll 事件——它是异步派发的，
+   我们滚完那一刻内容常常还没长完，事件回来时「已在底部」已是 false，
+   会把自己滚的误判成用户滚的，跟随随即被关掉（实测就丢在这里）。 */
+['wheel','touchstart','touchmove','mousedown','keydown'].forEach(function(t){
   $('msgs').addEventListener(t,unpin,{passive:true});
 });
-/* 地址栏收合 / 旋屏 / 软键盘：可视区高度一变就跟到底（只在钉住期间） */
+/* 位置和我们刚滚到的位置不符 ⇒ 是用户自己滚的；到底了就把跟随接回来 */
+$('msgs').addEventListener('scroll',function(){
+  const m=$('msgs');
+  if(Math.abs(m.scrollTop-AUTOTOP)<2)return;
+  PINB=isBottom();
+},{passive:true});
+/* 内容长高、容器变矮都要跟 —— 两个盒子都盯上 */
+if(typeof ResizeObserver==='function'){
+  try{
+    const ro=new ResizeObserver(function(){if(PINB)toBottom()});
+    ro.observe($('msgs'));ro.observe($('mw'));
+  }catch(e){}
+}
 window.addEventListener('resize',function(){if(PINB)toBottom()});
-window.addEventListener('orientationchange',function(){pinBottom(1200)});
+window.addEventListener('orientationchange',function(){if(PINB)toBottom()});
+/* 只在本来就跟随时，逐帧跟一小会儿。事件未必个个都到，
+   而字体度量、公式渲染、地址栏收合都爱在这段时间里改布局。 */
+function followFor(ms){
+  if(!PINB)return;
+  const t0=Date.now();
+  (function step(){
+    if(!PINB)return;
+    toBottom();
+    if(Date.now()-t0<(ms||1200))requestAnimationFrame(step);
+  })();
+}
+function settleBottom(ms){pinBottom();followFor(ms||1600)}
 /* 就地编辑自己说过的话：改完重发，之后的内容截断后重新回答 */
 function startEdit(i){
   const m=MS[i];if(!m||m.r!=='user')return;
   const d=$('mw').querySelector('.msg[data-i="'+i+'"]');
   if(!d||d.classList.contains('editing'))return;
-  const body=d.querySelector('.body'),old=body.innerHTML,later=MS.length-i-1;
+  const body=d.querySelector('.body'),old=body.innerHTML;
+  /* 只数「这一节」里跟在后面的消息：别的节不该被这次重发牵连 */
+  const later=MS.filter(function(x,ix){return ix>i&&sid(x)===CURS}).length;
   d.classList.add('editing');body.innerHTML='';
   const ta=document.createElement('textarea');ta.className='edta';ta.value=m.c;
   const bar=document.createElement('div');bar.className='edbar';
@@ -1464,7 +1759,7 @@ function startEdit(i){
     if(!$('key').value.trim()||!$('base').value.trim()){alert('先到「设置」填接口地址和 API Key，点保存。');return}
     if(v===m.c&&!later){close();return}
     if(later&&!confirm('这会删除这条之后的 '+later+' 条对话，然后重新回答。继续？'))return;
-    MS=MS.slice(0,i);saveMs();reloadMsgs();
+    MS=MS.slice(0,i).concat(MS.slice(i).filter(function(x){return sid(x)!==CURS}));saveMs();reloadMsgs();
     await ask(v);
   };
 }
@@ -1508,8 +1803,12 @@ async function ask(text,opt){
   opt=opt||{};
   const key=$('key').value.trim(),base=$('base').value.trim();
   if(!key||!base){alert('先到「设置」填接口地址和 API Key，点保存。');return}
+  pinBottom();   /* 自己发了话，就是要看回答：恢复跟随 */
+  BUSY=true;
   const pack=[{role:'system',content:sysMsg()+'\n\n'+ctxText()}];
-  MS.forEach(function(m){pack.push({role:m.r==='user'?'user':'assistant',content:m.c})});
+  /* 只把「这一节」的对话发给导师：各节独立，新节从零开始，
+     也顺带解决了「越聊越长、越聊越慢」——旧节随时点回去看，但不占上下文 */
+  MS.forEach(function(m){if(sid(m)!==CURS)return;pack.push({role:m.r==='user'?'user':'assistant',content:m.c})});
   pack.push({role:'user',content:text});
   /* 先把要占的下标算出来：两条消息是在 MS.push 之前就渲染的，
      若让 addMsg 自己取 MS.length，两条会拿到同一个数（编辑功能依赖这个下标） */
@@ -1518,8 +1817,9 @@ async function ask(text,opt){
   const el=addMsg('assistant','<span style="color:#888780">…</span>',bi+1);
   /* 记下这条对话属于哪门课：流式回答进行中用户可能切走，回答必须写回**原课程**。
      切课会把全局 MS 换成另一门课的数组，若结束时不加判断地 MS.push，回答会串课。 */
-  const myCourse=COURSE, myMs=MS;
-  MS.push({r:'user',c:text});saveMs();
+  const myCourse=COURSE, myMs=MS, mySess=CURS;
+  MS.push({r:'user',c:text,s:CURS});saveMs();
+  renderSTabs();
   $('stop').disabled=false;ctrl=new AbortController();
   const myCtrl=ctrl;
   let full='';   /* 提到 try 外：catch 里也要用（原来在 try 内用 let 声明，abort 时 catch 反而抛错） */
@@ -1535,38 +1835,39 @@ async function ask(text,opt){
       for(const l of ls){if(!l.startsWith('data: '))continue;const p=l.slice(6).trim();if(p==='[DONE]')continue;
         try{const j=JSON.parse(p);const dd=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content;
           if(dd){full+=dd;el.innerHTML=md(full);
-            if(COURSE===myCourse){
+            if(COURSE===myCourse&&CURS===mySess){
               /* 切走过又切回来时 reloadMsgs 重建过 DOM，正在渲染的 el 成了游离节点——
                  把它挂回列表末尾，回答就在原地继续往下长 */
               if(!el.isConnected&&el.parentNode)$('mw').appendChild(el.parentNode);
-              $('msgs').scrollTop=$('msgs').scrollHeight;
+              if(PINB)toBottom();
             }}
           if(j.usage){ST.i+=j.usage.prompt_tokens||0;ST.o+=j.usage.completion_tokens||0;LS.s('stats',ST)}}catch(e){}}}
     if(!full){full='（没有返回内容，检查接口地址与模型名）';el.innerHTML=md(full)}
-    /* 回答写回「这次对话属于的那门课」，而不是此刻所在的课 */
+    /* 回答写回「这次对话属于的那门课那一节」，而不是此刻所在的课/节 */
     if(COURSE===myCourse){
-      MS.push({r:'a',c:full});saveMs();
+      MS.push({r:'a',c:full,s:mySess});saveMs();renderSTabs();
       /* 流结束时用户可能刚好切回来——DOM 已由存储重绘，el 脱离，把它挂回让回答可见 */
-      if(!el.isConnected&&el.parentNode)$('mw').appendChild(el.parentNode);
+      if(CURS===mySess&&!el.isConnected&&el.parentNode)$('mw').appendChild(el.parentNode);
     }else{
-      myMs.push({r:'a',c:full});LS.s('msgs.'+myCourse,myMs);
+      myMs.push({r:'a',c:full,s:mySess});LS.s('msgs.'+myCourse,myMs);
       toast('「'+cname(myCourse)+'」的回答已完成，切回去就能看到');
     }
     bump('m');updTok();
     el.parentNode.__txt=full;
-    if(TTS&&!opt.card&&COURSE===myCourse)speak(full);
+    if(TTS&&!opt.card&&COURSE===myCourse&&CURS===mySess)speak(full);
     if(opt.card)return full;
   }catch(e){
-    if(String(e.name)==='AbortError'){if(COURSE===myCourse)el.innerHTML=md(full||'（已停止）');return}
+    if(String(e.name)==='AbortError'){if(COURSE===myCourse&&CURS===mySess)el.innerHTML=md(full||'（已停止）');return}
     if(COURSE===myCourse){
       el.innerHTML='<span style="color:#A32D2D">出错了：'+esc(String(e.message||e))+'</span>';
-      MS.pop();saveMs();
+      const last=MS[MS.length-1];
+      if(last&&last.r==='user'&&last.c===text){MS.pop();saveMs();renderSTabs()}
     }else if(myMs.length&&myMs[myMs.length-1].r==='user'){
       /* 已切到别的课：只撤掉原课程那条占位的提问，不碰当前课程 */
       myMs.pop();LS.s('msgs.'+myCourse,myMs);
     }
     return;
-  }finally{if(ctrl===myCtrl)$('stop').disabled=true}
+  }finally{BUSY=false;if(ctrl===myCtrl)$('stop').disabled=true}
 }
 function updTok(){
   const v=PROV[$('prov').value]&&PROV[$('prov').value].io||[0,0];
@@ -1669,6 +1970,7 @@ async function lessonClose(){
     await ask('我们今天的课先到这里。请你做一份「下课小结」，分三块：\n1. 【今天学会了】3–5 条要点，每条一句话，用我自己的理解说；\n2. 【还不太扎实】诚实指出我哪些点其实没懂、只是跟着点头了；\n3. 【下次从哪接】一句话说清下次从哪里继续。\n不要展开新讲解，只做小结。');
     await new Promise(function(r){setTimeout(r,400)});
     const g=$('gen');if(g)g.click();
+    toast('小结写好了。下一节课点「＋ 新一节」——这一节原样留着，随时点回去看');
   }catch(e){}finally{if(b)b.disabled=false}
 }
 $('mic').onclick=startVoice;
@@ -1680,12 +1982,18 @@ $('close').onclick=lessonClose;
 /* ---------- 闪卡 ---------- */
 const IV=[5,60*12,60*24,60*24*2,60*24*4,60*24*8];
 /* 闪卡按教材隔离：c 字段记来源课程；旧卡无 c 视为通用，各课程都可见 */
-function cardList(){return CD.filter(function(c){return !c.c||c.c===COURSE})}
+function cardList(){
+  return CD.filter(function(c){
+    if(c.c&&c.c!==COURSE)return false;
+    return CARD_S==='all'||sid(c)===CARD_S;   /* 升级前的旧卡没有节，算第一节 */
+  });
+}
 function dueList(){const n=Date.now();return cardList().filter(function(c){return (c.due||0)<=n})}
 function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function addCards(qas){
   const n=Date.now();let k=0;
-  qas.forEach(function(p){if(!p.q)return;CD.push({id:newId(),q:p.q,a:p.a||'',box:0,due:n,rep:0,c:COURSE});k++});
+  /* 记住是在哪一节里加的卡：以后能按节分开看，也能分清「哪次课攒下来的」 */
+  qas.forEach(function(p){if(!p.q)return;CD.push({id:newId(),q:p.q,a:p.a||'',box:0,due:n,rep:0,c:COURSE,s:CURS});k++});
   LS.s('cards',CD);renderCards();return k;
 }
 function parseCards(t){
@@ -1708,8 +2016,19 @@ function learnImport(t){
   });
   return out;
 }
+function renderCsel(){
+  const sel=$('cse');if(!sel)return;
+  sel.innerHTML='<option value="all">全部节</option>'+SESS.map(function(s,i){
+    const t=s.title||sessAuto(s.id);
+    return '<option value="'+esc(s.id)+'">'+esc('第 '+(i+1)+' 节'+(t?' · '+t:''))+'</option>';
+  }).join('');
+  sel.value=CARD_S;
+}
 function renderCards(){
-  const d=dueList(),CL=cardList();$('due').textContent='待复习 '+d.length+' / 共 '+CL.length+' · '+cname(COURSE);
+  const d=dueList(),CL=cardList();
+  renderCsel();
+  $('due').textContent='待复习 '+d.length+' / 共 '+CL.length+' · '+cname(COURSE)
+    +(CARD_S==='all'?'':' · '+sessLabel(CARD_S));
   const box=$('car');
   if(rev){
     const c=CD.filter(function(x){return x.id===rev})[0];
@@ -1728,7 +2047,7 @@ function renderCards(){
   const lst=$('clist');lst.innerHTML='';
   CL.slice().sort(function(a,b){return (a.due||0)-(b.due||0)}).forEach(function(c){
     const r=document.createElement('div');r.className='crow';
-    r.innerHTML='<div class="q">'+esc(c.q.slice(0,90))+'</div><div class="a">'+esc(String(c.a).slice(0,110))+'</div>'
+    r.innerHTML='<div class="q">'+titleHtml(clipTex(c.q,90))+'</div><div class="a">'+titleHtml(clipTex(c.a,110))+'</div>'
       +'<div class="m"><span>第 '+(c.box+1)+' 格</span><span>'+(new Date(c.due||0).toLocaleDateString())+' 到期</span>'
       +(c.c?'':'<span title="这门课之前创建的卡，所有课程共用">通用</span>')
       +'<span style="cursor:pointer;color:#A32D2D" data-x="'+c.id+'">删除</span></div>';
@@ -1943,6 +2262,10 @@ $('start').onclick=function(){
   else head='我们开始今天的课，使用教材：'+getBkn()+'。';
   head+=MODEK==='teach'?'按你的方式开场：不要直接讲解，先问一个能暴露我是否真懂的问题；我的回答若含糊，请追问量化；我若三轮答不上，请降低难度换更基础的问题。涉及定理表述与符号时以该教材为准。'
     :'（本轮模式：'+curMode().n+'，严格按该模式的规则执行，不要退回成讲解。）';
+  /* 这一节已经聊起来了？先问一句：接着上，还是开新的一节。
+     节之间互不干扰，所以「今天上一节新课」＝开一节，而不是把旧对话越堆越长。 */
+  const cur=curMsgs();
+  if(cur.length&&!confirm('「'+sessLabel(CURS)+'」已经有 '+cur.length+' 条对话。\n\n确定 ＝ 开新的一节，从头开始\n取消 ＝ 在这一节里接着上'))newSess(true);
   /* 先切到当前课程视图，避免停在别的页签上看着像"没反应" */
   document.querySelector('[data-v="lesson"]').click();
   ask(head);
@@ -1954,14 +2277,26 @@ $('gen').onclick=async function(){
 };
 $('exp2').onclick=function(){
   if(!MS.length){alert('没有内容');return}
-  dl('高数笔记_'+today()+'.md','# 高数学习笔记 '+today()+'\n\n导师：'+curName()+'\n\n'
-    +MS.map(function(m){return (m.r==='user'?'## 我\n':'## '+curName()+'\n')+m.c}).join('\n\n---\n\n'));
+  /* 按节分块导出：一份笔记里也能看清「哪一节学了什么」 */
+  const parts=SESS.map(function(s){
+    const ms=MS.filter(function(m){return sid(m)===s.id});
+    if(!ms.length)return '';
+    return '## '+sessLabel(s.id)+'\n\n'+ms.map(function(m){return (m.r==='user'?'### 我\n':'### '+curName()+'\n')+m.c}).join('\n\n---\n\n');
+  }).filter(Boolean);
+  dl('高数笔记_'+today()+'.md','# 高数学习笔记 '+today()+'\n\n导师：'+curName()+'\n\n'+parts.join('\n\n---\n\n'));
 };
-$('clr').onclick=function(){if(!confirm('清空「'+cname(COURSE)+'」的会话？其他教材的对话不受影响，闪卡和进度也不受影响。'))return;MS=[];saveMs();$('mw').innerHTML=''};
+$('clr').onclick=function(){
+  const n=curMsgs().length;
+  if(!n){toast('这一节还没有对话');return}
+  if(!confirm('清空「'+sessLabel(CURS)+'」的 '+n+' 条对话？\n\n只清这一节；别的节、闪卡、掌握进度都不受影响。'))return;
+  MS=MS.filter(function(m){return sid(m)!==CURS});saveMs();reloadMsgs();renderSTabs();
+  toast('已清空这一节');
+};
 $('newc').onclick=function(){
   const q=prompt('正面（问题）'),a=q===null?null:prompt('背面（答案）');
   if(q){addCards([{q:q,a:a||''}]);toast('已添加')}
 };
+$('cse').onchange=function(){CARD_S=this.value;LS.s(cselKey(),CARD_S);renderCards()};
 $('review').onclick=function(){const d=dueList();if(!d.length){toast('今天没有到期的卡');return}rev=d[0].id;revBack=false;renderCards()};
 $('expc').onclick=function(){dl('闪卡_'+cname(COURSE)+'_'+today()+'.md',cardList().map(function(c){return '问题：'+c.q+'\n答案：'+c.a+'\n'}).join('\n---\n\n'))};
 $('imp').onclick=function(){$('cfile').click()};
@@ -2056,8 +2391,8 @@ renderPs();renderModes();applyHabit();renderChips();updTok();renderSym();renderT
 vLoad();
 MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();
-if(MS.length)pinBottom();   /* 有记录：刷新后直接落回最后一次对话 */
-if(!MS.length)addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n- **教材**：进「教材」点「载入全部内置教材」，一次拿到高数八上 + 线代合编本；也可点「仅高数」/「仅线代」，或自己导入 md / pdf / epub。然后把正在学的那节勾上\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。');
+if(MS.length)settleBottom();   /* 有记录：刷新后直接落回最后一次对话 */
+if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e);addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n- **教材**：进「教材」点「载入全部内置教材」，一次拿到高数八上 + 线代合编本；也可点「仅高数」/「仅线代」，或自己导入 md / pdf / epub。然后把正在学的那节勾上\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
 (async function(){
   CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)});
   const had=COURSE;                        /* updateCourses 可能回落，先把原课程记下来 */
@@ -2072,7 +2407,7 @@ if(!MS.length)addMsg('assistant','先到「设置」填一个模型接口并保�
 /* 公式库若是从备用源延迟加载成功的，加载完重画一遍，把之前裸着的 LaTeX 补上 */
 window.addEventListener('katexready',function(){
   reloadMsgs();renderCards&&renderCards();renderBook();
-  if(PINB)toBottom();
+  followFor(900);   /* 公式一上来整页高度都会变，跟着走一小会儿 */
   if(curCh&&typeof showSec==='function')showSec(curCh);
   toast(window.__kx?'公式渲染已就绪':'公式渲染库加载失败，已转为可读文本模式');
 });

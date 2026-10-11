@@ -8,6 +8,7 @@ node_modules/
 *.bak
 *.bak-*
 *.tmp
+preview-*.png
 .DS_Store
 Thumbs.db
 .vscode/
