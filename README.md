@@ -101,6 +101,7 @@ python -m http.server 8000
 | `let SESS` / `CURS` | 「节」：课程内部的学习单元（`loadSess` / `newSess` / `switchSess` / `delSess` / `sid` / `sessLabel`）。消息与闪卡带 `s` 字段，没有的一律算第一节 |
 | `function renderSTabs` | 节条（课程标签下面那一行）：切换、`＋ 新一节`、右键/长按改名或删除 |
 | `const VBUILTIN` | 内置网课包（`video/` 下的 json，首次打开自动入库） |
+| `const VPOS` / `saveVPos` / `restoreVCtx` | 网课看到哪儿了：合集、第几讲、带到课堂的那一讲（上下文只存 key，正文按 key 重建）。`function goView` 顺手记下你待在哪一页 |
 | `function sysMsg` | 组装发给模型的 system prompt |
 | `function ctxText` | 教材摘录与来源标注 |
 | `---------- 停在最后一次对话 ----------` | 滚动跟随：`isBottom` / `toBottom` / `settleBottom` / `followFor`（盯 `#msgs` 与 `#mw` 两个盒子） |
@@ -129,6 +130,7 @@ node tests/test_instruct.js      # 下指令前先自检：点名对象、行/�
 node tests/test_qdiff.js         # 提问分量：禁纯算术、指明该问判断、例外口子、与密度开关正交
 node tests/test_bottom.js        # 刷新停在最后一句：盯两个盒子、内容长高与容器变矮都跟到底、一滚就松手
 node tests/test_rec.js           # 导师推荐：内容类型 → 人选、状态可翻盘、无信号不硬推、一键应用
+node tests/test_vpos.js          # 网课刷新后接着看：合集/第几讲/带到课堂都还在、正文不进 localStorage、合集删了上下文跟着失效
 node tests/test_coursemgmt.js    # 课程管理：清空记录 vs 删除课程各删各的、删当前课会回落、取消不动数据
 node tests/test_sess.js          # 课程内分节：旧记录归第一节、各节对话隔离且上下文不串、编辑只截本节、闪卡按节
 node tests/test_cards.js         # 闪卡：列表里的公式渲染、长公式截断不切在 $...$ 中间

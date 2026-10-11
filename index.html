@@ -1053,6 +1053,8 @@ function goView(v){
   document.querySelectorAll('.nv button').forEach(function(x){x.classList.toggle('on',x.dataset.v===v)});
   document.querySelectorAll('section.view').forEach(function(s){s.classList.remove('on')});
   $('v-'+v).classList.add('on');
+  /* 记住你待在哪一页。设置页不记：那是来配置的地方，刷新后该回到学习现场去。 */
+  if(v!=='set')LS.s('view',v);
   if(v==='prog')renderProg();if(v==='card')renderCards();
   if(v==='set'){fillRq(false);renderRst();renderRout()}
 }
@@ -1483,6 +1485,27 @@ const VDB=(function(){
 })();
 let VS=[], VSET=null, VLEC=null, VCTX=null;
 const VSTN=['未看','在看','已看'];
+
+/* 网课看到哪儿了：合集、第几讲、带进课堂的那一讲——刷新后接着看，不要每次都弹回第一讲。
+   VCTX 只记 key（「合集 id#第几讲」）：讲义正文有几千字，存进 localStorage 是浪费，
+   刷新后按 key 从合集里把正文重建出来就行。 */
+const VPOS={set:'vpos.set',lec:'vpos.lec',ctx:'vpos.ctx'};
+function saveVPos(){
+  try{
+    LS.s(VPOS.set,VSET||'');
+    LS.s(VPOS.lec,(VLEC===null||VLEC===undefined)?'':String(VLEC));
+    LS.s(VPOS.ctx,VCTX?VCTX.k:'');
+  }catch(e){}
+}
+function restoreVCtx(){
+  let k='';try{k=String(LS.g(VPOS.ctx,'')||'')}catch(e){}
+  if(!k){VCTX=null;return}
+  if(VCTX&&VCTX.k===k)return;                 /* 内存里已经有了，别白重建一遍 */
+  const p=k.split('#'),s=VS.filter(function(x){return x.id===p[0]})[0],i=parseInt(p[1],10);
+  const l=(s&&s.items&&i>=0)?s.items[i]:null;
+  /* 合集被删了、或者那一讲不在了 —— 上下文跟着失效，不能留一个指向空气的钩子 */
+  VCTX=l?{k:k,t:l.t,doc:(l.doc||'').slice(0,9000)}:null;
+}
 /* 内置网课包：跟站点一起分发，首次打开自动入库（换设备、换浏览器都在），
    「看没看」的状态就地存在 IndexedDB 里。以后改了包内容就把 VPKGVER 加一。 */
 const VPKGVER='1';
@@ -1524,10 +1547,25 @@ async function vLoad(){
 function renderVSets(){
   const sel=$('vset');if(!sel)return;
   sel.innerHTML=VS.length?VS.map(function(s){return '<option value="'+esc(s.id)+'">'+esc(s.title)+'（'+(s.items||[]).length+' 讲）</option>'}).join(''):'<option value="">（还没导入）</option>';
-  if(VSET&&VS.some(function(s){return s.id===VSET}))sel.value=VSET;
-  else{VSET=VS.length?VS[0].id:null;if(VSET)sel.value=VSET;VLEC=VS.length?0:null}
+  if(!VS.length){VSET=null;VLEC=null}
+  else{
+    /* 换了下一次打开：先认界面上选着的，再认上次记下的，最后才回落到第一个合集 */
+    if(!(VSET&&VS.some(function(s){return s.id===VSET}))){
+      let last='';try{last=String(LS.g(VPOS.set,'')||'')}catch(e){}
+      VSET=(last&&VS.some(function(s){return s.id===last}))?last:VS[0].id;
+    }
+    sel.value=VSET;
+    const n=((vCur()||{}).items||[]).length;
+    if(!(typeof VLEC==='number'&&VLEC>=0&&VLEC<n)){
+      let last='';try{last=parseInt(LS.g(VPOS.lec,''),10)}catch(e){}
+      VLEC=(last>=0&&last<n)?last:0;
+    }
+  }
   const st=$('vstat');if(st)st.textContent=VS.length?(VS.length+' 个合集 · 共 '+VS.reduce(function(n,s){return n+(s.items||[]).length},0)+' 讲'):'未导入';
+  restoreVCtx();
+  saveVPos();
   renderVLec();
+  showLec();
 }
 function renderVLec(){
   const box=$('vlist');if(!box)return;const s=vCur();
@@ -1540,9 +1578,12 @@ function renderVLec(){
       +(l.u?'<a href="'+esc(l.u)+'" target="_blank" rel="noopener">打开视频</a>':'')
       +(l.doc?'<span>'+Math.round(l.doc.length/1000)+'K 字讲义</span>':'<span style="color:#BA7517">无讲义</span>')+'</div>';
     d.querySelector('.vst').onclick=function(e){e.stopPropagation();const it=vCur().items[i];it.st=((it.st||0)+1)%3;VDB.put(vCur());renderVLec()};
-    d.onclick=function(){VLEC=i;renderVLec();showLec()};
+    d.onclick=function(){VLEC=i;saveVPos();renderVLec();showLec()};
     box.appendChild(d);
   });
+  /* 一百多讲的合集，刷新后选中项可能在屏幕外 —— 轻轻拉回视野，别让人自己找 */
+  if(VLEC!==null&&box.children[VLEC]&&box.children[VLEC].scrollIntoView)
+    box.children[VLEC].scrollIntoView({block:'nearest'});
 }
 function showLec(){
   const s=vCur(),box=$('vdoc');if(!box)return;
@@ -1581,7 +1622,7 @@ function vAct(a){
     const k=d.s.id+'#'+d.i;
     if(VCTX&&VCTX.k===k){VCTX=null;toast('已从课堂上下文移除')}
     else{VCTX={k:k,t:d.l.t,doc:(d.l.doc||'').slice(0,9000)};toast('已带到课堂：'+d.l.t)}
-    showLec();return;
+    saveVPos();showLec();return;
   }
   document.querySelector('[data-v="lesson"]').click();
   if(a==='drill'){MODEK='drill';renderModes();ask(head+'按「陪练出题」模式考我这一讲：只出题，不给答案不提示。挑这讲里最容易混淆或最容易算错的点下手。')}
@@ -1630,7 +1671,8 @@ function vParse(text,fname){
     s={id:newId(),title:title,url:'',items:items};
   }
   if(!s.items.length){toast('没解析出分讲，检查文件格式');return}
-  VDB.put(s).then(vLoad).then(function(){VSET=s.id;VLEC=0;renderVSets();showLec();
+  /* 先入库再切过去，vLoad 里就会把「当前合集」认成刚导入的这一份 */
+  VDB.put(s).then(function(){VSET=s.id;VLEC=0;return vLoad()}).then(function(){
     const no=s.items.filter(function(x){return !x.doc}).length;
     toast('已导入：'+s.title+'（'+s.items.length+' 讲'+(no?('，'+no+' 讲无讲义'):'')+'）')});
 }
@@ -2524,7 +2566,7 @@ $('vfile').onchange=async function(){
   try{vParse(await f.text(),f.name.replace(/\.(json|md|markdown|txt)$/i,''))}catch(e){toast('读取失败：'+e.message)}
   $('vfile').value='';
 };
-$('vset').onchange=function(){VSET=$('vset').value;VLEC=0;renderVLec();showLec()};
+$('vset').onchange=function(){VSET=$('vset').value;VLEC=0;saveVPos();renderVLec();showLec()};
 $('vdel').onclick=async function(){
   const s=vCur();if(!s)return;
   if(s.builtin){toast('这是内置合集，随站点自动载入；想少看点就在上面换一个合集');return}
@@ -2607,6 +2649,10 @@ if(MS.length)settleBottom();   /* 有记录：刷新后直接落回最后一次�
 if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e);addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n- **教材**：进「教材」点「载入全部内置教材」，一次拿到高数八上 + 线代合编本；也可点「仅高数」/「仅线代」，或自己导入 md / pdf / epub。然后把正在学的那节勾上\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
 (async function(){
   CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)});
+  /* 刷新后回到上次待着的那一页。放在这儿而不是启动那一刻：
+     进度页/闪卡页要等教材读完才渲染得出东西，太早切过去只会看到一片空。 */
+  const rv=LS.g('view','lesson');
+  if(rv!=='lesson'&&rv!=='set'&&$('v-'+rv))goView(rv);
   const had=COURSE;                        /* updateCourses 可能回落，先把原课程记下来 */
   renderBook();
   if(!CH.length&&location.protocol!=='file:'){await autoLoad(null);renderBook()}
