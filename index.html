@@ -671,12 +671,27 @@ const LS={g(k,d){try{const v=localStorage.getItem(P+k);return v==null?d:JSON.par
 
 const IDB=(function(){
   let dbp=null;
-  function op(){if(!dbp)dbp=new Promise(function(res,rej){const r=indexedDB.open('gxbook',1);
-    r.onupgradeneeded=function(){const d=r.result;if(!d.objectStoreNames.contains('ch'))d.createObjectStore('ch',{keyPath:'id'});};
-    r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)};});return dbp;}
+  /* 存储打不开绝不能让整页跟着崩——所以这里给出「确切原因」并且允许重试：
+     失败就把缓存的那个 promise 丢掉，下次调用重新开一次（关了占用的标签页就能自愈）。 */
+  function op(){if(!dbp)dbp=new Promise(function(res,rej){
+    let done=false;function ok(v){if(!done){done=true;res(v)}}function no(e){if(!done){done=true;dbp=null;rej(e||new Error('本地教材库打不开'))}}
+    try{
+      if(!window.indexedDB){no(new Error('这个浏览器不支持本地存储'));return}
+      const r=indexedDB.open('gxbook',1);
+      r.onupgradeneeded=function(){const d=r.result;if(!d.objectStoreNames.contains('ch'))d.createObjectStore('ch',{keyPath:'id'});};
+      r.onsuccess=function(){ok(r.result)};
+      r.onerror=function(){no(r.error)};
+      r.onblocked=function(){no(new Error('本地教材库被另一个标签页占着（请关掉其它打开本站在用的标签页）'))};
+      setTimeout(function(){no(new Error('本地教材库打开超时'))},6000);
+    }catch(e){no(e)}
+  });return dbp;}
   function tx(m,fn){return op().then(function(d){return new Promise(function(res,rej){
-    const t=d.transaction('ch',m);const rq=fn(t.objectStore('ch'));
-    t.oncomplete=function(){res(rq&&rq.result)};t.onerror=function(){rej(t.error)};});});}
+    let done=false;function ok(v){if(!done){done=true;res(v)}}function no(e){if(!done){done=true;rej(e)}}
+    try{
+      const t=d.transaction('ch',m);const rq=fn(t.objectStore('ch'));
+      t.oncomplete=function(){ok(rq&&rq.result)};t.onerror=function(){no(t.error)};t.onabort=function(){no(t.error)};
+    }catch(e){no(e)}
+  });});}
   return {put:function(o){return tx('readwrite',function(s){return s.put(o)})},
           all:function(){return tx('readonly',function(s){return s.getAll()})},
           del:function(id){return tx('readwrite',function(s){return s.delete(id)})},
@@ -764,11 +779,19 @@ let MYP=LS.g('myps',{});
 function getP(k){return MYP[k]||PERSONA[k]||PERSONA.cauchy}
 function pKeys(){return Object.keys(PERSONA).concat(Object.keys(MYP))}
 let CD=LS.g('cards',[]), PR=null, CTX=null;
+/* 教材正文（从 IndexedDB 读出来的一节节）。
+   必须显式声明：它一直是「隐式全局」，而启动早期 CH 还没读出来时，
+   renderChips() 里那句 CH.filter 就会 ReferenceError，把整个启动脚本当场打断——
+   表现就是「教材页进得去、里面全空、课程标签栏和节条都没有」。 */
+let CH=[];
 let ST=LS.g('stats',{i:0,o:0,days:{}}), CFG=LS.g('cfg',null);
 let PM=LS.g('pm',{});
 let ME=LS.g('meth.v2',DEF_METHOD);localStorage.removeItem(P+'meth');
 let who=LS.g('who','cauchy'), curCh=null, ctrl=null, rev=null;
 let COURSE=LS.g('course','__free'), PA=LS.g('pace','mid');
+/* 本地教材库（IndexedDB）打不开时记下原因：页面照样渲染（用 localStorage 那部分），
+   但要给一句人话，而不是让整页停在半路、看起来像「点不动」。 */
+let DBERR=null;
 /* 教材名按课程分开存：否则线代课会拿到高数的书名，导师收到矛盾指令 */
 const BKDEF='同济大学数学科学学院《高等数学》第八版上册';
 function noExt(f){return String(f).replace(/\.(md|txt|pdf|epub)$/i,'')}
@@ -1056,6 +1079,8 @@ function goView(v){
   /* 记住你待在哪一页。设置页不记：那是来配置的地方，刷新后该回到学习现场去。 */
   if(v!=='set')LS.s('view',v);
   if(v==='prog')renderProg();if(v==='card')renderCards();
+  /* 点「教材」就地重画一次：万一启动时被存储问题打断，这里也能把目录补上 */
+  if(v==='book')try{renderBook()}catch(e){console.warn('[教材] 渲染失败',e)};
   if(v==='set'){fillRq(false);renderRst();renderRout()}
 }
 document.querySelectorAll('.nv button').forEach(function(b){b.onclick=function(){goView(b.dataset.v)}});
@@ -1255,15 +1280,19 @@ async function autoLoad(btn,pk){
   const packs=pk?[pk]:PACKS;
   const label=btn?btn.textContent:'';
   if(btn){btn.disabled=true;btn.textContent='载入中…'}
-  let n=0,miss=0;
+  let n=0,miss=0,dbfail=0;
   for(const p of packs){
     for(const f of p.files){
+      let txt=null;
       try{
         /* no-store：部署那几分钟里可能被缓存住一个失败的响应，那样之后刷新多少次都还是空的 */
         const r=await fetch(p.dir+encodeURIComponent(f),{cache:'no-store'});
-        if(r.ok){await addFile(f,await r.text());n++}
-        else miss++;
-      }catch(e){miss++}
+        if(!r.ok){miss++;continue}
+        txt=await r.text();
+      }catch(e){miss++;continue}
+      /* 取到了却存不下＝存储的问题，不是文件的问题，两者要分开说 */
+      try{await addFile(f,txt);n++}
+      catch(e){dbfail++;DBERR=DBERR||e}
     }
   }
   if(btn){btn.disabled=false;btn.textContent=label}
@@ -1273,6 +1302,7 @@ async function autoLoad(btn,pk){
     /* 从课程标签栏点「载入」时，自动切到刚载入的那门课 */
     if(btn&&!switchCourse(packs[packs.length-1].key))toast('到「教材」页勾选正在学的那一节');
   }
+  else if(dbfail){storeWarn(DBERR,'教材库');toast('教材取回来了，但本地存储打不开、存不下');renderBook()}
   else if(miss)toast('教材文件没取到（多半是部署空档或网络抖了一下）。点「载入全部内置教材」再试一次，或「导入教材」上传自己的 md / pdf / epub。');
   else toast('内置教材已经都在了。');
   return n;
@@ -1398,7 +1428,9 @@ function bookIsReading(f){
 }
 function renderBook(){
   const q=$('bq').value.trim().toLowerCase();
-  updateCourses();
+  /* 标签栏/节条画不出来不能连累教材目录 —— 它们是两件事，别一起塌 */
+  try{updateCourses()}catch(e){console.warn('[教材] 课程标签栏渲染失败',e)}
+  
   const files={};
   CH.forEach(function(c){if(q&&c.title.toLowerCase().indexOf(q)<0&&c.txt.toLowerCase().indexOf(q)<0)return;(files[c.file]=files[c.file]||[]).push(c)});
   const box=$('blist');box.innerHTML='';
@@ -1410,11 +1442,16 @@ function renderBook(){
       ?'<div>没有匹配的章节，换个关键词试试。</div>'
       :(CH.length
         ?'<div>教材读出来了，但没找到可显示的章节。</div><div style="margin-top:10px">试试重新载入内置教材。</div>'
-        :'<div>还没有教材。</div>'
-         +'<div style="margin:12px 0"><button class="sm pri" id="ldempty">载入全部内置教材</button></div>'
-         +'<div>也可以点右上角「导入教材」，上传你自己的 md / pdf / epub。</div>'))+'</div>';
+        :(DBERR
+          ?'<div>本地教材库这次没打开，教材没能读出来。</div>'
+           +'<div style="margin-top:8px;color:#8A7327">'+esc((DBERR&&DBERR.message)||'存储不可用')+'</div>'
+           +'<div style="margin:12px 0"><button class="sm pri" id="ldempty">再试一次</button></div>'
+           +'<div>若反复如此：关掉其它打开本站的标签页，或检查浏览器是否禁用了本站的本地存储。</div>'
+          :'<div>还没有教材。</div>'
+           +'<div style="margin:12px 0"><button class="sm pri" id="ldempty">载入全部内置教材</button></div>'
+           +'<div>也可以点右上角「导入教材」，上传你自己的 md / pdf / epub。</div>'))) +'</div>';
     const eb=box.querySelector('#ldempty');
-    if(eb)eb.onclick=function(){autoLoad(eb)};
+    if(eb)eb.onclick=function(){ if(DBERR){DBERR=null;location.reload()} else autoLoad(eb) };
   }
   /* 先按课程归组：课程 → 分册 → 章节，一眼看清「这是哪门课的哪一本」 */
   const groups=[],used={};
@@ -1488,12 +1525,25 @@ function ctxText(max){
 /* ---------- 网课：合集课表 + 讲义 + 考我 / 合集分析 ---------- */
 const VDB=(function(){
   let dbp=null;
-  function op(){if(!dbp)dbp=new Promise(function(res,rej){const r=indexedDB.open('gxvid',1);
-    r.onupgradeneeded=function(){const d=r.result;if(!d.objectStoreNames.contains('vid'))d.createObjectStore('vid',{keyPath:'id'})};
-    r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)};});return dbp;}
+  function op(){if(!dbp)dbp=new Promise(function(res,rej){
+    let done=false;function ok(v){if(!done){done=true;res(v)}}function no(e){if(!done){done=true;dbp=null;rej(e||new Error('本地网课库打不开'))}}
+    try{
+      if(!window.indexedDB){no(new Error('这个浏览器不支持本地存储'));return}
+      const r=indexedDB.open('gxvid',1);
+      r.onupgradeneeded=function(){const d=r.result;if(!d.objectStoreNames.contains('vid'))d.createObjectStore('vid',{keyPath:'id'})};
+      r.onsuccess=function(){ok(r.result)};
+      r.onerror=function(){no(r.error)};
+      r.onblocked=function(){no(new Error('本地网课库被另一个标签页占着'))};
+      setTimeout(function(){no(new Error('本地网课库打开超时'))},6000);
+    }catch(e){no(e)}
+  });return dbp;}
   function tx(m,fn){return op().then(function(d){return new Promise(function(res,rej){
-    const t=d.transaction('vid',m);const rq=fn(t.objectStore('vid'));
-    t.oncomplete=function(){res(rq&&rq.result)};t.onerror=function(){rej(t.error)};});});}
+    let done=false;function ok(v){if(!done){done=true;res(v)}}function no(e){if(!done){done=true;rej(e)}}
+    try{
+      const t=d.transaction('vid',m);const rq=fn(t.objectStore('vid'));
+      t.oncomplete=function(){ok(rq&&rq.result)};t.onerror=function(){no(t.error)};t.onabort=function(){no(t.error)};
+    }catch(e){no(e)}
+  });});}
   return {put:function(o){return tx('readwrite',function(s){return s.put(o)})},
           all:function(){return tx('readonly',function(s){return s.getAll()})},
           del:function(id){return tx('readwrite',function(s){return s.delete(id)})}};
@@ -1694,8 +1744,9 @@ function vParse(text,fname){
 
 /* ---------- 上课 ---------- */
 function renderChips(){
-  const b=$('ctxchips');b.innerHTML='';
-  CTX.forEach(function(id){const c=CH.filter(function(x){return x.id===id})[0];
+  const b=$('ctxchips');if(!b)return;b.innerHTML='';
+  const C=CH||[];
+  (CTX||[]).forEach(function(id){const c=C.filter(function(x){return x.id===id})[0];
     const s=document.createElement('span');s.className='chip';s.innerHTML=esc(c?c.title.slice(0,14):id)+'<b>×</b>';
     s.querySelector('b').onclick=function(){toggleCtx(id)};b.appendChild(s)});
 }
@@ -2664,36 +2715,80 @@ function _errToast(m){
   if(_errSeen[m])return;_errSeen[m]=1;
   toast('出了点问题：'+m);
 }
+/* 存储类错误单独说：绝不能让「教材页一片空白」被理解成「教材/记录没了」。
+   给一条常驻提示 + 重试，把原因和「记录没丢」一起讲清楚。 */
+let _storWarned=false;
+function storeWarn(e,what){
+  const m=(e&&(e.message||e.name))||String(e||'');
+  DBERR=DBERR||e||new Error(m);
+  try{console.error('[存储]',what,e)}catch(_){}
+  if(_storWarned)return;_storWarned=true;
+  let d=$('storwarn');
+  if(!d){
+    d=document.createElement('div');d.id='storwarn';
+    d.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:120;'
+      +'background:#FFF8E6;border:1px solid #EFD9A4;color:#5A4308;padding:10px 12px;border-radius:10px;'
+      +'font-size:12.5px;line-height:1.7;max-width:min(92vw,620px);box-shadow:0 8px 26px rgba(0,0,0,.14);'
+      +'display:flex;gap:10px;align-items:flex-start;text-align:left';
+    document.body.appendChild(d);
+  }
+  d.innerHTML='<div style="flex:1">'
+    +'<b>本地存储这次没能打开</b>（'+esc(what)+'），所以教材/网课这次没载入 —— '
+    +'你的对话与学习记录都还在，没有丢。<br>'
+    +'常见原因：另一个标签页还开着本站（占着存储），或浏览器禁用了本站的本地存储权限。'
+    +'关掉多余的本站标签页后点「重试」通常就好。'
+    +'<div style="color:#8A7327;margin-top:4px">（'+esc(m).slice(0,140)+'）</div></div>'
+    +'<div style="flex:none;display:flex;flex-direction:column;gap:6px">'
+    +'<button class="sm pri" id="storretry">重试</button>'
+    +'<button class="sm" id="storclose">知道了</button></div>';
+  const r=$('storretry');if(r)r.onclick=function(){location.reload()};
+  const c=$('storclose');if(c)c.onclick=function(){d.remove()};
+}
 window.addEventListener('error',function(e){if(e&&e.message)_errToast(e.message)});
-window.addEventListener('unhandledrejection',function(e){_errToast(e&&e.reason&&(e.reason.message||e.reason))});
+window.addEventListener('unhandledrejection',function(e){
+  const r=e&&e.reason;const m=String((r&&(r.message||r.name))||r||'');
+  /* 存储相关的单独提示；其余照旧冒一句，别静默 */
+  if(/IndexedDB|indexedDB|存储|Quota/i.test(m))storeWarn(r,'存储');
+  else _errToast(r&&(r.message||r));
+});
 
 /* ---------- 启动 ---------- */
-renderPs();renderModes();applyHabit();renderChips();updTok();renderSym();renderTts();updTts();renderMic();renderVoiceName();
-vLoad();
+/* 这里不要再加「要读教材才能画」的东西：此刻 CH 还是空的。
+   renderChips 就因此搬到了下面 await IDB.all() 之后。 */
+renderPs();renderModes();applyHabit();updTok();renderSym();renderTts();updTts();renderMic();renderVoiceName();
+vLoad().catch(function(e){storeWarn(e,'网课库')});
 MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();
 if(MS.length)settleBottom();   /* 有记录：刷新后直接落回最后一次对话 */
 if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e);addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n- **教材**：进「教材」点「载入全部内置教材」，一次拿到高数八上 + 线代合编本；也可点「仅高数」/「仅线代」，或自己导入 md / pdf / epub。然后把正在学的那节勾上\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
 (async function(){
-  CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)});
-  /* 刷新后回到上次待着的那一页。放在这儿而不是启动那一刻：
-     进度页/闪卡页要等教材读完才渲染得出东西，太早切过去只会看到一片空。 */
-  const rv=LS.g('view','lesson');
-  if(rv!=='lesson'&&rv!=='set'&&$('v-'+rv))goView(rv);
-  const had=COURSE;                        /* updateCourses 可能回落，先把原课程记下来 */
-  renderBook();
-  if(!CH.length&&location.protocol!=='file:'){
-    const got=await autoLoad(null);
-    /* 第一次一无所获：多半是正撞上部署空档（沙盒在重启），或网络抖了一下。
-       这时页面会空着一片、而且不会自己再试，所以隔一会儿补一次。 */
-    if(!got){await new Promise(function(r){setTimeout(r,1500)});await autoLoad(null)}
+  let err=null;
+  /* 教材库打不开（存储被禁 / 库坏了 / 被别的标签页占着）不能连累整页：
+     后面所有渲染都排在这句后面，一旦 await 抛出，课程标签栏、节条、教材目录就全都不画了——
+     而导航是同步绑定的、还能切页，人看到的就是「教材页进得去，但里面全空、点不动」。 */
+  try{ CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)}) }
+  catch(e){ err=e;CH=[];storeWarn(e,'教材库') }
+  renderChips();          /* 等教材读出来再画：勾选章节的 chip 要显示章节标题，不是原始 id */
+  try{
+    /* 刷新后回到上次待着的那一页。放在这儿而不是启动那一刻：
+       进度页/闪卡页要等教材读完才渲染得出东西，太早切过去只会看到一片空。 */
+    const rv=LS.g('view','lesson');
+    if(rv!=='lesson'&&rv!=='set'&&$('v-'+rv))goView(rv);
+    const had=COURSE;                      /* updateCourses 可能回落，先把原课程记下来 */
     renderBook();
-  }
-  /* 课程被回落、但那门课其实聊过 —— 多半是教材没载入（换设备、换浏览器、
-     教材文件被清）。记录一直存在 localStorage 里，说清楚，别让人以为丢了。 */
-  if(had!=='__free'&&COURSE!==had&&LS.g('msgs.'+had,null)!==null){
-    toast('「'+cname(had)+'」的教材这次没载入，但这门课的学习记录都还在——把它重新导入就能接着用');
-  }
+    if(!err&&!CH.length&&location.protocol!=='file:'){
+      const got=await autoLoad(null);
+      /* 第一次一无所获：多半是正撞上部署空档（沙盒在重启），或网络抖了一下。
+         这时页面会空着一片、而且不会自己再试，所以隔一会儿补一次。 */
+      if(!got){await new Promise(function(r){setTimeout(r,1500)});await autoLoad(null)}
+      renderBook();
+    }
+    /* 课程被回落、但那门课其实聊过 —— 多半是教材没载入（换设备、换浏览器、
+       教材文件被清）。记录一直存在 localStorage 里，说清楚，别让人以为丢了。 */
+    if(!err&&had!=='__free'&&COURSE!==had&&LS.g('msgs.'+had,null)!==null){
+      toast('「'+cname(had)+'」的教材这次没载入，但这门课的学习记录都还在——把它重新导入就能接着用');
+    }
+  }catch(e2){ if(!err){err=e2;_errToast(e2&&(e2.message||e2))} }
 })();
 /* 公式库若是从备用源延迟加载成功的，加载完重画一遍，把之前裸着的 LaTeX 补上 */
 window.addEventListener('katexready',function(){
