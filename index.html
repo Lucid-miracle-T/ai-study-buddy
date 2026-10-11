@@ -1259,7 +1259,8 @@ async function autoLoad(btn,pk){
   for(const p of packs){
     for(const f of p.files){
       try{
-        const r=await fetch(p.dir+encodeURIComponent(f));
+        /* no-store：部署那几分钟里可能被缓存住一个失败的响应，那样之后刷新多少次都还是空的 */
+        const r=await fetch(p.dir+encodeURIComponent(f),{cache:'no-store'});
         if(r.ok){await addFile(f,await r.text());n++}
         else miss++;
       }catch(e){miss++}
@@ -1267,12 +1268,14 @@ async function autoLoad(btn,pk){
   }
   if(btn){btn.disabled=false;btn.textContent=label}
   if(n){
+    renderBook();   /* 载完先自己重画一次。别指望 switchCourse —— 当前课程刚好就是最后一个包时它会提前 return，列表会一直是空的 */
     toast('已载入 '+n+' 个分册'+(packs.length>1?'（全部内置教材）':''));
     /* 从课程标签栏点「载入」时，自动切到刚载入的那门课 */
     if(btn&&!switchCourse(packs[packs.length-1].key))toast('到「教材」页勾选正在学的那一节');
   }
-  else if(miss)toast('内置教材没找到（book/ 目录可能被 .gitignore 排除了）。点「导入教材」上传你自己的 md / pdf / epub。');
+  else if(miss)toast('教材文件没取到（多半是部署空档或网络抖了一下）。点「载入全部内置教材」再试一次，或「导入教材」上传自己的 md / pdf / epub。');
   else toast('内置教材已经都在了。');
+  return n;
 }
 /* ---------- 其他格式：PDF / EPUB ---------- */
 function loadScript(u){return new Promise(function(res,rej){
@@ -1400,7 +1403,19 @@ function renderBook(){
   CH.forEach(function(c){if(q&&c.title.toLowerCase().indexOf(q)<0&&c.txt.toLowerCase().indexOf(q)<0)return;(files[c.file]=files[c.file]||[]).push(c)});
   const box=$('blist');box.innerHTML='';
   const names=Object.keys(files);
-  if(!names.length){box.innerHTML='<div class="empty">'+(q?'没有匹配的章节，换个关键词试试。':'还没有教材。<br>点右上角导入 md。')+'</div>'}
+  /* 空状态得能自救：只写「点右上角导入 md」，人站在左边这块空地上根本不知道该点哪儿。
+     教材一份都没进来时，直接把「载入内置教材」放进来；已经有教材、只是被搜索词筛空了，就提示换词。 */
+  if(!names.length){
+    box.innerHTML='<div class="empty">'+(q
+      ?'<div>没有匹配的章节，换个关键词试试。</div>'
+      :(CH.length
+        ?'<div>教材读出来了，但没找到可显示的章节。</div><div style="margin-top:10px">试试重新载入内置教材。</div>'
+        :'<div>还没有教材。</div>'
+         +'<div style="margin:12px 0"><button class="sm pri" id="ldempty">载入全部内置教材</button></div>'
+         +'<div>也可以点右上角「导入教材」，上传你自己的 md / pdf / epub。</div>'))+'</div>';
+    const eb=box.querySelector('#ldempty');
+    if(eb)eb.onclick=function(){autoLoad(eb)};
+  }
   /* 先按课程归组：课程 → 分册 → 章节，一眼看清「这是哪门课的哪一本」 */
   const groups=[],used={};
   PACKS.forEach(function(p){
@@ -2640,6 +2655,18 @@ $('impf').onchange=async function(){
   setTimeout(function(){location.reload()},700);
 };
 
+/* 出了错别静默：一个未捕获的异常只会让页面「点了没反应」，人根本看不出哪里坏了。
+   兜住未捕获的异常与 promise 拒绝，直接说出来；同一条只报一次，免得刷屏。
+   资源加载失败（图片/外链脚本）不报——那不是页面坏了。 */
+const _errSeen={};
+function _errToast(m){
+  m=String(m||'未知错误').slice(0,80);
+  if(_errSeen[m])return;_errSeen[m]=1;
+  toast('出了点问题：'+m);
+}
+window.addEventListener('error',function(e){if(e&&e.message)_errToast(e.message)});
+window.addEventListener('unhandledrejection',function(e){_errToast(e&&e.reason&&(e.reason.message||e.reason))});
+
 /* ---------- 启动 ---------- */
 renderPs();renderModes();applyHabit();renderChips();updTok();renderSym();renderTts();updTts();renderMic();renderVoiceName();
 vLoad();
@@ -2655,7 +2682,13 @@ if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e
   if(rv!=='lesson'&&rv!=='set'&&$('v-'+rv))goView(rv);
   const had=COURSE;                        /* updateCourses 可能回落，先把原课程记下来 */
   renderBook();
-  if(!CH.length&&location.protocol!=='file:'){await autoLoad(null);renderBook()}
+  if(!CH.length&&location.protocol!=='file:'){
+    const got=await autoLoad(null);
+    /* 第一次一无所获：多半是正撞上部署空档（沙盒在重启），或网络抖了一下。
+       这时页面会空着一片、而且不会自己再试，所以隔一会儿补一次。 */
+    if(!got){await new Promise(function(r){setTimeout(r,1500)});await autoLoad(null)}
+    renderBook();
+  }
   /* 课程被回落、但那门课其实聊过 —— 多半是教材没载入（换设备、换浏览器、
      教材文件被清）。记录一直存在 localStorage 里，说清楚，别让人以为丢了。 */
   if(had!=='__free'&&COURSE!==had&&LS.g('msgs.'+had,null)!==null){
