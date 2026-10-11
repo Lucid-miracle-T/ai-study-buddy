@@ -1,12 +1,19 @@
 /* 真浏览器：模拟「勾选过章节的老用户」刷新，验证启动不再中断。
    用法：PROBE_URL=http://127.0.0.1:8902/index.html node scripts/probe_bootctx.mjs */
-const PORT = 9225;
+const PORT = process.env.PROBE_PORT || 9225;
 const URL_ = process.env.PROBE_URL || 'http://127.0.0.1:8902/index.html';
 const fs = await import('fs');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();
-const tgt = list.find(t => t.type === 'page' && /^http/.test(t.url || ''));
+/* 优先挑目标站点的那个标签页：9225 上可能还开着别的页 */
+const host = new URL(URL_).host;
+const pages = list.filter(t => t.type === 'page');
+const tgt = pages.find(t => (t.url || '').includes(host))
+  || pages.find(t => /^https?:/.test(t.url || ''))
+  || pages.find(t => /^about:/.test(t.url || ''))
+  || pages[0];
+console.log('用这个标签页：' + tgt.url);
 const ws = new WebSocket(tgt.webSocketDebuggerUrl);
 await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej });
 let id = 0; const waiters = new Map(); const errs = [];

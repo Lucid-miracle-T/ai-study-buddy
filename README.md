@@ -136,6 +136,7 @@ node tests/test_vpos.js          # 网课刷新后接着看：合集/第几讲/�
 node tests/test_coursemgmt.js    # 课程管理：清空记录 vs 删除课程各删各的、删当前课会回落、取消不动数据
 node tests/test_sess.js          # 课程内分节：旧记录归第一节、各节对话隔离且上下文不串、编辑只截本节、闪卡按节
 node tests/test_bookempty.js     # 教材取不到时不是死空地：空状态能直接载入、启动自己重试一轮、搜索筛空另说、异常冒成提示
+node tests/test_bootorder.js     # 启动顺序：勾选过章节（CTX 非空）刷新也不能崩；教材库打不开照样把页面画出来
 node tests/test_cards.js         # 闪卡：列表里的公式渲染、长公式截断不切在 $...$ 中间
 node tests/test_persist.js       # 记录持久性：教材未载入时不许重置课程
 node tests/test_switchstream.js  # 切课程不打断回答：写回原课程、不串课、切回可见
