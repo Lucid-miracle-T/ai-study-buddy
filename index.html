@@ -257,6 +257,18 @@ button.dgr{color:#A32D2D;border-color:#F09595}
 details{margin-top:10px}
 summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
 .help{font-size:12px;color:var(--tx2);line-height:1.8;background:#faf9f6;border-radius:7px;padding:10px 12px;margin-top:6px}
+/* 推荐结果 */
+.rcbox{border:1px solid var(--blue-line);background:var(--blue-bg);border-radius:9px;padding:12px 14px;margin-top:10px}
+.rcbox.rcb1{border-color:var(--line2);background:#faf9f6}
+.rcname{font-size:15px;font-weight:500;color:#0C447C}
+.rcplant{display:inline-block;margin-top:5px;font-size:11.5px;background:#fff;border:1px solid var(--blue-line);color:#0C447C;border-radius:5px;padding:2px 7px}
+.rcwhy{font-size:12.5px;line-height:1.85;color:var(--tx);margin-top:7px}
+.rcopen{font-size:12.5px;line-height:1.7;color:var(--tx2);margin-top:7px;padding-left:9px;border-left:2px solid var(--blue-line)}
+.rcmini{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.rcitem{flex:1 1 220px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 11px;cursor:pointer}
+.rcitem:hover{border-color:#378ADD}
+.rcitem b{font-size:12.5px;font-weight:500;color:#0C447C}
+.rcitem p{font-size:11.5px;color:var(--tx2);line-height:1.65;margin:4px 0 0}
 .help code{font-size:11.5px;background:#fff;padding:1px 4px;border-radius:3px;border:1px solid var(--line)}
 .warn{background:var(--amber-bg);border:1px solid #EF9F27;border-radius:7px;padding:9px 11px;font-size:12px;color:#633806;line-height:1.7}
 .okmsg{background:var(--green-bg);border:1px solid #97C459;border-radius:7px;padding:9px 11px;font-size:12px;color:#27500A}
@@ -369,6 +381,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
       <div class="bar">
         <span style="font-size:12px;color:var(--tx2)">导师</span>
         <span id="pbox" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+        <button class="sm" id="rgo2" title="不知道请谁？按要学的内容推一位">推荐导师</button>
         <span style="width:1px;height:18px;background:var(--line2);margin:0 2px"></span>
         <span style="font-size:12px;color:var(--tx2)" title="人格决定怎么说话，模式决定这一轮干什么">模式</span>
         <span id="mbox" style="display:flex;gap:6px;flex-wrap:wrap"></span>
@@ -505,6 +518,24 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
               <span style="color:#A32D2D">别为了省钱用小模型学数学。7B 级别会算错中间步骤、编造定理名称——你是来学的，学错比不学更糟。</span>
             </div>
           </details>
+        </div>
+        <div class="card2" id="reccard">
+          <h2>该请谁教你</h2>
+          <div class="hint">把要学的内容写进来（已按当前章节预填），再点一点你现在的状态，下面会推一位最合适的导师。</div>
+          <label>要学的内容</label>
+          <textarea id="rq" rows="2" placeholder="如：定积分的几何应用 / 行列式的定义与性质 / 指针和数组的区别"></textarea>
+          <label style="margin-top:10px">你现在的状态（可不选，可多选）</label>
+          <div id="rst" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"></div>
+          <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+            <button class="pri" id="rgo">推荐一位导师</button>
+            <button id="rfill">用当前章节填</button>
+          </div>
+          <div id="rout"></div>
+          <div class="help" style="margin-top:10px">
+            推荐看的不是「谁教哪一科」——所有人格都与学科无关——而是<b>这块内容的性质</b>（吃定义？吃图形？吃适用条件？）加上<b>你现在的状态</b>（基础不牢？怕假懂？学过忘了？）。<br>
+            所以同一门课，学定义那节可以请柯西，学几何应用那节换成莱布尼茨，都很正常。<br>
+            全部在这台设备上算，不耗 token；自定义人设不参与推荐。
+          </div>
         </div>
         <div class="card2">
           <h2>导师人格</h2>
@@ -1017,12 +1048,14 @@ function streak(){
   return c;
 }
 
-document.querySelectorAll('.nv button').forEach(function(b){b.onclick=function(){
-  document.querySelectorAll('.nv button').forEach(function(x){x.classList.remove('on')});b.classList.add('on');
+function goView(v){
+  document.querySelectorAll('.nv button').forEach(function(x){x.classList.toggle('on',x.dataset.v===v)});
   document.querySelectorAll('section.view').forEach(function(s){s.classList.remove('on')});
-  $('v-'+b.dataset.v).classList.add('on');
-  if(b.dataset.v==='prog')renderProg();if(b.dataset.v==='card')renderCards();
-}});
+  $('v-'+v).classList.add('on');
+  if(v==='prog')renderProg();if(v==='card')renderCards();
+  if(v==='set'){fillRq(false);renderRst();renderRout()}
+}
+document.querySelectorAll('.nv button').forEach(function(b){b.onclick=function(){goView(b.dataset.v)}});
 
 /* ---------- markdown ---------- */
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]})}
@@ -1655,6 +1688,177 @@ function renderMyPs(){
   });
 }
 function curName(){return getP(who).n}
+
+/* ---------- 导师推荐 ----------
+   推荐的不是「谁来教哪一科」——所有人格都与学科无关——而是
+   「按这块内容的性质 + 你现在的状态，哪种说话方式最有用」。
+   三路信号相加：① 内容命中哪类难点 ② 你勾的状态 ③ 你在内容里顺口写的困境。
+   纯本地规则，不耗 token；自定义人设不参与（没有可打分的标签）。 */
+const RTYPE=[
+ {p:'cauchy',kw:'定义 证明 充要 充分必要 必要条件 逆命题 反例 量词 存在 任意 唯一 收敛 连续 可导 可微 极限 中值定理 罗尔 拉格朗日 泰勒 洛必达 无穷小 无穷大 未定式 夹逼 单调有界 一致连续 间断点 秩 线性相关 线性无关 极大无关组 特征值 特征向量 正定 行列式 逆序数 余子式'},
+ {p:'leibniz',kw:'几何 图形 面积 体积 曲线 曲面 切线 切平面 法线 旋转体 弧长 曲率 向量 空间直线 平面方程 二次曲面 椭圆 双曲线 抛物线 图像 形状 直观 看作 画个 画出来'},
+ {p:'newton',kw:'应用 物理 力学 电路 速度 加速度 密度 功 功率 电流 电压 信号 建模 单位 量纲 工程 微分方程 增长 衰减 振动 实际 现实 物理意义 专业课'},
+ {p:'xiangliyao',kw:'条件 适用 成立 范围 前提 何时 什么时候 失效 不成立 边界 限制 收敛域 在哪种 能不能用 适用条件 前提条件 保证'},
+ {p:'changli',kw:'等价 同解 互推 推导 初等变换 方程组 相似 对角化 递推 依赖 用到 步骤 变换 消元 通解 解的结构'},
+ {p:'verina',kw:'区别 辨析 混淆 约定 规定 查表 优先级 结合性 类型转换 定义域 为什么 不同 相同 类似 易错 分不清'}
+];
+const RSTATE=[
+ {t:'这块的基础我还不牢',p:'verina',w:3},
+ {t:'怕自己其实是假装懂了',p:'aemeath',w:3},
+ {t:'学过一遍，现在忘了',p:'shorekeeper',w:3},
+ {t:'老是在同一个地方卡住',p:'shorekeeper',w:3},
+ {t:'太抽象，想要画面和直觉',p:'leibniz',w:2},
+ {t:'想被问住，把漏洞挖出来',p:'cauchy',w:3},
+ {t:'逻辑链太长，容易跟丢',p:'changli',w:3},
+ {t:'想知道会怎么考',p:'newton',mo:'exam',w:2},
+ {t:'只想快点过一遍',p:'leibniz',pace:'fast',w:1}
+];
+/* 内容里顺口写出来的困境，也能当信号用 */
+const RKW=[
+ {kw:'假懂 装懂 没真懂 糊过去 硬撑 心虚',p:'aemeath',w:3},
+ {kw:'忘了 记不住 复习 捡起来 学过一遍 回头再看',p:'shorekeeper',w:3},
+ {kw:'基础不牢 前面没学好 补基础 漏洞 底子',p:'verina',w:3},
+ {kw:'跟不上 乱七八糟 绕 太复杂 理不清',p:'changli',w:2},
+ {kw:'抽象 想象不出来 画不出 没画面',p:'leibniz',w:2}
+];
+const RWHY={
+ cauchy:'这一块难在<b>精确</b>：定义里每个字都得落实——对哪些对象成立、凭什么成立。柯西不接受「差不多趋近」，他会一路追到你把条件和量词都写清楚为止。',
+ leibniz:'这一块有<b>看得见的形状</b>。莱布尼茨会先让你把它画出来、动起来，再看式子——图像立住了，公式不容易记错，也更容易想起该用哪一步。',
+ newton:'这一块最后要<b>落到现实里</b>。牛顿算完一个数会先问「这是什么单位」，帮你在物理和工程上把答案验一遍，而不是停在符号层面。',
+ xiangliyao:'这一块最容易栽的地方是<b>「什么时候不能用」</b>。相里要每讲一条结论都先问它的边界，正好补上最容易漏的那一步。',
+ changli:'这一块的<b>前提一环扣一环</b>，错在前面就会错在后面。长离会把你的判断顺着往下推三步，让你自己看见它通到哪儿、在哪一步塌掉。',
+ verina:'这一块容易<b>和相邻的概念混起来</b>。维里奈最擅长发现「看着一样、其实不一样」，会陪你慢慢把定义、定理、约定一层层分开。',
+ aemeath:'你现在最需要的可能不是更快，而是<b>不假装懂</b>。爱弥斯会让你先讲给她听，讲不出来的地方，她会陪你重飞一遍。',
+ shorekeeper:'这一块你<b>不是第一次碰了</b>。守岸人记得你上次卡在哪儿，会从那个地方接着走，也会带你看清重复出现的同一个坑。'
+};
+const ROPEN={
+ cauchy:'你先把这个定义完整说一遍，一个字都别跳。',
+ leibniz:'别急着看公式——先告诉我，它在你脑子里长什么样？',
+ newton:'先说清楚：这个东西算出来，是什么单位？',
+ xiangliyao:'有意思。那先说它的边界——它在哪儿成立，在哪儿会坏掉？',
+ changli:'按你现在的走法往下三步，会到哪儿？你先说说看。',
+ verina:'你再仔细看看这两个式子……它们真的是一样的吗？',
+ aemeath:'诶？你在啊。那先讲给我听听——上次那个东西，你还记得多少？',
+ shorekeeper:'今天从哪里开始。……上次你停在这儿，还记得吗？'
+};
+const RMODEN={exam:'考试视角',drill:'陪练出题',eng:'工程接口',grade:'批改我的解答',teach:'讲解'};
+const RPACEN={slow:'慢',mid:'中',fast:'快'};
+/* 备选卡片上的一行小传：比截断长理由好读得多 */
+const RSHORT={
+ cauchy:'追定义和条件，不接受「差不多」',
+ leibniz:'先画出来、动起来，再谈式子',
+ newton:'每算完一个数先问「什么单位」',
+ xiangliyao:'先问它在哪儿成立、在哪儿坏掉',
+ changli:'把你的判断往下推三步，让你自己看见',
+ verina:'专挑「看着一样其实不一样」的地方',
+ aemeath:'先让你讲给她听，讲不出就陪你重飞',
+ shorekeeper:'记得你上次卡在哪，从那儿接着走'
+};
+const PORDER=Object.keys(PERSONA);
+let RSEL=[];
+
+function rHit(txt,kw){let c=0;const seen={};
+  kw.split(' ').forEach(function(w){if(w&&!seen[w]&&txt.indexOf(w)>=0){seen[w]=1;c++}});return c}
+
+/* 把要学的内容算成一堆分数。命中数封顶：长文本撞得多，不该因此碾压短文本。
+   权重分三档，因为这三类信号的强度不同：
+     内容类型 ×1.5 —— 只是「这块东西长什么样」，弱信号
+     顺口写的困境 ×1.6 —— 算是你说了，但夹在一句话里
+     亲手勾的状态 ×2 —— 你主动点的，最强信号，可以翻盘
+   （「矩阵的初等变换」+ 勾了「学过忘了」→ 该给守岸人，不是长离：你要的是接着上次走） */
+function rRec(){
+  const txt=String($('rq')?$('rq').value:'').toLowerCase();
+  const sc={},mo={},pace={};
+  function add(p,v){if(!p)return;sc[p]=(sc[p]||0)+v}
+  RTYPE.forEach(function(t){const h=Math.min(3,rHit(txt,t.kw));if(h)add(t.p,h*1.5)});
+  RKW.forEach(function(x){if(rHit(txt,x.kw))add(x.p,x.w*1.6)});
+  RSEL.forEach(function(i){
+    const s=RSTATE[i];if(!s)return;
+    add(s.p,(s.w||2)*2);
+    if(s.mo)mo[s.mo]=(mo[s.mo]||0)+(s.w||2);
+    if(s.pace)pace[s.pace]=(pace[s.pace]||0)+(s.w||2);
+  });
+  return {sc:sc,mo:mo,pace:pace};
+}
+function rRank(sc){
+  return Object.keys(sc).filter(function(k){return PERSONA[k]})
+    .sort(function(a,b){return (sc[b]-sc[a])||(PORDER.indexOf(a)-PORDER.indexOf(b))});
+}
+function rTop(obj){const ks=Object.keys(obj);if(!ks.length)return '';
+  ks.sort(function(a,b){return obj[b]-obj[a]});return ks[0]}
+
+/* 按当前正在学的东西预填内容框：优先这一节的名字，其次勾选的章节 */
+function rAuto(){
+  const a=[],cur=sessOf(CURS);
+  if(cur&&cur.title)a.push(cur.title);
+  (CTX||[]).forEach(function(id){const c=CH.filter(function(x){return x.id===id})[0];if(c&&a.indexOf(c.title)<0)a.push(c.title)});
+  if(!a.length)a.push(COURSE==='__free'?'自由学习':cname(COURSE));
+  return a.slice(0,3).join('、');
+}
+/* 内容框：空着就填，或者「上次也是自动填的」就跟着章节走——
+   教材是异步读进来的，首次填的时候章节可能还没到，进设置页要能补上。用户自己改过就不再动它。 */
+let rqAuto='';
+function fillRq(force){
+  const q=$('rq');if(!q)return;
+  if(force||!q.value.trim()||q.value===rqAuto){rqAuto=rAuto();q.value=rqAuto}
+}
+/* jsdom 之类的环境没有 scrollIntoView，别让一个滚动把整页搞崩 */
+function scrollToRec(){
+  const c=$('reccard');
+  if(c&&c.scrollIntoView)c.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function renderRst(){
+  const b=$('rst');if(!b)return;b.innerHTML='';
+  RSTATE.forEach(function(s,i){
+    const p=document.createElement('span');
+    p.className='pill'+(RSEL.indexOf(i)>=0?' on':'');p.textContent=s.t;
+    p.onclick=function(){const j=RSEL.indexOf(i);if(j>=0)RSEL.splice(j,1);else RSEL.push(i);renderRst();renderRout()};
+    b.appendChild(p);
+  });
+}
+function renderRout(){
+  const box=$('rout');if(!box)return;
+  const r=rRec(),ks=rRank(r.sc);
+  if(!ks.length){
+    box.innerHTML='<div class="rcbox rcb1"><div class="rcname" style="color:var(--tx2);font-size:13px">还没读出什么信号</div>'
+      +'<div class="rcwhy">把要学的内容写得具体一点（是「定积分的定义」还是「定积分的几何应用」，推出来的人不一样），或者点一个你现在的状态。</div></div>';
+    return;
+  }
+  const top=ks[0],rest=ks.slice(1,3);
+  const mK=rTop(r.mo),pK=rTop(r.pace);
+  const plant=[];
+  if(mK)plant.push('模式：'+RMODEN[mK]);
+  if(pK)plant.push('节奏：'+RPACEN[pK]);
+  let h='<div class="rcbox"><div class="rcname">'+esc(getP(top).n)+'</div>';
+  if(plant.length)h+='<div class="rcplant">建议搭配 · '+plant.join(' · ')+'</div>';
+  h+='<div class="rcwhy">'+RWHY[top]+'</div>';
+  if(ROPEN[top])h+='<div class="rcopen">TA 大概会这样开口：「'+ROPEN[top]+'」</div>';
+  h+='<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">'
+    +'<button class="pri sm" data-rk="'+esc(top)+'" data-rm="'+esc(mK)+'" data-rp="'+esc(pK)+'" data-go="lesson">用 TA 上课</button>'
+    +'<button class="sm" data-rk="'+esc(top)+'" data-rm="" data-rp="">只换人</button></div></div>';
+  if(rest.length){
+    h+='<div class="rcmini"><div style="width:100%;font-size:11.5px;color:var(--tx3);margin-bottom:2px">也说得通（点一下就换过去）</div>';
+    rest.forEach(function(k){
+      h+='<div class="rcitem" data-rk="'+esc(k)+'" data-rm="" data-rp=""><b>'+esc(getP(k).n)+'</b><p>'
+        +esc(RSHORT[k]||'')+'</p></div>';
+    });
+    h+='</div>';
+  }else{
+    h+='<div style="font-size:11.5px;color:var(--tx3);margin-top:8px">这块内容指向很清楚，只有这一位明显合适。</div>';
+  }
+  box.innerHTML=h;
+  box.querySelectorAll('[data-rk]').forEach(function(el){
+    el.onclick=function(){applyRec(el.dataset.rk,el.dataset.rm,el.dataset.rp);if(el.dataset.go)goView(el.dataset.go)};
+  });
+}
+function applyRec(k,mK,pK){
+  if(!PERSONA[k]&&!MYP[k])return;
+  who=k;LS.s('who',who);$('sys').value=PM[k]||getP(k).p;
+  if(mK&&MODE[mK]){MODEK=mK;LS.s('mode',mK)}
+  if(pK){PA=pK;LS.s('pace',pK);const pe=$('pace');if(pe)pe.value=pK}
+  renderPs();
+  toast('已换成：'+getP(k).n+(mK?(' · '+MODE[mK].n):'')+(pK?(' · 节奏'+RPACEN[pK]):''));
+}
 function addMsg(role,txt,idx){
   const d=document.createElement('div');d.className='msg'+(role==='user'?' me':'');
   d.dataset.i=String(idx===undefined?MS.length:idx);
@@ -2120,6 +2324,13 @@ $('test').onclick=async function(){
     $('tst').textContent='连接正常';$('tst').className='okmsg';
   }catch(e){$('tst').textContent='失败：'+String(e.message||e).slice(0,80);$('tst').className='warn'}
 };
+/* ---------- 导师推荐 ---------- */
+fillRq(false);renderRst();renderRout();
+$('rq').oninput=function(){renderRout()};
+$('rfill').onclick=function(){fillRq(true);renderRout();toast('已按当前章节填入')};
+$('rgo').onclick=function(){fillRq(false);renderRout();scrollToRec()};
+$('rgo2').onclick=function(){goView('set');scrollToRec()};
+
 $('sys').value=PM[who]||getP(who).p;
 $('bkn').value=getBkn();
 $('svb').onclick=function(){setBkn($('bkn').value.trim()||BKDEF);toast('已记下（作用于课程：'+cname(COURSE)+'）')};

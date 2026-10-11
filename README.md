@@ -95,6 +95,7 @@ python -m http.server 8000
 |---|---|
 | `const PERSONA` | 人格定义（说话风格） |
 | `const MODE` | 模式定义（这一轮干什么） |
+| `const RTYPE` / `RSTATE` / `RKW` / `RSHORT` | 「该请谁教你」：按内容性质 + 你的状态推荐导师（`rRec` 打分 / `rRank` 排序 / `renderRout` 渲染） |
 | `const QDENS` / `const QDIFF` / `const ACTS` | 输出风格：提问密度、提问分量（考判断不考算术）、动作与神态旁白（`function md` 里把 `*旁白*` 渲染成 `.act`） |
 | `const PACKS` | 内置教材包（哪门课由 `book/` 下哪些分册组成） |
 | `let SESS` / `CURS` | 「节」：课程内部的学习单元（`loadSess` / `newSess` / `switchSess` / `delSess` / `sid` / `sessLabel`）。消息与闪卡带 `s` 字段，没有的一律算第一节 |
@@ -127,6 +128,7 @@ node tests/test_glyph.js         # 缺字兜底：数学样式字母归一化、
 node tests/test_instruct.js      # 下指令前先自检：点名对象、行/列方向、说错后的补救话术
 node tests/test_qdiff.js         # 提问分量：禁纯算术、指明该问判断、例外口子、与密度开关正交
 node tests/test_bottom.js        # 刷新停在最后一句：盯两个盒子、内容长高与容器变矮都跟到底、一滚就松手
+node tests/test_rec.js           # 导师推荐：内容类型 → 人选、状态可翻盘、无信号不硬推、一键应用
 node tests/test_coursemgmt.js    # 课程管理：清空记录 vs 删除课程各删各的、删当前课会回落、取消不动数据
 node tests/test_sess.js          # 课程内分节：旧记录归第一节、各节对话隔离且上下文不串、编辑只截本节、闪卡按节
 node tests/test_cards.js         # 闪卡：列表里的公式渲染、长公式截断不切在 $...$ 中间
