@@ -21,6 +21,19 @@ const shot = async f => {
   fs.writeFileSync(f, Buffer.from(s.result.data, 'base64'));
   console.log('  截图 → ' + f);
 };
+/* 只截某个元素：看顶部那排挤没挤坏用这个最直接。
+   clip 用的是文档坐标，所以要补上 scrollX/scrollY —— 页面滚过时 GetBoundingClientRect 才是视口坐标。 */
+const shotEl = async (sel, f) => {
+  const r = await ev(`(function(){var b=document.querySelector('${sel}').getBoundingClientRect();
+    return JSON.stringify({x:b.left+window.scrollX,y:b.top+window.scrollY,w:b.width,h:b.height})})()`);
+  const b = JSON.parse(r);
+  const s = await send('Page.captureScreenshot', {
+    format: 'png', captureBeyondViewport: true,
+    clip: { x: b.x, y: b.y, width: b.w, height: Math.min(b.h, 900), scale: 1 }
+  });
+  fs.writeFileSync(f, Buffer.from(s.result.data, 'base64'));
+  console.log('  元素截图 → ' + f + '（' + Math.round(b.w) + '×' + Math.round(b.h) + '）');
+};
 await send('Page.enable'); await send('Runtime.enable'); await send('Network.enable');
 await send('Network.setCacheDisabled', { cacheDisabled: true });
 await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
@@ -107,5 +120,19 @@ await sleep(600);
 await ev(`document.querySelector('#reccard').scrollIntoView({block:'start'})`);
 await sleep(400);
 await shot('C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-推荐导师手机.png');
+
+console.log('\n【8. 上课页顶部那排（加了「推荐导师」会不会挤坏）】');
+await ev(`goView('lesson')`); await sleep(400);
+console.log('手机宽度 390 下顶部 bar 高度:', await ev(`document.querySelector('#v-lesson .bar').getBoundingClientRect().height.toFixed(0)+'px'`));
+console.log('bar 有没有横向溢出:', (await ev(`(function(){var b=document.querySelector('#v-lesson .bar');return b.scrollWidth>b.clientWidth})()`)) ? '溢出' : '正常');
+console.log('「推荐导师」按钮可见:', await ev(`(function(){var e=document.querySelector('#rgo2');var r=e.getBoundingClientRect();return r.width>0&&r.top<200})()`));
+await shot('C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-推荐入口手机.png');
+await ev(`(function(){window.scrollTo(0,0);['#msgs','#mw','#stage','#v-lesson'].forEach(function(s){var e=document.querySelector(s);if(e)e.scrollTop=0});return 1})()`);
+await sleep(300);
+console.log('手机 bar 的 rect:', await ev(`(function(){var b=document.querySelector('#v-lesson .bar').getBoundingClientRect();return Math.round(b.top)+','+Math.round(b.left)+' '+Math.round(b.width)+'x'+Math.round(b.height)})()`));
+await shotEl('#v-lesson .bar', 'C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-顶部栏手机.png');
+await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+await sleep(400);
+await shotEl('#v-lesson .bar', 'C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-顶部栏.png');
 
 ws.close();
