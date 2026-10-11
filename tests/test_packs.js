@@ -150,15 +150,29 @@ function installIDB(win) {
   ok(ev('(LS.g("msgs.__local2",[])||[]).length') === 1, '记录没丢');
 
   log('');
-  log('=== 6. 全包被删 → 回落自由问答，记录保住 ===');
+  log('=== 6. 课程确实失效（别的教材还在）→ 回落，记录保住 ===');
   ev('switchCourse("__local")');
   await wait(20);
   ev('window.__idb=window.__idb.filter(function(x){return !packOf(x.file)})');
+  /* 留一本外部教材：CH 非空，才谈得上「这门课失效了」 */
+  ev('window.__idb.push({id:"外部书.md#1",file:"外部书.md",title:"第一节",txt:"内容"})');
   ev('CH=window.__idb.slice(); updateCourses()');
   await wait(30);
   log('当前课程: ' + ev('COURSE'));
-  ok(ev('COURSE') === '__free', '两门内置课都删光后回落自由问答');
+  ok(ev('COURSE') === '__free', '内置课没了、但还有别的教材 → 回落自由问答');
   ok(ev('(LS.g("msgs.__local2",[])||[]).length') === 1, '线代记录仍在存储里，没被清');
+
+  log('');
+  log('=== 7. 教材未载入（CH 为空）→ 不许重置课程 ===');
+  /* 启动瞬间教材还没从 IndexedDB 读出来时，课程列表恒为 [自由问答]。
+     早期版本据此把 COURSE 重置成 __free 并写回 localStorage，
+     于是每次打开站点都停在空的自由问答 —— 就是「更新后学习记录不见了」。 */
+  ev('COURSE="__local2"; LS.s("course","__local2")');
+  ev('CH=[]; updateCourses()');
+  await wait(30);
+  ok(ev('COURSE') === '__local2', 'CH 为空时课程保持 __local2，实际 ' + ev('COURSE'));
+  ok(ev('LS.g("course")') === '__local2', 'localStorage 里的课程选择未被覆盖');
+  ok(ev('(LS.g("msgs.__local2",[])||[]).length') === 1, '线代记录没丢');
 
   log('');
   log('--- 错误 ---');

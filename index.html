@@ -539,8 +539,17 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
         </div>
         <div class="card2">
           <h2>数据</h2>
-          <div class="hint">教材正文存在浏览器 IndexedDB，其余在 localStorage。清浏览器数据会一起没，重要东西记得导出。</div>
-          <div style="display:flex;gap:6px"><button id="wipe">清空全部本地数据</button></div>
+          <div class="hint">教材正文存在浏览器 IndexedDB，其余（对话、闪卡、进度、习惯、接口配置）在 localStorage。清浏览器数据、换设备、或在不同的链接之间切换，这些都带不过去——所以重要的时候先导出一份。</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button id="expall">导出学习记录</button>
+            <button id="impall">从备份恢复</button>
+            <button id="wipe">清空全部本地数据</button>
+          </div>
+          <input id="impf" type="file" accept=".json,application/json" style="display:none">
+          <div class="help" style="margin-top:10px">
+            导出的是<b>全部对话、闪卡、掌握进度、勾选、习惯设置、导师与接口配置</b>；<b>不含 API Key</b>，也不含教材正文（换设备后重新「载入全部内置教材」即可）。<br><br>
+            换手机、换浏览器、清缓存之前先导出一次；在新环境里点「从备份恢复」选中那个文件，记录就回来了。
+          </div>
         </div>
         <div class="card2">
           <h2>语音</h2>
@@ -988,7 +997,11 @@ function updateCourses(){
   const L=courseList(), fs=L.fs, gs=L.gs;
   /* 教材已被移除 / 分册已并入「自带教材」时，回落到有效课程，并保住原记录 */
   const ok=gs.some(function(g){return g.k===COURSE});
-  if(!ok){
+  /* 教材还没载入（CH 为空）时 gs 恒为 [自由问答]，此刻无从判断课程是否失效。
+     早期版本在这里无条件回落，导致每次打开站点都把用户上次所在的课重置成
+     自由问答——看起来像「学习记录不见了」，其实数据一直在 msgs.<课程> 里。
+     只有教材确实载入过（fs 非空）却仍找不到该课程，才认定为真的失效。 */
+  if(!ok&&fs.length){
     saveCourseData();saveMs();
     /* 当前课程对应的分册被删了：若它属于某个内置包且该包还有别的分册在，就并回那个包 */
     const pk=packByKey(COURSE)||packOf(COURSE);
@@ -1861,6 +1874,46 @@ $('wipe').onclick=async function(){
   await IDB.clear();localStorage.clear();location.reload();
 };
 
+/* ---------- 学习记录备份 / 恢复 ----------
+   记录全在 localStorage 里，受 origin 限制：换域名、换设备、清缓存都会没。
+   导出一份 JSON 是唯一能跨环境带走的手段。刻意不含 API Key —— 备份文件常被
+   随手丢进网盘或聊天窗口，密钥不该跟着走。 */
+const BKP='ai-study-buddy';
+function bkpKeys(){
+  const ks=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&k.indexOf(P)===0&&k!==P+'key')ks.push(k);
+  }
+  return ks;
+}
+$('expall').onclick=function(){
+  const d={app:BKP,ver:1,at:new Date().toISOString(),data:{}};
+  bkpKeys().forEach(function(k){d.data[k]=localStorage.getItem(k)});
+  const n=Object.keys(d.data).length;
+  if(!n){toast('这台设备上还没有可导出的记录');return}
+  dl('学习记录备份_'+today()+'.json',JSON.stringify(d));
+  toast('已导出 '+n+' 项记录（不含 API Key）');
+};
+$('impall').onclick=function(){$('impf').click()};
+$('impf').onchange=async function(){
+  const f=this.files&&this.files[0];this.value='';
+  if(!f)return;
+  let j=null;
+  try{j=JSON.parse(await f.text())}catch(e){}
+  if(!j||j.app!==BKP||!j.data||typeof j.data!=='object'){alert('这不是本站导出的备份文件。');return}
+  const ks=Object.keys(j.data);
+  if(!ks.length){alert('备份文件里没有记录。');return}
+  if(!confirm('将写入 '+ks.length+' 项记录；同名的当前记录会被备份里的覆盖（API Key 和教材不受影响）。继续？'))return;
+  let n=0;
+  ks.forEach(function(k){
+    if(k.indexOf(P)!==0||k===P+'key')return;      /* 只认本站前缀，密钥一律不动 */
+    try{localStorage.setItem(k,j.data[k]);n++}catch(e){}
+  });
+  toast('已恢复 '+n+' 项记录，正在重新载入…');
+  setTimeout(function(){location.reload()},700);
+};
+
 /* ---------- 启动 ---------- */
 renderPs();renderModes();applyHabit();renderChips();updTok();renderSym();renderTts();updTts();renderMic();renderVoiceName();
 vLoad();
@@ -1868,8 +1921,15 @@ MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();
 if(!MS.length)addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n- **教材**：进「教材」点「载入全部内置教材」，一次拿到高数八上 + 线代合编本；也可点「仅高数」/「仅线代」，或自己导入 md / pdf / epub。然后把正在学的那节勾上\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。');
 (async function(){
-  CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)});renderBook();
+  CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)});
+  const had=COURSE;                        /* updateCourses 可能回落，先把原课程记下来 */
+  renderBook();
   if(!CH.length&&location.protocol!=='file:'){await autoLoad(null);renderBook()}
+  /* 课程被回落、但那门课其实聊过 —— 多半是教材没载入（换设备、换浏览器、
+     教材文件被清）。记录一直存在 localStorage 里，说清楚，别让人以为丢了。 */
+  if(had!=='__free'&&COURSE!==had&&LS.g('msgs.'+had,null)!==null){
+    toast('「'+cname(had)+'」的教材这次没载入，但这门课的学习记录都还在——把它重新导入就能接着用');
+  }
 })();
 /* 公式库若是从备用源延迟加载成功的，加载完重画一遍，把之前裸着的 LaTeX 补上 */
 window.addEventListener('katexready',function(){
