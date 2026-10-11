@@ -136,6 +136,11 @@ button.sm{padding:4px 9px;font-size:12px}
 .body table{border-collapse:collapse;margin:9px 0;font-size:13px}
 .body th,.body td{border:1px solid var(--line2);padding:5px 9px}
 .body blockquote{border-left:3px solid var(--line2);padding-left:11px;color:var(--tx2);margin:9px 0}
+/* 导师的动作/神态旁白（写作 *推了推眼镜*）：浅色、略小、带淡底，与对白区分开。
+   行内的旁白是淡底小标签，独立成段的旁白换成左侧竖线的整段旁白。 */
+.msg .body .act{color:var(--tx3);font-size:.9em;font-style:normal;background:rgba(136,135,128,.1);border-radius:4px;padding:1px 6px;margin:0 1px}
+.msg .body p.actp{margin:0 0 10px;padding-left:10px;border-left:2px solid var(--line2)}
+.msg .body p.actp .act{background:none;padding:0;margin:0}
 #inbar{border-top:1px solid var(--line);background:var(--panel);padding:11px 24px;flex-shrink:0}
 #inbar .wrap{display:flex;gap:8px;align-items:flex-end}
 /* 语音 */
@@ -488,6 +493,12 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
             <option value="one">一次一问（推荐）—— 答完再问下一个</option>
             <option value="few">一次 2–3 问 —— 想快些过的时候用</option>
           </select>
+          <label>导师的动作与神态描写</label>
+          <select id="act">
+            <option value="off">关闭 —— 只说话，不写动作</option>
+            <option value="mid">自然（推荐）—— 偶尔一个动作或神态</option>
+            <option value="rich">丰富 —— 动作、神态、小场景都写</option>
+          </select>
           <label>对话字号</label>
           <select id="fsz">
             <option value="1">标准</option>
@@ -501,7 +512,8 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
           </select>
           <div class="help" style="margin-top:10px">
             中文输入法打字时按 Enter 是在选字，不会被当成发送——这点已经处理好了，不用担心打一半被送出去。<br><br>
-            <b>想改自己说过的话？</b>点你那条消息右上角的「编辑」，改完点「重发」——它之后的内容会一起清掉，导师会拿改过的话重新回答一遍。要是只错了个符号，这比重新问一遍省事得多。
+            <b>想改自己说过的话？</b>点你那条消息右上角的「编辑」，改完点「重发」——它之后的内容会一起清掉，导师会拿改过的话重新回答一遍。要是只错了个符号，这比重新问一遍省事得多。<br><br>
+            <b>动作描写</b>：导师写成 <code>*推了推眼镜*</code> 的句子是旁白，会显示成浅色小字，和它要讲的话分开。你自己也能这么写——旁白不会被朗读出来。想改在哪几个角色身上出现，就在上面这个开关里调。
           </div>
         </div>
         <div class="card2">
@@ -616,6 +628,15 @@ const QDENS={
   one:"【提问纪律】一次回复最多只提出一个问题。问完就停下等我回答，不要一口气列出两三个问题让我排队。确实需要连续追问时，只挑最关键的那一个先问，其余的等我答完再决定要不要问。",
   few:"【提问纪律】一次回复最多提出 2–3 个递进的小问题，并在末尾用一句「先答第 1 个」告诉我从哪儿开始。"
 };
+/* 动作/神态描写：导师说话时顺带写一小句旁白（*推了推眼镜*），渲染成浅色小字，读起来像「有个人在陪你学」。
+   和提问密度一样属于「输出风格」，本机一份，与课程、教材、人格都无关。
+   约定：单星号只写旁白，强调一律用 **双星号** —— 所以渲染时可以把 <em> 直接当成旁白处理。 */
+let ACT=LS.g('act','mid');if(['off','mid','rich'].indexOf(ACT)<0)ACT='mid';
+const ACTS={
+  off:"【动作与神态】不要写任何动作、神态或场景旁白，只输出对白与讲解正文。",
+  mid:"【动作与神态 · 自然】你可以在开口的同时写一小句动作或神态旁白，用一对单星号包住，例如：*推了推眼镜*、*停顿了一下，在纸上画出一条曲线*。规则：\n- 每轮 0–2 处，只在真的有助于表达时才用；宁少勿多，不要每句都配动作。\n- 旁白要短，一般不超过 12 字，用第三人称写成旁白，不要写成像对白那样带引号。\n- 必须符合你的人格设定与当前场景；不要借旁白编造与设定冲突的身份、道具或环境。\n- 单星号只留给旁白；要强调文字时一律用双星号 **这样**，不要用 _斜体_。",
+  rich:"【动作与神态 · 丰富】在说话的过程中多写一些动作、神态与小场景，用一对单星号包住，例如：*推了推眼镜，把草稿纸转过来*、*指尖在桌面上敲了两下，忽然停住*。规则：\n- 每轮 2–4 处，可以带动作与环境细节，但仍以对白和讲解为主，不要让旁白盖过内容。\n- 每条旁白一般不超过 20 字，用第三人称写成旁白，不要写成像对白那样带引号。\n- 必须符合你的人格设定与当前场景；不要借旁白编造与设定冲突的身份、道具或环境。\n- 单星号只留给旁白；要强调文字时一律用双星号 **这样**，不要用 _斜体_。"
+};
 /* 本轮模式：与人格正交——人格决定「怎么说话」，模式决定「这一轮干什么」 */
 const MODE={
   teach:{n:"讲解",ph:"说点什么。Ctrl+Enter 发送",p:"【本轮模式 · 讲解】按你的一贯方式讲清楚这个概念：先说它成立的条件和物理含义，再谈推导（只在影响“什么时候能用”时才讲），最后给一个能套用的判据或步骤。讲完留一个小问题确认我是否跟上。"},
@@ -722,6 +743,7 @@ function applyHabit(){
   const f=$('fsz');if(f)f.value=FSZ;
   const a=$('symadef');if(a)a.value=(typeof SYMA!=='undefined'&&SYMA)?'1':'0';
   const q=$('qden');if(q)q.value=QDEN;
+  const a2=$('act');if(a2)a2.value=ACT;
 }
 /* ---- 每本教材一套独立记录：进度 / 上下文勾选 / 对话 ---- */
 function prKey(){return 'prog.'+COURSE}
@@ -870,6 +892,13 @@ function md(src){
     h=DOMPurify.sanitize(marked.parse(s),{ADD_ATTR:['style','class']});
   }else{
     h='<p>'+esc(s).replace(/\n/g,'<br>')+'</p>';
+  }
+  /* 导师的动作/神态旁白（*推了推眼镜*）：本应用约定单星号只写旁白、强调一律用 **双星号**，
+     所以 marked 产出的 <em> 基本都是旁白——换成 .act 的 span，浅色小字号与对白区分。
+     注意：此刻 KaTeX 的 HTML 还是 %%M 占位符，不会被这里误伤；独立成段的旁白再补一个竖线版式。 */
+  if(h.indexOf('<em>')>=0){
+    h=h.replace(/<em>([\s\S]*?)<\/em>/g,'<span class="act">$1</span>');
+    h=h.replace(/<p><span class="act">([\s\S]*?)<\/span><\/p>/g,'<p class="actp"><span class="act">$1</span></p>');
   }
   return h.replace(/%%M(\d+)%%/g,function(m,i){return st[(+i)-1]!==undefined?st[(+i)-1]:''});
 }
@@ -1389,6 +1418,7 @@ function sysMsg(){
     +'数学式一律用 $行内$ 或 $$独立成行$$ 包裹，禁止输出裸露的 LaTeX 命令，禁止用 \\( \\) 或 \\[ \\]；'
     +'第一次出现某个符号时必须顺带说明它念什么、表示什么（例如“ε（epsilon，任意给定的小正数）”）；'
     +'能用一句话说清的地方不要堆符号；关键推导分步写，每步用文字点明在做什么。'
+    +'\n\n'+(ACTS[ACT]||ACTS.mid)
     +'\n\n【教材依据】这门课当前使用：'+getBkn()+'。涉及定理表述、符号约定、例题编号时以该教材为准。'
     +(COURSE&&COURSE!=='__free'?'\n本轮所属教材文件：'+COURSE:'')
     /* 模式放最后：它决定本轮行为，要求高于人格的默认习惯 */
@@ -1411,31 +1441,57 @@ async function ask(text,opt){
   const bi=MS.length;
   if(!opt.silent)addMsg('user',text,bi);
   const el=addMsg('assistant','<span style="color:#888780">…</span>',bi+1);
+  /* 记下这条对话属于哪门课：流式回答进行中用户可能切走，回答必须写回**原课程**。
+     切课会把全局 MS 换成另一门课的数组，若结束时不加判断地 MS.push，回答会串课。 */
+  const myCourse=COURSE, myMs=MS;
   MS.push({r:'user',c:text});saveMs();
   $('stop').disabled=false;ctrl=new AbortController();
+  const myCtrl=ctrl;
+  let full='';   /* 提到 try 外：catch 里也要用（原来在 try 内用 let 声明，abort 时 catch 反而抛错） */
   try{
     const r=await fetch(base.replace(/\/+$/,'')+'/chat/completions',{method:'POST',signal:ctrl.signal,
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
       body:JSON.stringify({model:$('model').value.trim(),messages:pack,temperature:opt.temp||0.6,stream:true})});
     if(!r.ok){let m=r.status+' '+r.statusText;try{const j=await r.json();m+=' '+(j.error&&j.error.message?j.error.message:JSON.stringify(j).slice(0,150))}catch(e){}
       throw new Error(m)}
-    const rd=r.body.getReader(),dc=new TextDecoder();let buf='',full='';
+    const rd=r.body.getReader(),dc=new TextDecoder();let buf='';
     for(;;){const o=await rd.read();if(o.done)break;
       buf+=dc.decode(o.value,{stream:true});const ls=buf.split('\n');buf=ls.pop();
       for(const l of ls){if(!l.startsWith('data: '))continue;const p=l.slice(6).trim();if(p==='[DONE]')continue;
         try{const j=JSON.parse(p);const dd=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content;
-          if(dd){full+=dd;el.innerHTML=md(full);$('msgs').scrollTop=$('msgs').scrollHeight}
+          if(dd){full+=dd;el.innerHTML=md(full);
+            if(COURSE===myCourse){
+              /* 切走过又切回来时 reloadMsgs 重建过 DOM，正在渲染的 el 成了游离节点——
+                 把它挂回列表末尾，回答就在原地继续往下长 */
+              if(!el.isConnected&&el.parentNode)$('mw').appendChild(el.parentNode);
+              $('msgs').scrollTop=$('msgs').scrollHeight;
+            }}
           if(j.usage){ST.i+=j.usage.prompt_tokens||0;ST.o+=j.usage.completion_tokens||0;LS.s('stats',ST)}}catch(e){}}}
     if(!full){full='（没有返回内容，检查接口地址与模型名）';el.innerHTML=md(full)}
-    MS.push({r:'a',c:full});saveMs();bump('m');updTok();
+    /* 回答写回「这次对话属于的那门课」，而不是此刻所在的课 */
+    if(COURSE===myCourse){
+      MS.push({r:'a',c:full});saveMs();
+      /* 流结束时用户可能刚好切回来——DOM 已由存储重绘，el 脱离，把它挂回让回答可见 */
+      if(!el.isConnected&&el.parentNode)$('mw').appendChild(el.parentNode);
+    }else{
+      myMs.push({r:'a',c:full});LS.s('msgs.'+myCourse,myMs);
+      toast('「'+cname(myCourse)+'」的回答已完成，切回去就能看到');
+    }
+    bump('m');updTok();
     el.parentNode.__txt=full;
-    if(TTS&&!opt.card)speak(full);
+    if(TTS&&!opt.card&&COURSE===myCourse)speak(full);
     if(opt.card)return full;
   }catch(e){
-    if(String(e.name)==='AbortError'){el.innerHTML=md(full||'（已停止）');return}
-    el.innerHTML='<span style="color:#A32D2D">出错了：'+esc(String(e.message||e))+'</span>';
-    MS.pop();saveMs();return;
-  }finally{$('stop').disabled=true}
+    if(String(e.name)==='AbortError'){if(COURSE===myCourse)el.innerHTML=md(full||'（已停止）');return}
+    if(COURSE===myCourse){
+      el.innerHTML='<span style="color:#A32D2D">出错了：'+esc(String(e.message||e))+'</span>';
+      MS.pop();saveMs();
+    }else if(myMs.length&&myMs[myMs.length-1].r==='user'){
+      /* 已切到别的课：只撤掉原课程那条占位的提问，不碰当前课程 */
+      myMs.pop();LS.s('msgs.'+myCourse,myMs);
+    }
+    return;
+  }finally{if(ctrl===myCtrl)$('stop').disabled=true}
 }
 function updTok(){
   const v=PROV[$('prov').value]&&PROV[$('prov').value].io||[0,0];
@@ -1481,7 +1537,9 @@ function speechText(t){
   s=s.replace(/\\\([\s\S]*?\\\)/g,' ').replace(/\\\[[\s\S]*?\\\]/g,' ');
   s=s.replace(/!\[[^\]]*\]\([^)]*\)/g,' ').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1');
   s=s.replace(/<[^>]+>/g,' ');
-  s=s.replace(/^#{1,6}\s*/gm,'').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*([^*]+)\*/g,'$1')
+  /* **加粗** 先去标记留文字；剩下的单星号一律是动作旁白（*推了推眼镜*）——
+     旁白是写给眼睛看的，不该由导师的嗓音念出来，所以整段丢掉。 */
+  s=s.replace(/^#{1,6}\s*/gm,'').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*([^*\n]+)\*/g,' ')
    .replace(/_([^_]+)_/g,'$1').replace(/^>\s?/gm,'').replace(/^\s*[-*+]\s+/gm,'').replace(/\|/g,' ');
   s=s.replace(/\\[A-Za-z]+/g,' ').replace(/[{}^_\\]/g,' ').replace(/\s+/g,' ').trim();
   return s;
@@ -1795,6 +1853,10 @@ $('sendkey').onchange=function(){
 $('qden').onchange=function(){
   QDEN=this.value==='few'?'few':'one';LS.s('qden',QDEN);applyHabit();
   toast(QDEN==='one'?'导师一次只问一个问题':'导师一次可问 2–3 个问题');
+};
+$('act').onchange=function(){
+  ACT=['off','mid','rich'].indexOf(this.value)>=0?this.value:'mid';LS.s('act',ACT);applyHabit();
+  toast(ACT==='off'?'导师不再写动作描写':(ACT==='rich'?'导师会多写一些动作与神态':'导师偶尔会写一点动作神态'));
 };
 $('fsz').onchange=function(){FSZ=String(this.value);LS.s('fsz',FSZ);applyHabit()};
 $('symadef').onchange=function(){SYMA=this.value==='1'?1:0;LS.s('syma',SYMA);renderSym();applyHabit()};
