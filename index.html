@@ -1208,7 +1208,7 @@ function updTok(){
   renderFoot();
 }
 function toast(t){let d=$('toast');if(!d){d=document.createElement('div');d.id='toast';
-  d.style.cssText='position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:99;background:#2c2c2a;color:#fff;padding:8px 14px;border-radius:8px;font-size:12.5px;opacity:.95';
+  d.style.cssText='position:fixed;bottom:76px;left:50%;transform:translateX(-50%);z-index:99;background:#2c2c2a;color:#fff;padding:8px 14px;border-radius:8px;font-size:12.5px;opacity:.95;pointer-events:none;max-width:86vw;text-align:center';
   document.body.appendChild(d)}d.textContent=t;d.style.display='block';clearTimeout(d._t);d._t=setTimeout(function(){d.style.display='none'},2400)}
 
 /* ---------- 语音（对标 Socratopia：你说 · 伙伴答） ---------- */
@@ -1556,6 +1556,9 @@ $('start').onclick=function(){
   else head='我们开始今天的课，使用教材：'+getBkn()+'。';
   head+=MODEK==='teach'?'按你的方式开场：不要直接讲解，先问一个能暴露我是否真懂的问题；我的回答若含糊，请追问量化；我若三轮答不上，请降低难度换更基础的问题。涉及定理表述与符号时以该教材为准。'
     :'（本轮模式：'+curMode().n+'，严格按该模式的规则执行，不要退回成讲解。）';
+  /* 先切到当前课程视图，避免停在别的页签上看着像"没反应" */
+  document.querySelector('[data-v="lesson"]').click();
+  ask(head);
 };
 $('gen').onclick=async function(){
   if(!MS.length){alert('先聊几句。');return}
