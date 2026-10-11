@@ -42,6 +42,20 @@ function kxdone(){
   var st=document.getElementById('kxst');
   if(st){st.textContent=window.__kx?'公式渲染正常':'公式渲染未加载';st.className='tag'+(window.__kx?' ok':' bad')}
 }
+/* marked / DOMPurify 多源兜底：与 KaTeX 同理，主源（jsdelivr）失败时依次切国内镜像。
+   两者必须都到位才允许渲染 markdown，缺一个就降级为纯文本（见 md() 里的说明）。 */
+var MD_SRC=["https://registry.npmmirror.com/marked/12.0.2/files/marked.min.js",
+            "https://unpkg.com/marked@12.0.2/marked.min.js",
+            "https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"];
+var DP_SRC=["https://registry.npmmirror.com/dompurify/3.1.6/files/dist/purify.min.js",
+            "https://unpkg.com/dompurify@3.1.6/dist/purify.min.js",
+            "https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"];
+function loadAlt(list,i){
+  if(i>=list.length)return;
+  var s=document.createElement('script');s.src=list[i];
+  s.onerror=function(){loadAlt(list,i+1)};
+  document.head.appendChild(s);
+}
 window.addEventListener('DOMContentLoaded',function(){
   setTimeout(function(){
     if(typeof katex==='undefined')kxjs(1);
@@ -442,6 +456,11 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
           <div style="display:flex;gap:6px;margin-top:8px"><button id="rstd">恢复这个人设的默认提示词</button></div>
         </div>
         <div class="card2">
+          <h2>本轮模式</h2>
+          <div class="hint">人格决定「怎么说话」，模式决定「这一轮干什么」——想被考就切陪练，做完题想查错就切批改。上课页顶部也能切，两边同步。<span id="mcur" style="color:var(--blue)"></span></div>
+          <div id="mbox2" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
+        </div>
+        <div class="card2">
           <h2>加自己的人设</h2>
           <div class="hint">内置的只有三位数学家和五位鸣潮角色。想让谁陪你学，自己填一个就行——加完会出现在上面那排。</div>
           <div id="myplist" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"></div>
@@ -500,9 +519,9 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" onerror="loadAlt(MD_SRC,0)"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js" onerror="loadAlt(DP_SRC,0)"></script>
 <script>
 const P='gx.';
 const LS={g(k,d){try{const v=localStorage.getItem(P+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
@@ -676,7 +695,12 @@ function renderCTabs(fs){
   gs.forEach(function(g){
     const files=g.f.length?g.f:[g.k];
     let ms=0,done=0;
-    files.forEach(function(f){
+    /* 记录统一按「课程键」存：包课程=包键（__local 等），单文件课程=文件名（二者都等于 g.k）。
+       迁移前的老数据散在各分册键下，只有课程键还没有任何记录时才回退聚合分册键——
+       否则会重复计数，且包课程的角标会永远停在迁移时的快照数字、不随新对话增长。 */
+    const hasOwn=LS.g('msgs.'+g.k,null)!==null||LS.g('prog.'+g.k,null)!==null;
+    const src=hasOwn?[g.k]:files;
+    src.forEach(function(f){
       ms+=(LS.g('msgs.'+f,[])||[]).length;
       const pr=LS.g('prog.'+f,null)||{};
       Object.keys(pr).forEach(function(k){if(pr[k]===2)done++});
@@ -746,8 +770,15 @@ function md(src){
     s=s.replace(/\$\$([\s\S]+?)\$\$/g,function(m,p){return '\n'+niceTex(p)+'\n'});
     s=s.replace(/(^|[^\\$])\$([^$\n]+?)\$/g,function(m,pre,p){return pre+niceTex(p)});
   }
-  let h=(typeof marked!=='undefined')?marked.parse(s):'<p>'+esc(s).replace(/\n/g,'<br>')+'</p>';
-  if(typeof DOMPurify!=='undefined')h=DOMPurify.sanitize(h,{ADD_ATTR:['style','class']});
+  /* markdown 渲染要求 marked 与 DOMPurify 同时就位：缺任何一个都降级为安全的纯文本。
+     否则会出现「marked 加载成功、DOMPurify 因 CDN 失败而缺席」的窗口——
+     那样 marked 产出的 HTML 会被原样注入（教材正文与模型输出都可能有标签），形成 XSS。 */
+  let h;
+  if(typeof marked!=='undefined'&&typeof DOMPurify!=='undefined'){
+    h=DOMPurify.sanitize(marked.parse(s),{ADD_ATTR:['style','class']});
+  }else{
+    h='<p>'+esc(s).replace(/\n/g,'<br>')+'</p>';
+  }
   return h.replace(/%%M(\d+)%%/g,function(m,i){return st[(+i)-1]!==undefined?st[(+i)-1]:''});
 }
 function est(t){const z=String(t).match(/[\u4e00-\u9fa5]/g)||[];return Math.ceil(z.length+(String(t).length-z.length)/3.2)}
@@ -1361,7 +1392,7 @@ function renderCards(){
     const r=document.createElement('div');r.className='crow';
     r.innerHTML='<div class="q">'+esc(c.q.slice(0,90))+'</div><div class="a">'+esc(String(c.a).slice(0,110))+'</div>'
       +'<div class="m"><span>第 '+(c.box+1)+' 格</span><span>'+(new Date(c.due||0).toLocaleDateString())+' 到期</span>'
-      +(c.c&&c.c!==COURSE?'':'')
+      +(c.c?'':'<span title="这门课之前创建的卡，所有课程共用">通用</span>')
       +'<span style="cursor:pointer;color:#A32D2D" data-x="'+c.id+'">删除</span></div>';
     r.querySelector('[data-x]').onclick=function(){CD=CD.filter(function(x){return x.id!==c.id});LS.s('cards',CD);renderCards()};
     lst.appendChild(r);

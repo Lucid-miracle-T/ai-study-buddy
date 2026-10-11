@@ -88,10 +88,14 @@ python -m http.server 8000
 
 ```bash
 npm i jsdom
-node tests/smoke.js              # 整体冒烟
+node tests/smoke.js              # 整体冒烟（视图、符号面板、人格、进度）
+node tests/test_buttons.js       # 每个「会发消息」的按钮都真的调了 ask()
+node tests/test_clickall.js      # 暴力点击：页面上每个可点元素都不抛错
+node tests/test_edge.js          # 数据边界：畸形公式 / XSS / 空输入 / Leitner 越界
 node tests/test_course.js        # 多教材隔离
 node tests/test_local_course.js  # 内置课合并与教材名隔离
-node tests/test_packs.js        # 多内置包、课程隔离与回落
+node tests/test_packs.js         # 多内置包、课程隔离与回落
+node tests/test_tabs.js          # 课程标签栏角标 + 设置页模式区
 node tests/test_mode.js          # 模式层与人格正交
 node tests/test_vid.js           # 网课栏目
 ```
