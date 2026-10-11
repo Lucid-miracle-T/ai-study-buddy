@@ -27,7 +27,7 @@
 ## 三步跑起来
 
 1. **设置** → 填一个 OpenAI 兼容的模型接口（base URL + key + 模型名），保存
-2. **教材** → 导入你的教材（md / txt / pdf / epub），把正在学的那节勾上
+2. **教材** → 点「载入全部内置教材」一次拿到高数 + 线代两门，或点「仅高数」/「仅线代」；也可以「导入教材」上传自己的 md / txt / pdf / epub。把正在学的那节勾上
 3. **上课** → 选人格、选模式，点「开始今天的一课」
 
 ### 免费上手
@@ -59,7 +59,7 @@ python -m http.server 8000
 
 请不要把受版权保护的教材全文提交进来——那是侵权，会连累整个仓库被 DMCA 下架。教材由使用者**自己导入**，本仓库只提供承载工具。
 
-想内置教材自用：把 md 放进 `book/`，页面点「载入自带分册」（它不会被 git 跟踪）。
+想内置教材自用：把 md 放进 `book/`（子目录也行），页面点「载入全部内置教材」。代码里 `const PACKS` 声明每门内置课叫什么、由哪些文件组成——多个文件会自动合并成一门课，不会拆成一堆对话框；它不会被 git 跟踪。
 
 ---
 
@@ -90,7 +90,8 @@ python -m http.server 8000
 npm i jsdom
 node tests/smoke.js              # 整体冒烟
 node tests/test_course.js        # 多教材隔离
-node tests/test_local_course.js  # 自带分册合并与教材名隔离
+node tests/test_local_course.js  # 内置课合并与教材名隔离
+node tests/test_packs.js        # 多内置包、课程隔离与回落
 node tests/test_mode.js          # 模式层与人格正交
 node tests/test_vid.js           # 网课栏目
 ```

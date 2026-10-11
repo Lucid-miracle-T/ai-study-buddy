@@ -348,7 +348,9 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
         <input id="bq" placeholder="搜标题…" style="width:220px">
         <span class="sp"></span>
         <span class="tag" id="bstat">未载入</span>
-        <button class="sm" id="reload">载入自带分册</button>
+        <button class="sm" id="reload">载入全部内置教材</button>
+        <button class="sm" id="ldg">仅高数</button>
+        <button class="sm" id="ldl">仅线代</button>
         <button class="sm pri" id="pickfile">导入教材</button>
         <input type="file" id="file" accept=".md,.markdown,.txt,.pdf,.epub" multiple style="display:none">
       </div>
@@ -597,8 +599,20 @@ function getBkn(){
 function setBkn(v){LS.s('bkn.'+COURSE,v);if(COURSE==='__free'||COURSE===LOCAL_KEY)LS.s('bkn',v)}
 let TTS=LS.g('tts',0), TTSRATE=parseFloat(LS.g('ttsrate',1))||1;
 function msKey(){return 'msgs.'+COURSE}
-/* 自带分册（book/ 下 9 个 md）合并成一门「课程」，不要拆成 9 个对话框 */
-const LOCAL_KEY='__local', LOCAL_NAME='高等数学 · 第八版上册';
+/* 自带教材包：book/ 下的 md 按包合并成一门课程，不要拆成多个对话框 */
+const LOCAL_KEY='__local',  LOCAL_NAME='高等数学 · 第八版上册';
+const LOCAL_KEY2='__local2', LOCAL_NAME2='线性代数与解析几何';
+const PACKS=[
+  {key:LOCAL_KEY, name:LOCAL_NAME, dir:'book/', files:[
+    '第1章_函数与极限.md','第2章_导数与微分.md','第3章_微分中值定理与导数的应用.md','第4章_不定积分.md',
+    '第5章_定积分.md','第6章_定积分的应用.md','第7章_微分方程.md','附录.md','习题答案与提示.md']},
+  {key:LOCAL_KEY2, name:LOCAL_NAME2, dir:'book/线代/', files:[
+    '第1章 行列式.md','第2章 矩阵及其运算.md','第3章 空间解析几何与向量运算.md',
+    '第4章 矩阵的初等变换与线性方程组.md','第5章 向量组的线性相关性（n 维向量）.md',
+    '第6章 矩阵相似对角化.md','第7章 二次型.md','附录 A 线性空间与线性变换.md']}
+];
+function packOf(f){for(const p of PACKS)if(p.files.indexOf(f)>=0)return p;return null}
+function packByKey(k){for(const p of PACKS)if(p.key===k)return p;return null}
 let MS=LS.g(msKey(),null);
 if(MS===null){MS=LS.g('msgs',[]);LS.s(msKey(),MS);localStorage.removeItem(P+'msgs')}
 function saveMs(){LS.s(msKey(),MS)}
@@ -620,24 +634,24 @@ function loadCourseData(){
   }
 }
 function saveCourseData(){LS.s(prKey(),PR);LS.s(ctxKey(),CTX)}
-function cname(k){return k==='__free'?'自由问答':k===LOCAL_KEY?LOCAL_NAME:String(k).replace(/\.(md|txt|pdf|epub)$/i,'')}
-/* 第一次进入「自带教材」课程时，把散落在各分册名下的旧记录合并过来 */
-function migrateLocal(){
-  if(LS.g('msgs.'+LOCAL_KEY,null)!==null)return;   /* 已迁移过就不再动 */
+function cname(k){return k==='__free'?'自由问答':k===LOCAL_KEY?LOCAL_NAME:k===LOCAL_KEY2?LOCAL_NAME2:String(k).replace(/\.(md|txt|pdf|epub)$/i,'')}
+/* 第一次进入某个「自带教材包」课程时，把散落在各分册名下的旧记录合并过来 */
+function migratePack(key,files){
+  if(LS.g('msgs.'+key,null)!==null)return;   /* 已迁移过就不再动 */
   let Ms=[],Pr={},Cx=[];
-  AUTO.forEach(function(f){
+  files.forEach(function(f){
     Ms=Ms.concat(LS.g('msgs.'+f,[])||[]);
     const p=LS.g('prog.'+f,null)||{};Object.keys(p).forEach(function(k){Pr[k]=p[k]});
     Cx=Cx.concat(LS.g('ctx.'+f,[])||[]);
   });
   if(!Ms.length&&!Object.keys(Pr).length&&!Cx.length)return;
-  LS.s('msgs.'+LOCAL_KEY,Ms);LS.s('prog.'+LOCAL_KEY,Pr);LS.s('ctx.'+LOCAL_KEY,Cx);
+  LS.s('msgs.'+key,Ms);LS.s('prog.'+key,Pr);LS.s('ctx.'+key,Cx);
 }
 function switchCourse(k){
   if(k===COURSE)return false;
   saveCourseData();saveMs();
   COURSE=k;LS.s('course',COURSE);
-  if(k===LOCAL_KEY)migrateLocal();
+  if(packByKey(k))migratePack(k,packByKey(k).files);
   loadCourseData();MS=LS.g(msKey(),[])||[];
   rev=null;revBack=false;
   updateCourses();renderChips();renderBook();reloadMsgs();renderCards();
@@ -647,10 +661,12 @@ function switchCourse(k){
 /* 课程分组：自带分册合成一门，其余每本教材各一门 */
 function courseList(){
   const fs=[];CH.forEach(function(c){if(fs.indexOf(c.file)<0)fs.push(c.file)});
-  const locals=fs.filter(function(f){return AUTO.indexOf(f)>=0});
-  const gs=[{k:'__free',f:[]}];
-  if(locals.length)gs.push({k:LOCAL_KEY,f:locals});
-  fs.forEach(function(f){if(AUTO.indexOf(f)<0)gs.push({k:f,f:[f]})});
+  const gs=[{k:'__free',f:[]}], locals=[];
+  PACKS.forEach(function(p){
+    const l=fs.filter(function(f){return p.files.indexOf(f)>=0});
+    if(l.length){gs.push({k:p.key,f:l});locals.push.apply(locals,l)}
+  });
+  fs.forEach(function(f){if(!packOf(f))gs.push({k:f,f:[f]})});
   return {gs:gs,fs:fs,locals:locals};
 }
 function renderCTabs(fs){
@@ -758,26 +774,38 @@ async function addFile(file,src){
   CH=await IDB.all();CH.sort(function(a,b){return a.id<b.id?-1:1});
   renderBook();toast('已载入 '+file+' · '+got.length+' 节');
   LS.s('hasbook',1);
-  const isLocal=AUTO.indexOf(file)>=0;
-  if(isLocal)migrateLocal();
-  if(COURSE==='__free'){COURSE=isLocal?LOCAL_KEY:file;LS.s('course',COURSE);loadCourseData();MS=LS.g(msKey(),[])||[];updateCourses()}
+  const pk=packOf(file);
+  if(pk){migratePack(pk.key,pk.files)}
+  if(COURSE==='__free'){COURSE=pk?pk.key:file;LS.s('course',COURSE);loadCourseData();MS=LS.g(msKey(),[])||[];updateCourses()}
 }
 async function removeFile(file){
-  for(const c of await IDB.all()){if(c.file===file)await IDB.del(c.id)}
-  CH=await IDB.all();renderBook();
+  for(const c of await IDB.all())if(c.file===file)await IDB.del(c.id)
+  CH=await IDB.all();renderBook();updateCourses();
 }
-const AUTO=['第1章_函数与极限.md','第2章_导数与微分.md','第3章_微分中值定理与导数的应用.md','第4章_不定积分.md',
-            '第5章_定积分.md','第6章_定积分的应用.md','第7章_微分方程.md','附录.md','习题答案与提示.md'];
-async function autoLoad(btn){
+/* 载入某个内置教材包（默认全部） */
+async function autoLoad(btn,pk){
   if(location.protocol==='file:'){toast('本地打开时无法自动读取，请用“导入 md”按钮');return}
+  const packs=pk?[pk]:PACKS;
+  const label=btn?btn.textContent:'';
   if(btn){btn.disabled=true;btn.textContent='载入中…'}
-  let n=0;
-  for(const f of AUTO){
-    try{const r=await fetch('book/'+encodeURIComponent(f));if(r.ok){await addFile(f,await r.text());n++}}catch(e){}
+  let n=0,miss=0;
+  for(const p of packs){
+    for(const f of p.files){
+      try{
+        const r=await fetch(p.dir+encodeURIComponent(f));
+        if(r.ok){await addFile(f,await r.text());n++}
+        else miss++;
+      }catch(e){miss++}
+    }
   }
-  if(btn){btn.disabled=false;btn.textContent='载入自带分册'}
-  if(n)toast('自带分册已载入 '+n+' 个文件');
-  else toast('没有内置教材（book/ 目录为空）。点上方「导入」上传你自己的教材即可，支持 md / txt / pdf / epub。');
+  if(btn){btn.disabled=false;btn.textContent=label}
+  if(n){
+    toast('已载入 '+n+' 个分册'+(packs.length>1?'（高数 + 线代）':''));
+    /* 从课程标签栏点「载入」时，自动切到刚载入的那门课 */
+    if(btn&&!switchCourse(packs[packs.length-1].key))toast('到「教材」页勾选正在学的那一节');
+  }
+  else if(miss)toast('内置教材没找到（book/ 目录可能被 .gitignore 排除了）。点「导入教材」上传你自己的 md / pdf / epub。');
+  else toast('内置教材已经都在了。');
 }
 /* ---------- 其他格式：PDF / EPUB ---------- */
 function loadScript(u){return new Promise(function(res,rej){
@@ -848,8 +876,12 @@ function updateCourses(){
   const ok=gs.some(function(g){return g.k===COURSE});
   if(!ok){
     saveCourseData();saveMs();
-    COURSE=(AUTO.indexOf(COURSE)>=0&&L.locals.length)?LOCAL_KEY:'__free';
-    LS.s('course',COURSE);migrateLocal();loadCourseData();MS=LS.g(msKey(),[])||[];
+    /* 当前课程对应的分册被删了：若它属于某个内置包且该包还有别的分册在，就并回那个包 */
+    const pk=packByKey(COURSE)||packOf(COURSE);
+    COURSE=(pk&&L.locals.length)?pk.key:'__free';
+    LS.s('course',COURSE);
+    if(pk)migratePack(pk.key,pk.files);
+    loadCourseData();MS=LS.g(msKey(),[])||[];
   }
   renderCTabs(fs);
   const sel=$('course');if(!sel)return;
@@ -1576,6 +1608,8 @@ $('file').onchange=async function(e){
   e.target.value='';
 };
 $('reload').onclick=function(){autoLoad(this)};
+$('ldg').onclick=function(){autoLoad(this,packByKey(LOCAL_KEY))};
+$('ldl').onclick=function(){autoLoad(this,packByKey(LOCAL_KEY2))};
 $('bq').oninput=renderBook;
 $('expp').onclick=function(){
   dl('高数学习数据_'+today()+'.json',JSON.stringify({progress:PR,cards:CD,stats:ST,messages:MS},null,1));
@@ -1590,10 +1624,10 @@ renderPs();renderModes();$('in').placeholder=curMode().ph;renderChips();updTok()
 vLoad();
 MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();
-if(!MS.length)addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n- **教材**：进「教材」导入你自己的（md/txt/pdf/epub）；若仓库里放了 `book/` 目录，点“载入自带分册”也行。然后把正在学的那节勾上\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。');
+if(!MS.length)addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n- **教材**：进「教材」点「载入全部内置教材」，一次拿到高数八上 + 线代合编本；也可点「仅高数」/「仅线代」，或自己导入 md / pdf / epub。然后把正在学的那节勾上\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。');
 (async function(){
   CH=await IDB.all();renderBook();
-  if(!CH.length&&location.protocol!=='file:')await autoLoad(null);
+  if(!CH.length&&location.protocol!=='file:'){await autoLoad(null);renderBook()}
 })();
 /* 公式库若是从备用源延迟加载成功的，加载完重画一遍，把之前裸着的 LaTeX 补上 */
 window.addEventListener('katexready',function(){
