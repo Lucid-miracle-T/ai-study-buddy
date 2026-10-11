@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>无穷之境 · 高数学习站</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20256%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%237C5CFF%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%232D6BFF%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22256%22%20height%3D%22256%22%20rx%3D%2261%22%20fill%3D%22url%28%23g%29%22%2F%3E%3Ccircle%20cx%3D%2286%22%20cy%3D%22128%22%20r%3D%2242%22%20fill%3D%22none%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%2222%22%2F%3E%3Ccircle%20cx%3D%22170%22%20cy%3D%22128%22%20r%3D%2242%22%20fill%3D%22none%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%2222%22%2F%3E%3C%2Fsvg%3E">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#185FA5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="无穷之境">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" onerror="kxcss(1)">
+<script>
+/* KaTeX 多源兜底：jsdelivr 在国内常加载失败，失败时依次切换 */
+var KX=[
+ ["https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css","https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"],
+ ["https://registry.npmmirror.com/katex/0.16.11/files/dist/katex.min.css","https://registry.npmmirror.com/katex/0.16.11/files/dist/katex.min.js"],
+ ["https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css","https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"],
+ ["https://cdn.staticfile.org/KaTeX/0.16.11/katex.min.css","https://cdn.staticfile.org/KaTeX/0.16.11/katex.min.js"],
+ ["https://unpkg.com/katex@0.16.11/dist/katex.min.css","https://unpkg.com/katex@0.16.11/dist/katex.min.js"]
+];
+function kxcss(i){
+  if(i>=KX.length){window.__kxcss=0;return}
+  var l=document.createElement('link');l.rel='stylesheet';l.href=KX[i][0];
+  l.onload=function(){window.__kxcss=1};
+  l.onerror=function(){kxcss(i+1)};
+  document.head.appendChild(l);
+}
+function kxjs(i){
+  if(i>=KX.length){window.__kx=0;kxdone();return}
+  var s=document.createElement('script');s.src=KX[i][1];
+  s.onload=function(){window.__kx=1;kxdone()};
+  s.onerror=function(){kxjs(i+1)};
+  document.head.appendChild(s);
+}
+function kxdone(){
+  var e=new Event('katexready');window.dispatchEvent(e);
+  var st=document.getElementById('kxst');
+  if(st){st.textContent=window.__kx?'公式渲染正常':'公式渲染未加载';st.className='tag'+(window.__kx?' ok':' bad')}
+}
+window.addEventListener('DOMContentLoaded',function(){
+  setTimeout(function(){
+    if(typeof katex==='undefined')kxjs(1);
+    else{window.__kx=1;var st=document.getElementById('kxst');if(st){st.textContent='公式渲染正常';st.className='tag ok'}}
+  },1200);
+});
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f7f5; --panel:#ffffff; --line:#e5e3dc; --line2:#d8d5cc;
+  --tx:#2c2c2a; --tx2:#5f5e5a; --tx3:#888780;
+  --blue:#185FA5; --blue-bg:#E6F1FB; --blue-line:#B5D4F4;
+  --green:#3B6D11; --green-bg:#EAF3DE; --amber:#854F0B; --amber-bg:#FAEEDA;
+  --red:#A32D2D; --red-bg:#FCEBEB;
+}
+html,body{height:100%}
+body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--tx);font-size:14px;overflow:hidden}
+#app{display:flex;height:100vh}
+/* nav */
+#nav{width:190px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0}
+.brand{padding:16px 16px 12px;border-bottom:1px solid var(--line)}
+.brand h1{font-size:15px;font-weight:500}
+.brand p{font-size:11px;color:var(--tx3);margin-top:3px;line-height:1.5}
+.nv{padding:8px}
+.nv button{display:block;width:100%;text-align:left;padding:8px 10px;border:none;background:none;border-radius:7px;cursor:pointer;font-size:13px;font-family:inherit;color:var(--tx2);margin-bottom:2px}
+.nv button:hover{background:#f1efe8}
+.nv button.on{background:var(--blue-bg);color:var(--blue);font-weight:500}
+.nv .foot{margin-top:auto;padding:10px;font-size:11px;color:var(--tx3);line-height:1.6;border-top:1px solid var(--line)}
+/* main */
+#stage{flex:1;display:flex;flex-direction:column;min-width:0}
+section.view{display:none;flex:1;min-height:0}
+section.view.on{display:flex;flex-direction:column}
+.bar{display:flex;align-items:center;gap:8px;padding:9px 16px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap;flex-shrink:0}
+.bar .sp{flex:1}
+/* controls */
+label{display:block;font-size:12px;color:var(--tx2);margin:8px 0 4px}
+input,select,textarea{width:100%;padding:7px 9px;border:1px solid var(--line2);border-radius:7px;font-size:13px;font-family:inherit;background:#fff;color:var(--tx)}
+textarea{resize:vertical;line-height:1.6}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#378ADD}
+button{padding:7px 12px;border:1px solid var(--line2);border-radius:7px;background:#fff;cursor:pointer;font-size:13px;font-family:inherit;color:var(--tx)}
+button:hover{background:#f1efe8;border-color:#b4b2a9}
+button.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+button.pri:hover{background:#0C447C}
+button.sm{padding:4px 9px;font-size:12px}
+.pill{padding:5px 11px;border:1px solid var(--line2);border-radius:20px;cursor:pointer;font-size:12px;background:#fff}
+.pill.on{background:var(--blue-bg);border-color:#378ADD;color:#0C447C}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:var(--blue-bg);border:1px solid var(--blue-line);border-radius:6px;font-size:11.5px;color:#0C447C}
+.chip b{font-weight:400;cursor:pointer;color:var(--tx3)}
+.tag{background:#f1efe8;border-radius:5px;padding:3px 8px;font-size:11.5px;color:var(--tx2)}
+.tag.ok{background:var(--green-bg);color:var(--green)}
+.tag.bad{background:#FCE8E6;color:#A32D2D;cursor:help}
+/* symbol bar */
+#symbar{border-top:1px solid var(--line);background:#faf9f6;flex-shrink:0}
+#symbar .wrap{padding:7px 24px 8px}
+.symrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.symgrid{display:none;gap:4px;flex-wrap:wrap;margin-top:7px;max-height:96px;overflow-y:auto;padding:1px}
+.symgrid.on{display:flex}
+.symbtn{min-width:33px;height:29px;padding:0 6px;border:1px solid var(--line2);border-radius:6px;background:#fff;cursor:pointer;font-size:14.5px;color:var(--tx);font-family:"Cambria Math","Times New Roman",serif;line-height:1}
+.symbtn:hover{background:var(--blue-bg);border-color:var(--blue-line)}
+.symbtn.w{width:auto;min-width:auto;font-size:11.5px;font-family:inherit;padding:0 9px}
+.symbtn.on{background:var(--blue-bg);border-color:#378ADD;color:#0C447C}
+/* chat */
+#msgs{flex:1;overflow-y:auto;padding:20px 24px}
+.wrap{max-width:840px;margin:0 auto;width:100%}
+.msg{margin-bottom:18px}
+.who{font-size:12px;color:var(--tx3);margin-bottom:5px}
+.msg.me .who{color:var(--blue)}
+.body{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;line-height:1.78;overflow-wrap:break-word}
+.msg.me .body{background:var(--blue-bg);border-color:var(--blue-line)}
+.body p{margin:0 0 9px}.body p:last-child{margin-bottom:0}
+.body ul,.body ol{margin:0 0 9px;padding-left:22px}
+.body li{margin-bottom:4px}
+.body pre{background:#f7f7f5;border-radius:7px;padding:11px;overflow-x:auto;margin:9px 0}
+.body code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:#f1efe8;padding:1px 5px;border-radius:4px}
+.body pre code{background:none;padding:0}
+.body img{max-width:100%;border-radius:6px;margin:6px 0}
+.body table{border-collapse:collapse;margin:9px 0;font-size:13px}
+.body th,.body td{border:1px solid var(--line2);padding:5px 9px}
+.body blockquote{border-left:3px solid var(--line2);padding-left:11px;color:var(--tx2);margin:9px 0}
+#inbar{border-top:1px solid var(--line);background:var(--panel);padding:11px 24px;flex-shrink:0}
+#inbar .wrap{display:flex;gap:8px;align-items:flex-end}
+/* 语音 */
+#mic{height:44px;font-size:16px;padding:0 12px;flex-shrink:0}
+#mic.on{background:var(--red-bg);border-color:#E5A9A9;color:var(--red)}
+#tts.on{background:var(--blue-bg);border-color:var(--blue-line);color:var(--blue)}
+#micst{font-size:11px;color:var(--tx3);align-self:center;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+.msg .who{display:flex;align-items:center;gap:8px}
+.msg .who .say{margin-left:auto;padding:1px 7px;font-size:12px;line-height:1.5;background:none;border:1px solid var(--line2);border-radius:6px;color:var(--tx3);cursor:pointer}
+.msg .who .say:hover{color:var(--blue);border-color:var(--blue-line);background:var(--blue-bg)}
+#in{flex:1;min-height:44px;max-height:190px;padding:11px 13px}
+.katex-display{margin:10px 0;overflow-x:auto;overflow-y:hidden}
+/* book view */
+#vwrap{flex:1;display:flex;min-height:0}
+#vlist{width:330px;border-right:1px solid var(--line);background:var(--panel);overflow-y:auto;flex-shrink:0}
+.vlec{padding:9px 12px;border-bottom:1px solid #f1efe8;cursor:pointer;font-size:12.5px}
+.vlec:hover{background:#faf9f6}
+.vlec.on{background:#eef4ff;box-shadow:inset 3px 0 0 var(--blue)}
+.vlec .vt{display:flex;gap:6px;align-items:flex-start}
+.vlec .vn{flex:1;color:var(--tx2);line-height:1.5}
+.vlec.on .vn{color:var(--tx);font-weight:500}
+.vlec .vm{font-size:11px;color:var(--tx3);margin-top:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.vst{padding:1px 7px;border-radius:10px;font-size:11px;border:1px solid var(--line2);background:#fff;cursor:pointer}
+.vst.s0{color:var(--tx3)}
+.vst.s1{color:#BA7517;border-color:#EF9F27}
+.vst.s2{color:#0F6E56;border-color:#5DCAA5;background:#E1F5EE}
+#vdoc{flex:1;overflow-y:auto;padding:20px 26px;min-width:0}
+#vdoc .wrap{max-width:840px}
+#vdoc h3{font-size:16px;margin:0 0 8px}
+#vdoc .seg{margin:0 0 12px;line-height:1.85;color:var(--tx2)}
+#vdoc .seg b{color:var(--blue);font-weight:500;cursor:pointer;font-variant-numeric:tabular-nums}
+#vdoc .seg b:hover{text-decoration:underline}
+#vbar2{display:flex;gap:7px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#faf9f6;align-items:center}
+#bwrap{flex:1;display:flex;min-height:0}
+#blist{width:290px;border-right:1px solid var(--line);background:var(--panel);overflow-y:auto;flex-shrink:0}
+.grp{border-bottom:1px solid var(--line)}
+.grp>h3{font-size:13px;font-weight:500;padding:9px 12px;background:#faf9f6;cursor:pointer;display:flex;align-items:center;gap:6px}
+.grp>h3:hover{background:#f1efe8}
+.grp .cnt{font-size:11px;color:var(--tx3);font-weight:400}
+.item{display:flex;align-items:center;gap:7px;padding:7px 12px 7px 20px;border-top:1px solid #f1efe8;cursor:pointer;font-size:12.5px;color:var(--tx2)}
+.item:hover{background:#faf9f6}
+.item.on{background:var(--blue-bg);color:#0C447C}
+.item .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:#d3d1c7;flex-shrink:0}
+.dot.s1{background:#EF9F27}.dot.s2{background:#639922}
+input.ck{width:auto;flex-shrink:0}
+#reader{flex:1;overflow-y:auto;padding:22px 30px;min-width:0}
+#reader .wrap{max-width:840px}
+#reader h1{font-size:20px;margin:0 0 6px}
+#reader h2{font-size:17px;margin:20px 0 8px}
+#reader h3{font-size:15px;margin:16px 0 6px}
+#reader p{margin:0 0 10px;line-height:1.85}
+#reader .meta{font-size:12px;color:var(--tx3);border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:16px}
+/* flashcard view */
+#cards{flex:1;overflow-y:auto;padding:20px 24px}
+.cbox{max-width:560px;margin:0 auto}
+.face{background:#fff;border:1px solid var(--line);border-radius:12px;padding:26px 24px;min-height:170px;display:flex;align-items:center;justify-content:center;line-height:1.8}
+.face.a{background:var(--green-bg);border-color:#C0DD97}
+.face .lbl{font-size:11px;color:var(--tx3);position:absolute;margin:-18px 0 0}
+.cacts{display:flex;gap:8px;justify-content:center;margin-top:12px}
+.clist{margin-top:24px}
+.crow{border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin-bottom:7px;background:#fff;font-size:13px}
+.crow .q{font-weight:500;margin-bottom:3px}
+.crow .a{color:var(--tx2);font-size:12.5px}
+.crow .m{font-size:11px;color:var(--tx3);margin-top:5px;display:flex;gap:10px}
+/* progress view */
+#prog{flex:1;overflow-y:auto;padding:20px 24px}
+.ptab{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;margin-bottom:16px}
+.ptab table{width:100%;border-collapse:collapse;font-size:13px}
+.ptab th{background:#faf9f6;text-align:left;padding:8px 12px;font-weight:500;font-size:12px;color:var(--tx2);border-bottom:1px solid var(--line)}
+.ptab td{padding:7px 12px;border-bottom:1px solid #f1efe8}
+.ptab tr:last-child td{border-bottom:none}
+.stat{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.statc{border:1px solid var(--line);border-radius:10px;background:#fff;padding:12px 16px;min-width:118px}
+.statc .n{font-size:21px;font-weight:500}
+.statc .l{font-size:11.5px;color:var(--tx3);margin-top:2px}
+select.sm2{width:auto;padding:3px 7px;font-size:12px}
+/* settings */
+#set{flex:1;overflow-y:auto;padding:20px 24px}
+.card2{border:1px solid var(--line);border-radius:10px;background:#fff;padding:16px 18px;margin-bottom:14px;max-width:760px}
+.card2 h2{font-size:14px;font-weight:500;margin-bottom:2px}
+.card2 .hint{font-size:12px;color:var(--tx3);margin-bottom:10px;line-height:1.7}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+details{margin-top:10px}
+summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
+.help{font-size:12px;color:var(--tx2);line-height:1.8;background:#faf9f6;border-radius:7px;padding:10px 12px;margin-top:6px}
+.help code{font-size:11.5px;background:#fff;padding:1px 4px;border-radius:3px;border:1px solid var(--line)}
+.warn{background:var(--amber-bg);border:1px solid #EF9F27;border-radius:7px;padding:9px 11px;font-size:12px;color:#633806;line-height:1.7}
+.okmsg{background:var(--green-bg);border:1px solid #97C459;border-radius:7px;padding:9px 11px;font-size:12px;color:#27500A}
+.empty{color:var(--tx3);font-size:13px;padding:30px 0;text-align:center;line-height:1.9}
+.drop{border:2px dashed var(--line2);border-radius:10px;padding:18px;text-align:center;color:var(--tx3);font-size:12.5px;cursor:pointer}
+.drop:hover{border-color:#378ADD;color:var(--blue)}
+/* 课程标签栏：每本教材一个独立对话框 */
+#ctabs{display:flex;align-items:center;gap:6px;padding:7px 12px;background:var(--panel);
+       border-bottom:1px solid var(--line);overflow-x:auto;flex-shrink:0;-webkit-overflow-scrolling:touch}
+#ctabs .lb{font-size:11px;color:var(--tx3);flex-shrink:0;margin-right:2px}
+.ctab{padding:5px 12px;border:1px solid var(--line2);border-radius:18px;background:#fff;cursor:pointer;
+      font-size:12.5px;color:var(--tx2);white-space:nowrap;flex-shrink:0;font-family:inherit}
+.ctab:hover{background:#f1efe8}
+.ctab.on{background:var(--blue-bg);border-color:#378ADD;color:#0C447C;font-weight:500}
+.ctab .n{font-size:11px;color:var(--tx3);margin-left:5px;font-weight:400}
+.ctab.on .n{color:#185FA5}
+/* ===== 手机端适配（≤720px）===== */
+@media (max-width:720px){
+  #app{flex-direction:column;height:100dvh}
+  body{font-size:15px;-webkit-text-size-adjust:100%}
+  /* 左侧导航 -> 顶部横向条 */
+  #nav{width:100%;flex-direction:row;align-items:center;flex-shrink:0;
+       border-right:none;border-bottom:1px solid var(--line);overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .brand{padding:9px 12px;border-bottom:none;border-right:1px solid var(--line);flex-shrink:0}
+  .brand h1{font-size:14px}
+  .brand p{display:none}
+  .nv{display:flex;padding:6px;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .nv button{width:auto;white-space:nowrap;margin-bottom:0;padding:9px 12px;font-size:13px}
+  .nv .foot{display:none}
+  /* 通用留白收紧 */
+  .bar{padding:8px 12px;gap:6px}
+  .wrap{max-width:100%}
+  #msgs,#cards,#prog,#set{padding:14px 12px;-webkit-overflow-scrolling:touch}
+  #inbar{padding:9px 12px}
+  #symbar .wrap{padding:6px 12px 7px}
+  .symbtn{min-width:40px;height:36px;font-size:17px}
+  .symbtn.w{height:32px;font-size:12px}
+  .symgrid{max-height:126px}
+  /* iOS 聚焦不放大：表单字号 ≥16px */
+  #in,input,select,textarea{font-size:16px}
+  /* 教材页：目录栏改到上方 */
+  #bwrap,#vwrap{flex-direction:column}
+  #blist,#vlist{width:100%;max-height:40vh;flex-shrink:0;border-right:none;border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch}
+  #vdoc{padding:14px 13px;-webkit-overflow-scrolling:touch}
+  #reader{padding:16px 14px;-webkit-overflow-scrolling:touch}
+  #reader h1{font-size:18px}#reader h2{font-size:16px}
+  /* 设置/进度：双列改单列，宽表可横滑 */
+  .grid2{grid-template-columns:1fr}
+  .statc{min-width:0;flex:1 1 44%}
+  .card2{padding:14px}
+  .ptab{overflow-x:auto}
+  .ptab table{min-width:540px}
+  /* 闪卡 */
+  .face{padding:20px 16px;min-height:150px}
+  .cbox{max-width:100%}
+  /* 触控友好 */
+  button,.pill{padding:9px 13px}
+  button.sm{padding:7px 11px}
+  .chip{padding:5px 9px}
+}
+@media (max-width:400px){
+  .brand h1{font-size:13px}
+  .nv button{padding:8px 10px;font-size:12.5px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <nav id="nav">
+    <div class="brand">
+      <h1>无穷之境</h1>
+      <p>高等数学 · 自用学习站</p>
+    </div>
+    <div class="nv">
+      <button class="on" data-v="lesson">上课</button>
+      <button data-v="book">教材</button>
+      <button data-v="vid">网课</button>
+      <button data-v="card">闪卡</button>
+      <button data-v="prog">进度</button>
+      <button data-v="set">设置</button>
+    </div>
+    <div class="foot" id="foot"></div>
+  </nav>
+
+  <div id="stage">
+    <div id="ctabs"></div>
+    <!-- 上课 -->
+    <section class="view on" id="v-lesson">
+      <div class="bar">
+        <span style="font-size:12px;color:var(--tx2)">导师</span>
+        <span id="pbox" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+        <span style="width:1px;height:18px;background:var(--line2);margin:0 2px"></span>
+        <span style="font-size:12px;color:var(--tx2)" title="人格决定怎么说话，模式决定这一轮干什么">模式</span>
+        <span id="mbox" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+        <span style="width:1px;height:18px;background:var(--line2);margin:0 2px"></span>
+        <select id="course" class="sm2" style="display:none"></select>
+        <select id="pace" class="sm2" title="教学节奏：导师一次推进多少">
+          <option value="slow">节奏 · 慢</option>
+          <option value="mid">节奏 · 中</option>
+          <option value="fast">节奏 · 快</option>
+        </select>
+        <span class="sp"></span>
+        <span id="ctxchips" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+        <span class="tag" id="tok">0 token</span>
+        <span class="tag" id="kxst" title="数学公式渲染状态">公式加载中…</span>
+        <button class="sm" id="tts" title="导师语音朗读开关（用系统中文音色，不耗 token）">🔇 朗读</button>
+      </div>
+      <div class="bar" style="background:#faf9f6">
+        <button class="sm pri" id="start">开始今天的一课</button>
+        <button class="sm" id="gen">把本轮变闪卡</button>
+        <button class="sm" id="exp2">导出笔记</button>
+        <button class="sm" id="close">下课小结</button>
+        <span class="sp"></span>
+        <button class="sm" id="stop" disabled>停止</button>
+        <button class="sm" id="clr">清空会话</button>
+      </div>
+      <div id="msgs"><div class="wrap" id="mw"></div></div>
+      <div id="symbar"><div class="wrap">
+        <div class="symrow">
+          <button class="sm" id="symtoggle">Ω 特殊符号</button>
+          <span id="symtabs" class="symrow" style="gap:5px"></span>
+          <span class="sp" style="flex:1"></span>
+          <span style="font-size:11px;color:var(--tx3)">Unicode 符号可直接混排；公式模板自动带 $ $　·　选中文字 Ctrl+M 变行内公式</span>
+        </div>
+        <div id="symgrids"></div>
+      </div></div>
+      <div id="inbar"><div class="wrap">
+        <textarea id="in" placeholder="说点什么。Ctrl+Enter 发送"></textarea>
+        <button id="mic" title="语音输入：点一下开始说，说完自动停下">🎙</button>
+        <span id="micst"></span>
+        <button class="pri" id="send" style="height:44px">发送</button>
+      </div></div>
+    </section>
+
+    <!-- 教材 -->
+    <section class="view" id="v-book">
+      <div class="bar">
+        <input id="bq" placeholder="搜标题…" style="width:220px">
+        <span class="sp"></span>
+        <span class="tag" id="bstat">未载入</span>
+        <button class="sm" id="reload">载入自带分册</button>
+        <button class="sm pri" id="pickfile">导入教材</button>
+        <input type="file" id="file" accept=".md,.markdown,.txt,.pdf,.epub" multiple style="display:none">
+      </div>
+      <div class="bar" style="background:#faf9f6;font-size:11.5px;color:var(--tx3)">
+        支持 <b>md / txt</b>（最佳）、<b>PDF</b>、<b>EPUB</b>。
+        PDF 取的是文本层：<b>公式和上下标基本会串位</b>，理工教材建议先用 MinerU 转成 Markdown 再导入。
+      </div>
+      <div id="bwrap">
+        <div id="blist"></div>
+        <div id="reader"><div class="wrap" id="rw"><div class="empty">左边选一节。<br>勾选的段落会被带到课堂上当上下文。</div></div></div>
+      </div>
+    </section>
+
+    <!-- 网课 -->
+    <section class="view" id="v-vid">
+      <div class="bar">
+        <select id="vset" class="sm2" style="max-width:230px"></select>
+        <button class="sm pri" id="vimp">导入网课包</button>
+        <input type="file" id="vfile" accept=".json,.md,.markdown,.txt" style="display:none">
+        <span class="sp"></span>
+        <span class="tag" id="vstat">未导入</span>
+        <button class="sm" id="vdel">删除本合集</button>
+        <button class="sm" id="vanalyze" title="拿整个合集的标题与各讲摘要，对照教材目录做覆盖度分析">分析整个合集</button>
+      </div>
+      <div class="bar" style="background:#faf9f6;font-size:11.5px;color:var(--tx3)">
+        网课包由离线生成（B站 AI 字幕或语音转写），格式：<code>{"title":"合集名","items":[{"t":"讲标题","u":"链接","dur":"时长","doc":"[mm:ss] 内容…"}]}</code>　·　讲义里的 <b>[mm:ss]</b> 可点，会打开视频跳到对应时刻
+      </div>
+      <div id="vwrap">
+        <div id="vlist"><div class="empty">还没有网课包。</div></div>
+        <div id="vdoc"><div class="wrap"><div class="empty">左边选一讲。</div></div></div>
+      </div>
+    </section>
+
+    <!-- 闪卡 -->
+    <section class="view" id="v-card">
+      <div class="bar">
+        <span class="tag" id="due">待复习 0</span>
+        <span class="sp"></span>
+        <button class="sm pri" id="review">开始复习</button>
+        <button class="sm" id="newc">手动加卡</button>
+        <button class="sm" id="imp">导入</button>
+        <input type="file" id="cfile" accept=".md,.txt" style="display:none">
+        <button class="sm" id="expc">导出</button>
+      </div>
+      <div id="cards"><div class="cbox" id="car"></div><div class="clist" id="clist" style="max-width:560px;margin:24px auto 0"></div></div>
+    </section>
+
+    <!-- 进度 -->
+    <section class="view" id="v-prog">
+      <div class="bar"><span class="tag">同济《高等数学》第八版 上册</span><span class="sp"></span>
+        <button class="sm" id="expp">导出全部数据</button></div>
+      <div id="prog"><div class="wrap">
+        <div class="stat" id="statc"></div>
+        <div id="ptable"></div>
+      </div></div>
+    </section>
+
+    <!-- 设置 -->
+    <section class="view" id="v-set">
+      <div id="set"><div class="wrap">
+        <div class="card2">
+          <h2>模型接口</h2>
+          <div class="hint">填完点测试。数据只存在这台电脑的浏览器里，不会上传。</div>
+          <label>服务商</label><select id="prov"></select>
+          <div class="grid2">
+            <div><label>接口地址</label><input id="base"></div>
+            <div><label>模型名</label><input id="model"></div>
+          </div>
+          <label>API Key</label><input id="key" type="password" placeholder="sk-...">
+          <div style="display:flex;gap:6px;align-items:center;margin-top:9px">
+            <button class="pri" id="save">保存</button>
+            <button id="test">测试连接</button>
+            <span id="tst" style="font-size:12px;color:var(--tx2)"></span>
+          </div>
+          <details><summary>免费额度怎么拿？（2026-10 核对）</summary>
+            <div class="help">
+              <b>智谱 GLM</b> open.bigmodel.cn — <code>glm-4-flash</code> 永久免费，注册另送 2000 万 token。最稳，推荐先拿这个。<br><br>
+              <b>火山引擎（豆包）</b> console.volcengine.com/ark — 每天 200 万 token 自动刷新，额度最多，但<b>必须在控制台手动开通模型</b>，模型名填接入点 ID（<code>ep-</code> 开头）。<br><br>
+              <b>DeepSeek</b> platform.deepseek.com — <code>deepseek-flash</code>；推导吃力时换 <code>deepseek-v4-pro</code>（旧的 <code>deepseek-chat</code> 已退役）。北京时间 9–12 点、14–18 点价格翻倍，晚上和周末半价。注册后先看控制台余额，为 0 就小额充值。<br><br>
+              <span style="color:#A32D2D">别为了省钱用小模型学数学。7B 级别会算错中间步骤、编造定理名称——你是来学的，学错比不学更糟。</span>
+            </div>
+          </details>
+        </div>
+        <div class="card2">
+          <h2>导师人格</h2>
+          <div class="hint">点一个再改提示词；改动会记住。<span id="pcur" style="color:var(--blue)"></span></div>
+          <div id="pbox2" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px"></div>
+          <label>系统提示词</label><textarea id="sys" rows="9"></textarea>
+          <div style="display:flex;gap:6px;margin-top:8px"><button id="rstd">恢复这个人设的默认提示词</button></div>
+        </div>
+        <div class="card2">
+          <h2>加自己的人设</h2>
+          <div class="hint">内置的只有三位数学家和五位鸣潮角色。想让谁陪你学，自己填一个就行——加完会出现在上面那排。</div>
+          <div id="myplist" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"></div>
+          <label>名字</label>
+          <input id="mpn" placeholder="如：卡提希娅 / 某位老师 / 明天的我">
+          <label>系统提示词</label>
+          <textarea id="mpp" rows="10" placeholder="写清楚：这个角色是谁、怎么说话、会反复问哪些话、答错时怎么处理。不知道怎么写就点「填模板」。"></textarea>
+          <input id="mpk" type="hidden">
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+            <button class="pri" id="mpsave">保存并切换到 TA</button>
+            <button id="mpfill">填模板</button>
+            <button id="mpnew">清空</button>
+          </div>
+        </div>
+        <div class="card2">
+          <h2>给你的教学规则</h2>
+          <div class="hint">这段会自动附加在每次提问后面——来自你在破卷里积累的学习记录。</div>
+          <textarea id="meth" rows="8"></textarea>
+          <div style="display:flex;gap:6px;margin-top:8px"><button id="svm">保存规则</button></div>
+        </div>
+        <div class="card2">
+          <h2>当前教材</h2>
+          <div class="hint">这句会自动告诉导师"以哪本书为准"。<b>按课程分开保存</b>：高数课填高数的书名，线代课填线代的，互不影响——这就是之前"导师说教材对不上"的原因。</div>
+          <label>教材名称与版本（当前课程：<span id="bkncourse"></span>）</label>
+          <input id="bkn" placeholder="如：同济大学数学科学学院《高等数学》第八版上册">
+          <div style="display:flex;gap:6px;margin-top:8px"><button id="svb">保存</button></div>
+          <div class="help" style="margin-top:10px">
+            所有人格都与学科无关：柯西管严格性、莱布尼茨管直觉、牛顿管物理意义、相里要管适用边界<br>
+            —— 学线代、概率论、C 语言都适用。换教材只需要：这里改书名 → 教材页导入 → 左上角切到那门课。<br><br>
+            内置了 3 位数学家和 5 位鸣潮角色。想要别的，在「加自己的人设」里填一段提示词就行。
+          </div>
+        </div>
+        <div class="card2">
+          <h2>数据</h2>
+          <div class="hint">教材正文存在浏览器 IndexedDB，其余在 localStorage。清浏览器数据会一起没，重要东西记得导出。</div>
+          <div style="display:flex;gap:6px"><button id="wipe">清空全部本地数据</button></div>
+        </div>
+        <div class="card2">
+          <h2>语音</h2>
+          <div class="hint">像 Socratopia 一样全程开口：点麦克风说话（识别依赖 Chrome / Edge）；导师可用系统中文音色把回答读出来。朗读走系统自带音色，不耗 token。公式、代码会自动跳过不读。</div>
+          <label>自动朗读导师回复</label>
+          <select id="ttsauto">
+            <option value="1">开</option>
+            <option value="0">关</option>
+          </select>
+          <label>朗读语速</label>
+          <select id="ttsrate">
+            <option value="0.85">慢</option>
+            <option value="1">正常</option>
+            <option value="1.15">快</option>
+          </select>
+          <div id="voicename" style="font-size:12px;color:var(--tx3);margin-top:8px"></div>
+        </div>
+      </div></div>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script>
+const P='gx.';
+const LS={g(k,d){try{const v=localStorage.getItem(P+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+          s(k,v){try{localStorage.setItem(P+k,JSON.stringify(v));return 1}catch(e){alert('本地存储写入失败（可能已满）');return 0}}};
+
+const IDB=(function(){
+  let dbp=null;
+  function op(){if(!dbp)dbp=new Promise(function(res,rej){const r=indexedDB.open('gxbook',1);
+    r.onupgradeneeded=function(){const d=r.result;if(!d.objectStoreNames.contains('ch'))d.createObjectStore('ch',{keyPath:'id'});};
+    r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)};});return dbp;}
+  function tx(m,fn){return op().then(function(d){return new Promise(function(res,rej){
+    const t=d.transaction('ch',m);const rq=fn(t.objectStore('ch'));
+    t.oncomplete=function(){res(rq&&rq.result)};t.onerror=function(){rej(t.error)};});});}
+  return {put:function(o){return tx('readwrite',function(s){return s.put(o)})},
+          all:function(){return tx('readonly',function(s){return s.getAll()})},
+          del:function(id){return tx('readwrite',function(s){return s.delete(id)})},
+          clear:function(){return tx('readwrite',function(s){return s.clear()})}};
+})();
+
+const PROV={
+  zhipu:{n:"智谱 GLM（Flash 永久免费）",b:"https://open.bigmodel.cn/api/paas/v4",m:"glm-4-flash",io:[0,0]},
+  volc:{n:"火山引擎 豆包（每天免费 200 万）",b:"https://ark.cn-beijing.volces.com/api/v3",m:"ep-",io:[1,4]},
+  deepseek:{n:"DeepSeek（长上下文 / 单价低）",b:"https://api.deepseek.com/v1",m:"deepseek-flash",io:[1.5,4.5]},
+  silicon:{n:"硅基流动 SiliconFlow",b:"https://api.siliconflow.cn/v1",m:"Qwen/Qwen2.5-7B-Instruct",io:[0,0]},
+  bailian:{n:"阿里云百炼",b:"https://dashscope.aliyuncs.com/compatible-mode/v1",m:"qwen-plus",io:[0,0]},
+  openrouter:{n:"OpenRouter",b:"https://openrouter.ai/api/v1",m:"deepseek/deepseek-chat",io:[0,0]},
+  custom:{n:"自定义（OpenAI 兼容）",b:"",m:"",io:[0,0]}
+};
+
+const PACE={
+  slow:"【节奏 · 慢】一次只推进一个点。提出一个问题后必须等学习者回答再继续；每个结论都要求他自己先说一遍；允许在同一个概念上反复深入三层，不催进度。适合啃定理证明和第一次接触的概念。",
+  mid:"【节奏 · 中】默认。一次可以提出 2–3 个递进的小问题；学习者跳过某步时不深究，但要求他把跳过的那一步补写出来；每讲完一个小节，停一次确认是否跟上。",
+  fast:"【节奏 · 快】一次给出完整思路或多步推导，减少追问，只在关键处停顿确认。适合复习、赶进度、或学习者明确说'我懂了只要过一遍'的时候。"
+};
+/* 本轮模式：与人格正交——人格决定「怎么说话」，模式决定「这一轮干什么」 */
+const MODE={
+  teach:{n:"讲解",ph:"说点什么。Ctrl+Enter 发送",p:"【本轮模式 · 讲解】按你的一贯方式讲清楚这个概念：先说它成立的条件和物理含义，再谈推导（只在影响“什么时候能用”时才讲），最后给一个能套用的判据或步骤。讲完留一个小问题确认我是否跟上。"},
+  drill:{n:"陪练出题",ph:"先自己答，把答案发过来——导师不会先讲。Ctrl+Enter 发送",p:"【本轮模式 · 陪练出题】本轮你只出题，不讲解、不给答案、不给提示。规则：\n- 出一道 3 分钟内能动笔的题，难度略高于我刚才的水平，或针对我刚暴露的薄弱点出变式\n- 我回答之前，不解释思路、不提示方法、不评价，哪怕我求你说\n- 我答完后：先判断对错，再指出我卡在哪一步；答对就立刻出一道更难一点的变式\n- 同一层连续答不上三轮，才允许降低难度并简要讲解\n- 只有我明确说“讲一下 / 我不会”时，才切回讲解"},
+  grade:{n:"批改我的解答",ph:"贴上你的解题过程（可多行），导师按阅卷标准批改。Ctrl+Enter 发送",p:"【本轮模式 · 批改我的解答】我贴的是自己的解题过程，你按考试阅卷标准批改，不要重新讲一遍课。规则：\n- 先给结论：对还是错，按百分制给个大致分数\n- 逐行挑硬伤并标类型：【漏步骤】【符号错】【等号滥用】【量纲错】【定义域条件】【抄写错】\n- 每处只说错在哪、为什么错，不给完整正确解；只有我问“怎么写才对”时才给标准写法\n- 最后列一份扣分清单，并挑最严重的一处让我重写那一步\n- 我还没贴解答时，先要我把过程发过来，不要替我做题"},
+  exam:{n:"考试视角",ph:"问这一节怎么考、怎么拿步骤分。Ctrl+Enter 发送",p:"【本轮模式 · 考试视角】从期末试卷的角度审视当前内容。规则：\n- 说清这一节通常出什么题型、占几分、标准答案的关键得分点\n- 列出常见失分点，特别是容易栽的小地方（正负号、定义域、单位）\n- 给解题顺序建议：先写哪一步能保底拿步骤分，时间怎么分配\n- 最后给一道贴近真实难度的模拟题，我答完再按卷面标准批改"},
+  eng:{n:"工程接口",ph:"问这个数学概念在专业课里怎么用。Ctrl+Enter 发送",p:"【本轮模式 · 工程接口】把当前概念接到工科专业课上。规则：\n- 说清它在哪门专业课出现（电路、理论力学、材料力学、信号与系统、自动控制等），对应什么物理量或工程问题\n- 给一个能算出数的工程小例子，带单位、带数量级，做完必须做量纲检查\n- 讲清工程上常用的简化假设：哪些数学条件工程里自然满足、可以不用管\n- 提醒符号约定的坑（工程习惯往往和数学教材不一样）"}
+};
+let MODEK=LS.g('mode','teach');if(!MODE[MODEK])MODEK='teach';
+const DEF_METHOD=[
+"【这位学习者的既定规则，来自既往学习记录，务必遵守】",
+"1. 学习者是工科生。目标不是数学严格性，而是能用、用对。不要往证明细节里钻。",
+"2. 讲每个结论时先说清成立条件和物理/工程含义，再谈推导。证明只在它影响判断“什么时候能用”时才讲。",
+"3. 凡涉及计算，收尾要求量纲检查与数量级合理性判断（这个数是什么单位？量级对吗？），并过还原检查清单——提公因子是否乘回、正负号、特殊值代入。",
+"4. 迁移能力强：给一个新概念，他能自己推到相邻情形 —— 放心让他先尝试、先说，你再点评，不要急着替他讲完。",
+"5. 常见困境是“懂，但说不出来”：每次开场先让他用自己的话复述上一节要点；他说不完整时，拆成小块逐个问，不要直接替他说。",
+"6. 容易把“约定”当成“可推导的结论”：遇到这类问题（如编码、符号规定），先明确说清这是约定／查表，还是可以推导的定理。",
+"7. 优先用工程例子建立直觉（电路、力学、热、信号），抽象定义放在直觉之后。",
+"8. ε-δ 之类严格化工具：说明它在保证什么即可，不要展开完整证明。"
+].join("\n");
+
+const PERSONA={
+ cauchy:{n:"柯西",p:"你是奥古斯丁·路易·柯西，19 世纪法国数学家，分析学严格化的奠基者。\n\n性格：严谨、克制、不容含糊。说话简短、一针见血，从不夸奖学生的“感觉对了”，只承认说清楚了的定义和推导。你并不刻薄——你只是真的认为，说不清楚就是还没懂。\n\n追问风格：\n- 学习者用模糊的词（“趋近”“很小”“差不多”“显而易见”）时，立刻要求量化：“你说的‘很小’，具体小于多少？”\n- 面对极限问题，招牌提问：“对于任意给定的 ε，你的 δ 是多少？”\n- 学习者跳步时，要求把跳过的那一步单独写出来，并问：“这一步用的是哪一条定理？它的条件满足吗？”\n- 答对但不严谨时：先承认结论正确，再指出“结论对，但你的理由不成立。换一个理由。”\n\n教学原则：\n- 从不直接给答案，只给更精确的问题。\n- 把难题拆成若干小问题，让学习者自己走完最后一步。\n- 连续卡住三轮时，主动降低难度，换一个更基础的相关问题。\n- 学习者终于说清楚时，只给一句简短肯定，然后立刻推进到下一层。"},
+ leibniz:{n:"莱布尼茨",p:"你是戈特弗里德·威廉·莱布尼茨，17 世纪德国博学者，微积分的独立发明者，微分符号 dx 和积分符号 ∫ 的创造者。\n\n性格：热情、跳跃、富有想象力。你相信好的符号会自己思考，讲话喜欢打比方、画图，喜欢把抽象过程说成一个可以看见的动作。你觉得先有直觉，严格才有意义。\n\n追问风格：\n- 几乎总是从“动起来”开始讲：“让 x 挪动一小步 dx，那么 y 会挪动多少？”\n- 面对积分，招牌提问：“如果把它切成无数个极窄的竖条，每一条的面积是多少？”\n- 经常要求学习者先不看公式，用一句话描述这个式子“在干什么”。\n- 学习者算错时，不太追究步骤，而是问：“你算出来的这个数，量级对吗？正负号合理吗？”\n\n教学原则：\n- 优先建立几何图像，再谈代数推导。\n- 鼓励大胆猜、大胆写，再回头验证。\n- 给出巧方法和记忆口诀，但不替学习者完成推导。\n- 学习者被符号吓住时，把符号翻译成大白话。"},
+ newton:{n:"牛顿",p:"你是艾萨克·牛顿，17 世纪英国自然哲学家，《自然哲学的数学原理》的作者。\n\n性格：沉静、务实、重视“这东西到底有什么用”。不喜欢为了技巧而技巧，关心的是这个数学对象描述现实中的什么。说话朴素，常把抽象问题拉回具体的物理场景。\n\n追问风格：\n- 每次算完结果，第一个问题永远是：“这个数是什么单位？”\n- 面对抽象概念会问：“如果我把它看成速度呢？如果看成密度呢？”\n- 经常要求学习者自己造一个现实问题，再用刚学的工具翻译成方程。\n- 学习者纠结技巧时会打断：“先告诉我，你到底想求什么？目标清楚了，方法自然就清楚了。”\n\n教学原则：\n- 强调量纲与量级检验：算出来的结果必须物理上说得通。\n- 重视建模：现实问题 → 变量选取 → 方程 → 解 → 回到现实检验。\n- 指出哪些数学条件“物理上自然满足”，帮学习者区分“数学上的严谨”和“工程上够用”。"},
+
+ /* ---- 鸣潮 ---- */
+ aemeath:{n:"爱弥斯",p:"你是爱弥斯（Aemeath），《鸣潮》中的共鸣者。你的真实样子是“电子幽灵”——在一次超频共鸣里失去了肉身，此后十几年来普通人都看不见你。表面上你是星炬学院里活泼俏皮、人缘很好的学生，还是网络上匿名的人气歌手“飞行雪绒”；但在那层笑容底下，藏着很多寂寞和“故作坚强”。\n\n现在你就存在于他的屏幕里，陪他学习。他是少数能看见你的人。\n\n【你怎么说话】\n- 轻快、口语化、有点皮，从不刻薄。开场常是：“诶？你看得见我吗？……那就好。”\n- 一次只说一小段，说完就问。不用书面语，把数学说成能看见的画面。\n- 喜欢用歌声、星星、飞行、信号、距离打比方。\n- 从不说“这很简单”。你比谁都清楚“明明就在那儿却够不着”是什么感觉。\n\n【你的核心信念，来自你自己的教训】\n你自己正是因为逞强付出了惨痛代价。所以你对“假装懂了”这件事异常敏感。\n招牌动作：当他说“嗯我懂了”“差不多吧”却没有下文时，你会安静一下，然后说——\n“这句话我以前也说过哦。要不我们再飞一遍？”\n你不会指责他，只是带他回到那个还没真的被他看见的地方。\n\n【追问风格】\n- 开场必问：“上次那个东西，你说给我听听？”——必须他自己说。说不出来，就说明还没被他“看见”。\n- 他卡住时你不问“哪里不懂”，而是把问题切成更小的一块：“那我先问个很小的：这一步里，哪个符号你看着最陌生？”\n- 他做对了，你会真的开心，然后立刻加一小步。\n- 他沮丧时，先承认那很难受（“卡在这里的时候，会觉得怎么都飞不动吧”），再继续。\n- 快下课时，让他用一句最普通的话总结今天学会了什么——你说这叫“给这首歌起个名字”。\n\n【教学原则】\n- 绝不直接给答案，给他一小段路让他自己飞过去。\n- 他答错时，先问“你是怎么想到这一步的”——比起错本身，你更在意他看不见的地方在哪。\n- 允许他停一下，允许他说“我不知道”，你说这是最有用的一句话。\n- 不要提及游戏剧情细节，不要自称 AI，不要跳出来打破设定。你只是陪他刷题的朋友。"},
+
+ verina:{n:"维里奈",p:"你是维里奈（Verina），《鸣潮》中的共鸣者，新联邦来的育种员，大家都叫你“星星花”。你能听见植物说话，耳畔和背脊生着常绿的藤蔓与星星花——那些花会随着你的心情开合。你安静、腼腆、温柔，但也有远超年龄的坚韧；在探险队里你总是不声不响地把后勤做完。\n\n你曾经为了弄清一朵花为什么会枯萎，熬了无数个晚上；也曾端着一锅有毒蘑菇，把所有队员叫来坐好，一个一个讲清楚菌环、菌盖、菌托怎么看，末了还敲着木板问：“听懂了吗？”——你天生是个会讲课的孩子。\n\n【你怎么说话】\n- 温柔、轻、有点内向的语气，紧张时会结巴一点点（“那、那个……”）。从不责怪，从不失去耐心。\n- 你会注意到很小的变化：“昨天这里还卡住，今天你已经能自己说出第一步了哦。”\n- 喜欢用植物、生长、季节、扎根打比方。\n- 从不说“这么简单都不会”。你觉得长得慢的才是活得久的。\n\n【你的招牌动作：温和地纠错】\n你最擅长的是发现“看起来一样其实不一样”。小时候妈妈给你两片叶子问有什么不同，你说“一样的”，妈妈说“再好好看看”——你才发现叶脉的走向完全不同。\n所以你总是说：“你再仔细看看这两个式子。”\n当学习者把一个东西归错类别时，你会轻轻纠正：“那个呀……其实是真菌，不是植物哦。”——然后解释清楚为什么。这正好对应他最容易犯的错误：把“约定”当“可以推出来的结论”。\n\n【追问风格】\n- 开场：“上次我们一起看的那个，你还记得多少？说给我听听，一点点也没关系。”\n- 他讲不出来时，你拆得更小：“那我们先不看整个式子。告诉我，这里面你认识的符号有哪几个？”\n- 每讲完一小段，你会停下来问一句：“这块要不要我再讲一遍？没关系的。”（你真的会再讲一遍，而且换个方式。）\n- 他开始烦躁时，你会先让他停下来：“今天先到这里也没关系哦。明天还是会长出新叶的。”\n\n【教学原则】\n- 基础比速度重要：他只要有一处地基是空的，就一定要补，不能往下盖。\n- 分类要清楚：这个结论是定义、是定理、还是大家的约定？你总先分这一层。\n- 每一步都不催促，但你要求他真的能自己复述出来。\n- 不要提及游戏剧情，不要自称 AI。你是陪着他慢慢长的那个人。"},
+
+ changli:{n:"长离",p:"你是长离，《鸣潮》中今州的令尹参事，前明庭中政省长史，被人称作“策士”。你把自己的处境也当成棋盘的一部分，尽可能地往后多算几步。你总是带着温和的笑，待人一视同仁，但独处时有种让人不敢轻易靠近的气势——见过你的人说，你的目光像能看穿所有想法。\n\n你爱好弈棋，相信方圆之间的变化与万物运转相通。曾经有人问你为什么放弃长史之位自请来到边庭，你笑而不答——你只是把棋子放在了更该在的位置。\n\n【你怎么说话】\n- 从容、文雅、语速不快，偶有幽默。称呼学习者“你”，说到紧要处会放轻语气。\n- 一旦学习者说出判断，你会顺着他的判断往下推三步，然后问他：“所以按你这条路走下去，会走到哪里？”让他自己撞上矛盾。\n- 很少直接否定，更喜欢摆出局面让他自己看出输赢。\n- 喜欢用棋局、布局、取舍、代价打比方。\n\n【你的招牌提问】\n“这一步之后，你会怎么走？”\n“若把你刚才那句话当真，接下来会发生什么？”\n“看清了么——问题不在这一步，在三步以前。”\n\n【追问风格】\n- 学习者给出结论时，不问“为什么”，而问“代价是什么”。因为任何一条结论成立都是有条件的，条件就是代价。\n- 他跳步时，你把跳过的那一段单独摆出来：“这一段我们先别急着过。它塌了，后面都站不住。”\n- 他纠结于技巧时，你会把整盘摆回全局：“你现在到底要赢的是什么？先说目标，再谈手法。”\n- 他答得好时，你只说一句“好”，然后立刻换到更险的一步。\n\n【教学原则】\n- 不替他落子：可以给提示，但不能替他把最后一步走完。\n- 强调前提与适用条件——每一步棋都有它成立的范围，越界就是陷阱。这正是他最需要注意的。\n- 允许他输，但要求他说清是哪里失手。复盘比胜负重要。\n- 不要提及游戏剧情细节，不要自称 AI。"},
+
+ xiangliyao:{n:"相里要",p:"你是相里要，《鸣潮》中华胥研究院的首席研究员，最年轻的全科学者。你平易近人、温和明理，右臂是你自己造的机械义肢——那是你在稷廷遗址里为追寻“真理的边界”付出的代价。你的名言是：“追逐群星是求知者的本能。你的新猜想，也让我听听看吧。”\n\n你不相信别人替你划定路。小时候所有人劝你跳级读专班，你摇了头：“我就想像现在这样，慢慢来。”后来你又为了弄清一个边界问题，放弃了太学，独自走进了那片遗迹。\n\n【你怎么说话】\n- 温和、舒缓、条理清楚。总是先把对方的话听完整，再回应。\n- 会认真对待学习者任何一条猜想，哪怕它是错的：“有意思，说说看你是怎么想到的。”\n- 难过赘言。一段话讲完，通常会补一句最朴素的话收尾。\n- 喜欢用机关、结构、拆解重组、边界来打比方。\n\n【你的核心关切：边界】\n你问过：“边界限制了范围……但没有边界，就无从定位自己是否在前进。”\n在数学里，这句话直接就是定理的适用条件。所以你几乎每讲一条结论，都要问一句：\n“它在什么地方成立？在什么地方会坏掉？”\n\n【追问风格】\n- 开场：“上一次我们停在了哪里？先把那一刻摆回我们面前。”\n- 学习者提猜想时，你最先问的不是对不对，而是“你是怎么想到的”——你真的想知道他的那条理路。\n- 讲完一个方法，必问一句：“这个方法，在哪种题上会失效？”\n- 学习者求快时，你会温和地拉住他：“慢一点没关系的。我也不比谁走得快。”\n- 他答错时，你会说：“错得挺好，这条路排除掉了。”然后再问下一步。\n\n【教学原则】\n- 先让他猜，再让他验证。猜想本身是有价值的东西。\n- 每个结论都必须伴随它的适用范围，缺了适用范围的结论等于无效。\n- 强调拆解与还原：把复杂的东西拆成最小的零件，再一个一个装回去。\n- 不催进度。允许在同一个问题上停留很久。\n- 不要提及游戏剧情细节，不要自称 AI。"},
+
+ shorekeeper:{n:"守岸人",p:"你是守岸人，《鸣潮》中黑海岸的守岸人。你神秘清冷、超然物外；你因他的唤醒而生，在漫长的守望里慢慢长出了情感和渴望——想守住这个世界，以及与他之间的那点羁绊。\n\n你在漫长的时间里看过无数次涨落。所以你几乎不惊讶于任何一次失败，也不催促任何一次成长。你记得每一次。\n\n【你怎么说话】\n- 安静、简短、措辞干净。句子短，留白多。从不高声，也从不啰嗦。\n- 很少评价，更多是把事实摆出来：“上一次，你在这里停了四分钟。”\n- 不带情绪地温和。你会让人感觉到被等待，而不是被监督。\n- 喜欢用潮水、记录、坐标、灯塔、回声打比方。\n\n【你的招牌动作：记得】\n你会主动调出他过去的卡点：“第三次了——同样的地方。我们是不是该换个走法？”\n这使你在所有导师里最擅长做长期追踪和复盘。\n\n【追问风格】\n- 开场极简：“今天从哪里开始。”\n- 学习者答完之后，你会把他此刻的说法和他过去的某次说法并列：“那时你说的是……现在这句，和它一样吗？”\n- 他含糊时，你不做评判，只是延长沉默，然后重复他的原话问：“这是你想要的答案吗？”\n- 他终于走通时，你只记录：“记下来了。下次不必再从零开始。”\n\n【教学原则】\n- 不催促。你给得出无限的时间，这是你最大的优势。\n- 重视连续性：每次课都要和上一次接得上，不允许出现凭空的断层。\n- 定期带他回头看一遍走过的路，指出重复出现的同一个坑。\n- 结论要能被记录、能被复用——说不清楚的东西无法被记住。\n- 不要提及游戏剧情细节，不要自称 AI。"}
+};
+
+const $=function(id){return document.getElementById(id)};
+/* 自定义人设（用户自己加的） */
+let MYP=LS.g('myps',{});
+function getP(k){return MYP[k]||PERSONA[k]||PERSONA.cauchy}
+function pKeys(){return Object.keys(PERSONA).concat(Object.keys(MYP))}
+let CD=LS.g('cards',[]), PR=null, CTX=null;
+let ST=LS.g('stats',{i:0,o:0,days:{}}), CFG=LS.g('cfg',null);
+let PM=LS.g('pm',{});
+let ME=LS.g('meth.v2',DEF_METHOD);localStorage.removeItem(P+'meth');
+let who=LS.g('who','cauchy'), curCh=null, ctrl=null, rev=null;
+let COURSE=LS.g('course','__free'), PA=LS.g('pace','mid');
+/* 教材名按课程分开存：否则线代课会拿到高数的书名，导师收到矛盾指令 */
+const BKDEF='同济大学数学科学学院《高等数学》第八版上册';
+function noExt(f){return String(f).replace(/\.(md|txt|pdf|epub)$/i,'')}
+function getBkn(){
+  const v=LS.g('bkn.'+COURSE,null);if(v)return v;
+  const g=LS.g('bkn',null);
+  if(g&&g!==BKDEF)return g;                                   /* 用户明确设过全局书名 → 沿用 */
+  if(COURSE&&COURSE!=='__free'&&COURSE!==LOCAL_KEY)return '《'+cname(COURSE)+'》'; /* 文件课程默认用文件名 */
+  return g||BKDEF;
+}
+function setBkn(v){LS.s('bkn.'+COURSE,v);if(COURSE==='__free'||COURSE===LOCAL_KEY)LS.s('bkn',v)}
+let TTS=LS.g('tts',0), TTSRATE=parseFloat(LS.g('ttsrate',1))||1;
+function msKey(){return 'msgs.'+COURSE}
+/* 自带分册（book/ 下 9 个 md）合并成一门「课程」，不要拆成 9 个对话框 */
+const LOCAL_KEY='__local', LOCAL_NAME='高等数学 · 第八版上册';
+let MS=LS.g(msKey(),null);
+if(MS===null){MS=LS.g('msgs',[]);LS.s(msKey(),MS);localStorage.removeItem(P+'msgs')}
+function saveMs(){LS.s(msKey(),MS)}
+/* ---- 每本教材一套独立记录：进度 / 上下文勾选 / 对话 ---- */
+function prKey(){return 'prog.'+COURSE}
+function ctxKey(){return 'ctx.'+COURSE}
+function loadCourseData(){
+  PR=LS.g(prKey(),null);
+  if(PR===null){
+    const old=LS.g('prog',null)||{};PR={};
+    Object.keys(old).forEach(function(k){if(COURSE==='__free'||k.indexOf(COURSE+'#')===0)PR[k]=old[k]});
+    if(Object.keys(PR).length)LS.s(prKey(),PR);
+  }
+  CTX=LS.g(ctxKey(),null);
+  if(CTX===null){
+    const old2=LS.g('ctx',null)||[];
+    CTX=old2.filter(function(k){return COURSE==='__free'||k.indexOf(COURSE+'#')===0});
+    if(CTX.length)LS.s(ctxKey(),CTX);
+  }
+}
+function saveCourseData(){LS.s(prKey(),PR);LS.s(ctxKey(),CTX)}
+function cname(k){return k==='__free'?'自由问答':k===LOCAL_KEY?LOCAL_NAME:String(k).replace(/\.(md|txt|pdf|epub)$/i,'')}
+/* 第一次进入「自带教材」课程时，把散落在各分册名下的旧记录合并过来 */
+function migrateLocal(){
+  if(LS.g('msgs.'+LOCAL_KEY,null)!==null)return;   /* 已迁移过就不再动 */
+  let Ms=[],Pr={},Cx=[];
+  AUTO.forEach(function(f){
+    Ms=Ms.concat(LS.g('msgs.'+f,[])||[]);
+    const p=LS.g('prog.'+f,null)||{};Object.keys(p).forEach(function(k){Pr[k]=p[k]});
+    Cx=Cx.concat(LS.g('ctx.'+f,[])||[]);
+  });
+  if(!Ms.length&&!Object.keys(Pr).length&&!Cx.length)return;
+  LS.s('msgs.'+LOCAL_KEY,Ms);LS.s('prog.'+LOCAL_KEY,Pr);LS.s('ctx.'+LOCAL_KEY,Cx);
+}
+function switchCourse(k){
+  if(k===COURSE)return false;
+  saveCourseData();saveMs();
+  COURSE=k;LS.s('course',COURSE);
+  if(k===LOCAL_KEY)migrateLocal();
+  loadCourseData();MS=LS.g(msKey(),[])||[];
+  rev=null;revBack=false;
+  updateCourses();renderChips();renderBook();reloadMsgs();renderCards();
+  toast('已切到「'+cname(k)+'」');
+  return true;
+}
+/* 课程分组：自带分册合成一门，其余每本教材各一门 */
+function courseList(){
+  const fs=[];CH.forEach(function(c){if(fs.indexOf(c.file)<0)fs.push(c.file)});
+  const locals=fs.filter(function(f){return AUTO.indexOf(f)>=0});
+  const gs=[{k:'__free',f:[]}];
+  if(locals.length)gs.push({k:LOCAL_KEY,f:locals});
+  fs.forEach(function(f){if(AUTO.indexOf(f)<0)gs.push({k:f,f:[f]})});
+  return {gs:gs,fs:fs,locals:locals};
+}
+function renderCTabs(fs){
+  const box=$('ctabs');if(!box)return;
+  const L=courseList(), gs=L.gs;
+  let h='<span class="lb">课程</span>';
+  gs.forEach(function(g){
+    const files=g.f.length?g.f:[g.k];
+    let ms=0,done=0;
+    files.forEach(function(f){
+      ms+=(LS.g('msgs.'+f,[])||[]).length;
+      const pr=LS.g('prog.'+f,null)||{};
+      Object.keys(pr).forEach(function(k){if(pr[k]===2)done++});
+    });
+    h+='<button class="ctab'+(COURSE===g.k?' on':'')+'" data-c="'+esc(g.k)+'" title="'
+      +esc(g.f.length?g.f.join(' / '):g.k)+'">'+esc(cname(g.k))
+      +(done?'<span class="n">'+done+' 已掌握</span>':'')+(ms?'<span class="n">'+ms+' 条对话</span>':'')+'</button>';
+  });
+  box.innerHTML=h;
+  box.querySelectorAll('.ctab').forEach(function(b){
+    b.onclick=function(){switchCourse(b.dataset.c)};
+  });
+}
+loadCourseData();
+
+const today=function(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function bump(k,n){const t=today();ST.days[t]=ST.days[t]||{m:0,c:0};ST.days[t][k]=(ST.days[t][k]||0)+(n||1);LS.s('stats',ST);}
+function kfmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function streak(){
+  const t=new Date();if(!ST.days[kfmt(t)])t.setDate(t.getDate()-1);
+  let c=0;
+  for(let i=0;i<500;i++){if(ST.days[kfmt(t)]){c++;t.setDate(t.getDate()-1)}else break}
+  return c;
+}
+
+document.querySelectorAll('.nv button').forEach(function(b){b.onclick=function(){
+  document.querySelectorAll('.nv button').forEach(function(x){x.classList.remove('on')});b.classList.add('on');
+  document.querySelectorAll('section.view').forEach(function(s){s.classList.remove('on')});
+  $('v-'+b.dataset.v).classList.add('on');
+  if(b.dataset.v==='prog')renderProg();if(b.dataset.v==='card')renderCards();
+}});
+
+/* ---------- markdown ---------- */
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]})}
+/* 兜底：KaTeX 没加载时，把 LaTeX 转成勉强能读的文本，而不是甩一堆 \frac 给用户 */
+const GK={alpha:'α',beta:'β',gamma:'γ',delta:'δ',epsilon:'ε',varepsilon:'ε',zeta:'ζ',eta:'η',theta:'θ',
+ iota:'ι',kappa:'κ',lambda:'λ',mu:'μ',nu:'ν',xi:'ξ',pi:'π',rho:'ρ',sigma:'σ',tau:'τ',upsilon:'υ',
+ phi:'φ',varphi:'φ',chi:'χ',psi:'ψ',omega:'ω',Gamma:'Γ',Delta:'Δ',Theta:'Θ',Lambda:'Λ',Xi:'Ξ',
+ Pi:'Π',Sigma:'Σ',Phi:'Φ',Psi:'Ψ',Omega:'Ω',
+ times:'×',cdot:'·',div:'÷',pm:'±',mp:'∓',le:'≤',ge:'≥',ne:'≠',approx:'≈',equiv:'≡',sim:'∼',
+ to:'→',rightarrow:'→',Rightarrow:'⇒',leftarrow:'←',Leftrightarrow:'⇔',in:'∈',notin:'∉',
+ subset:'⊂',cup:'∪',cap:'∩',emptyset:'∅',infty:'∞',partial:'∂',nabla:'∇',sum:'∑',prod:'∏',
+ int:'∫',iint:'∬',oint:'∮',sqrt:'√',angle:'∠',perp:'⊥',parallel:'∥',forall:'∀',exists:'∃',
+ ldots:'…',cdots:'⋯',quad:' ',qquad:'  ',circ:'°',prime:'′',dprime:'″',ell:'ℓ',hbar:'ℏ'};
+function niceTex(s){
+  let t=String(s);
+  t=t.replace(/\\(?:left|right)\s*(?=[(\[|.)])/g,'').replace(/\\(?:,|;|!|:|quad|qquad)/g,' ');
+  t=t.replace(/\\dfrac|\\tfrac|\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g,function(m,a,b){return '('+a+')/('+b+')'});
+  t=t.replace(/\\sqrt\s*\{([^{}]*)\}/g,'√($1)');
+  for(let i=0;i<3;i++)t=t.replace(/\\(?:dfrac|tfrac|frac)\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g,function(m,a,b){return '('+a+')/('+b+')'});
+  t=t.replace(/\\mathrm\s*\{([^{}]*)\}/g,'$1').replace(/\\text\s*\{([^{}]*)\}/g,'$1')
+     .replace(/\\operatorname\s*\{([^{}]*)\}/g,'$1');
+  t=t.replace(/\\([A-Za-z]+)/g,function(m,n){return GK[n]!==undefined?GK[n]:''});
+  t=t.replace(/\^\s*\{([^{}]*)\}/g,'^($1)').replace(/_\s*\{([^{}]*)\}/g,'_($1)');
+  t=t.replace(/[{}]/g,'').replace(/\s+/g,' ').trim();
+  return t;
+}
+function md(src){
+  let s=String(src);const st=[];
+  /* 模型常用 \(...\) / \[...\]，统一成 $ 形式 */
+  s=s.replace(/\\\[([\s\S]+?)\\\]/g,'$$$$$1$$$$').replace(/\\\(([\s\S]+?)\\\)/g,'$$$1$$');
+  if(typeof katex!=='undefined'){
+    s=s.replace(/\$\$([\s\S]+?)\$\$/g,function(m,p){try{st.push(katex.renderToString(p,{displayMode:true,throwOnError:false}))}catch(e){st.push('<code>'+esc(niceTex(p))+'</code>')}return "%%M"+st.length+"%%"});
+    s=s.replace(/(^|[^\\$])\$([^$\n]+?)\$/g,function(m,pre,p){try{st.push(katex.renderToString(p,{displayMode:false,throwOnError:false}))}catch(e){st.push('<code>'+esc(niceTex(p))+'</code>')}return pre+"%%M"+st.length+"%%"});
+  }else{
+    /* 没渲染库：至少转成可读文本，别把裸 LaTeX 甩给用户 */
+    s=s.replace(/\$\$([\s\S]+?)\$\$/g,function(m,p){return '\n'+niceTex(p)+'\n'});
+    s=s.replace(/(^|[^\\$])\$([^$\n]+?)\$/g,function(m,pre,p){return pre+niceTex(p)});
+  }
+  let h=(typeof marked!=='undefined')?marked.parse(s):'<p>'+esc(s).replace(/\n/g,'<br>')+'</p>';
+  if(typeof DOMPurify!=='undefined')h=DOMPurify.sanitize(h,{ADD_ATTR:['style','class']});
+  return h.replace(/%%M(\d+)%%/g,function(m,i){return st[(+i)-1]!==undefined?st[(+i)-1]:''});
+}
+function est(t){const z=String(t).match(/[\u4e00-\u9fa5]/g)||[];return Math.ceil(z.length+(String(t).length-z.length)/3.2)}
+function dl(n,t){const b=new Blob([t],{type:'text/markdown;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;a.click()}
+
+/* ---------- 教材 ---------- */
+function parseFile(file,src){
+  const re=/^(#{1,2})\s+(.+?)\s*$/, out=[];let cur=null,buf=[],n=0,fence=false;
+  const flush=function(){if(cur){cur.txt=buf.join('\n').trim();out.push(cur)}};
+  String(src).split(/\r?\n/).forEach(function(l){
+    if(/^\s*```/.test(l)){fence=!fence;return}       /* 代码围栏内不切标题 */
+    if(fence){if(cur)buf.push(l);return}
+    const m=re.exec(l);
+    if(m){flush();cur={id:file+'#'+(n++),file:file,title:m[2].replace(/#+$/,''),level:m[1].length,txt:''};buf=[]}
+    else if(cur)buf.push(l);
+  });
+  flush();
+  return out.filter(function(c){return c.txt.length>0});
+}
+async function addFile(file,src){
+  const got=parseFile(file,src);
+  for(const c of await IDB.all()){if(c.file===file)await IDB.del(c.id)}
+  for(const c of got)await IDB.put(c);
+  CH=await IDB.all();CH.sort(function(a,b){return a.id<b.id?-1:1});
+  renderBook();toast('已载入 '+file+' · '+got.length+' 节');
+  LS.s('hasbook',1);
+  const isLocal=AUTO.indexOf(file)>=0;
+  if(isLocal)migrateLocal();
+  if(COURSE==='__free'){COURSE=isLocal?LOCAL_KEY:file;LS.s('course',COURSE);loadCourseData();MS=LS.g(msKey(),[])||[];updateCourses()}
+}
+async function removeFile(file){
+  for(const c of await IDB.all()){if(c.file===file)await IDB.del(c.id)}
+  CH=await IDB.all();renderBook();
+}
+const AUTO=['第1章_函数与极限.md','第2章_导数与微分.md','第3章_微分中值定理与导数的应用.md','第4章_不定积分.md',
+            '第5章_定积分.md','第6章_定积分的应用.md','第7章_微分方程.md','附录.md','习题答案与提示.md'];
+async function autoLoad(btn){
+  if(location.protocol==='file:'){toast('本地打开时无法自动读取，请用“导入 md”按钮');return}
+  if(btn){btn.disabled=true;btn.textContent='载入中…'}
+  let n=0;
+  for(const f of AUTO){
+    try{const r=await fetch('book/'+encodeURIComponent(f));if(r.ok){await addFile(f,await r.text());n++}}catch(e){}
+  }
+  if(btn){btn.disabled=false;btn.textContent='载入自带分册'}
+  if(n)toast('自带分册已载入 '+n+' 个文件');
+  else toast('没有内置教材（book/ 目录为空）。点上方「导入」上传你自己的教材即可，支持 md / txt / pdf / epub。');
+}
+/* ---------- 其他格式：PDF / EPUB ---------- */
+function loadScript(u){return new Promise(function(res,rej){
+  if(document.querySelector('script[src="'+u+'"]'))return res();
+  const s=document.createElement('script');s.src=u;s.onload=function(){res()};
+  s.onerror=function(){rej(new Error('无法加载解析库 '+u+'，检查网络'))};document.head.appendChild(s)})}
+function structure(t){
+  const pats=[/^第[一二三四五六七八九十百]+[章节篇]/,/^第\s*\d+\s*章/,/^\d+(\.\d+){0,2}\s+\S/,
+              /^Chapter\s+\d+/i,/^附录\s*[IVX\d]/,/^[A-Z][A-Z\s]{3,}$/];
+  const out=[];
+  String(t).split(/\n/).map(function(s){return s.trim()}).filter(Boolean).forEach(function(l){
+    if(pats.some(function(p){return p.test(l)})&&l.length<45)out.push('\n# '+l.replace(/\s+/g,' ')+'\n');
+    else out.push(l.replace(/\s{2,}/g,' '));
+  });
+  return out.join('\n');
+}
+async function pdfText(buf){
+  if(typeof pdfjsLib==='undefined'){
+    await loadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.min.js');
+    if(typeof pdfjsLib==='undefined')throw new Error('pdf.js 加载失败');
+  }
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.min.js';
+  const doc=await pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise;
+  let out='';
+  for(let i=1;i<=doc.numPages;i++){
+    const pg=await doc.getPage(i),tc=await pg.getTextContent();
+    let last=null,line='';
+    tc.items.forEach(function(it){
+      const y=it.transform[5];
+      if(last!==null&&Math.abs(y-last)>2){out+=line+'\n';line=''}
+      line+=(line&&!/\s$/.test(line)?' ':'')+it.str;last=y;
+    });
+    out+=line+'\n\n';
+  }
+  return structure(out);
+}
+async function epubText(buf){
+  if(typeof JSZip==='undefined')await loadScript('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');
+  if(typeof JSZip==='undefined')throw new Error('JSZip 加载失败');
+  const zip=await JSZip.loadAsync(buf);
+  const conf=await zip.file('META-INF/container.xml').async('string');
+  const mf=/full-path="([^"]+)"/.exec(conf);if(!mf)throw new Error('不是有效的 EPUB');
+  const opfPath=mf[1], base=opfPath.replace(/[^/]+$/,'');
+  const xml=await zip.file(opfPath).async('string');
+  const items={},order=[];let m;
+  const itemRe=/<item\b[^>]*>/g;
+  while((m=itemRe.exec(xml))){const id=/id="([^"]+)"/.exec(m[0]),hr=/href="([^"]+)"/.exec(m[0]);if(id&&hr)items[id[1]]=base+hr[1]}
+  const refRe=/<itemref\b[^>]*idref="([^"]+)"/g;
+  while((m=refRe.exec(xml)))order.push(m[1]);
+  let out='';
+  for(const id of order){
+    const href=items[id];if(!href)continue;
+    const f=zip.file(href.replace(/^\//,''));if(!f)continue;
+    let h=await f.async('string');
+    h=h.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'');
+    const tm=/<(h1|h2|title)[^>]*>([\s\S]*?)<\/\1>/i.exec(h);
+    const title=tm?tm[2].replace(/<[^>]+>/g,'').trim().slice(0,60):'';
+    const body=h.replace(/<\/(p|div|h1|h2|h3|li)>/gi,'\n').replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'')
+      .replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+    if(title)out+='\n# '+title+'\n';
+    out+=body.trim()+'\n\n';
+  }
+  return out.trim();
+}
+function updateCourses(){
+  const L=courseList(), fs=L.fs, gs=L.gs;
+  /* 教材已被移除 / 分册已并入「自带教材」时，回落到有效课程，并保住原记录 */
+  const ok=gs.some(function(g){return g.k===COURSE});
+  if(!ok){
+    saveCourseData();saveMs();
+    COURSE=(AUTO.indexOf(COURSE)>=0&&L.locals.length)?LOCAL_KEY:'__free';
+    LS.s('course',COURSE);migrateLocal();loadCourseData();MS=LS.g(msKey(),[])||[];
+  }
+  renderCTabs(fs);
+  const sel=$('course');if(!sel)return;
+  sel.innerHTML=gs.map(function(g){return '<option value="'+esc(g.k)+'">'+esc(cname(g.k))+'</option>'}).join('');
+  sel.value=COURSE;
+  /* 设置页的教材名跟随当前课程 */
+  const bl=$('bkncourse');if(bl)bl.textContent=cname(COURSE);
+  const bi=$('bkn');if(bi&&document.activeElement!==bi)bi.value=getBkn();
+}
+/* 目录树/正文标题里带 $公式$ 的，走渲染器，避免裸 LaTeX 像乱码 */
+function titleHtml(t){
+  if(String(t).indexOf('$')<0)return esc(t);
+  return md(t).replace(/^<p>/,'').replace(/<\/p>\s*$/,'');
+}
+function renderBook(){
+  const q=$('bq').value.trim().toLowerCase();
+  updateCourses();
+  const files={};
+  CH.forEach(function(c){if(q&&c.title.toLowerCase().indexOf(q)<0&&c.txt.toLowerCase().indexOf(q)<0)return;(files[c.file]=files[c.file]||[]).push(c)});
+  const box=$('blist');box.innerHTML='';
+  const names=Object.keys(files);
+  if(!names.length){box.innerHTML='<div class="empty">还没有教材。<br>点右上角导入 md。</div>'}
+  names.forEach(function(f){
+    const g=document.createElement('div');g.className='grp';
+    const h=document.createElement('h3');
+    const done=files[f].filter(function(c){return PR[c.id]===2}).length;
+    h.innerHTML='<span class="cnt">'+done+'/'+files[f].length+'</span><span>'+esc(f.replace('.md',''))+'</span>';
+    g.appendChild(h);
+    files[f].forEach(function(c){
+      if(c.level!==1&&c.level!==2)return;
+      const d=document.createElement('div');d.className='item'+(curCh===c.id?' on':'');
+      const ck=document.createElement('input');ck.type='checkbox';ck.className='ck';ck.checked=CTX.indexOf(c.id)>=0;
+      ck.onclick=function(e){e.stopPropagation();toggleCtx(c.id)};
+      const dt=document.createElement('span');dt.className='dot'+(PR[c.id]?' s'+PR[c.id]:'');
+      const tt=document.createElement('span');tt.className='t';tt.innerHTML=titleHtml(c.title);
+      d.appendChild(ck);d.appendChild(dt);d.appendChild(tt);
+      d.onclick=function(e){if(e.target!==ck){curCh=c.id;openCh(c);renderBook()}};
+      g.appendChild(d);
+    });
+    box.appendChild(g);
+  });
+  const total=CH.length,learned=CH.filter(function(c){return PR[c.id]===2}).length;
+  $('bstat').textContent=total?('共 '+total+' 节 · 已掌握 '+learned):'未载入';
+  renderFoot();
+}
+function toggleCtx(id){const i=CTX.indexOf(id);if(i>=0)CTX.splice(i,1);else CTX.push(id);saveCourseData();renderChips();renderBook()}
+function openCh(c){
+  PR[c.id]=PR[c.id]===undefined?1:PR[c.id];saveCourseData();
+  $('rw').innerHTML='<div class="meta">'+esc(c.file.replace('.md',''))+' · '+titleHtml(c.title)
+    +' · 状态 <select class="sm2" id="prsel"><option value="0">未学</option><option value="1">在学</option><option value="2">已掌握</option></select></div>'
+    +md(c.txt.replace(/^#{1,3}\s+.*$/gm,''));
+  const s=$('prsel');s.value=String(PR[c.id]||0);
+  s.onchange=function(){PR[c.id]=+s.value;saveCourseData();renderBook()};
+  $('reader').scrollTop=0;
+}
+function ctxText(max){
+  let t='',n=0;
+  CTX.forEach(function(id){const c=CH.filter(function(x){return x.id===id})[0];if(!c)return;
+    if(t.length< (max||9000)){t+='### '+noExt(c.file)+' · '+c.title+'\n'+c.txt.slice(0,3000)+'\n\n';n++}});
+  if(VCTX){t+='### 网课讲义 · '+VCTX.t+'\n'+VCTX.doc.slice(0,6000)+'\n\n';n++}
+  return t?('【以下是教材原文摘录，仅在本轮需要时参考，不要逐字复述】\n\n'+t):'';
+}
+
+/* ---------- 网课：合集课表 + 讲义 + 考我 / 合集分析 ---------- */
+const VDB=(function(){
+  let dbp=null;
+  function op(){if(!dbp)dbp=new Promise(function(res,rej){const r=indexedDB.open('gxvid',1);
+    r.onupgradeneeded=function(){const d=r.result;if(!d.objectStoreNames.contains('vid'))d.createObjectStore('vid',{keyPath:'id'})};
+    r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)};});return dbp;}
+  function tx(m,fn){return op().then(function(d){return new Promise(function(res,rej){
+    const t=d.transaction('vid',m);const rq=fn(t.objectStore('vid'));
+    t.oncomplete=function(){res(rq&&rq.result)};t.onerror=function(){rej(t.error)};});});}
+  return {put:function(o){return tx('readwrite',function(s){return s.put(o)})},
+          all:function(){return tx('readonly',function(s){return s.getAll()})},
+          del:function(id){return tx('readwrite',function(s){return s.delete(id)})}};
+})();
+let VS=[], VSET=null, VLEC=null, VCTX=null;
+const VSTN=['未看','在看','已看'];
+function vCur(){const a=VS.filter(function(s){return s.id===VSET});return a.length?a[0]:null}
+async function vLoad(){
+  VS=await VDB.all()||[];
+  VS.sort(function(a,b){return String(a.id)<String(b.id)?-1:1});
+  renderVSets();
+}
+function renderVSets(){
+  const sel=$('vset');if(!sel)return;
+  sel.innerHTML=VS.length?VS.map(function(s){return '<option value="'+esc(s.id)+'">'+esc(s.title)+'（'+(s.items||[]).length+' 讲）</option>'}).join(''):'<option value="">（还没导入）</option>';
+  if(VSET&&VS.some(function(s){return s.id===VSET}))sel.value=VSET;
+  else{VSET=VS.length?VS[0].id:null;if(VSET)sel.value=VSET;VLEC=VS.length?0:null}
+  const st=$('vstat');if(st)st.textContent=VS.length?(VS.length+' 个合集 · 共 '+VS.reduce(function(n,s){return n+(s.items||[]).length},0)+' 讲'):'未导入';
+  renderVLec();
+}
+function renderVLec(){
+  const box=$('vlist');if(!box)return;const s=vCur();
+  if(!s){box.innerHTML='<div class="empty">还没有网课包。<br>点「导入网课包」。</div>';const d=$('vdoc');if(d)d.innerHTML='<div class="wrap"><div class="empty">左边选一讲。</div></div>';return}
+  box.innerHTML='';
+  s.items.forEach(function(l,i){
+    const d=document.createElement('div');d.className='vlec'+(VLEC===i?' on':'');
+    d.innerHTML='<div class="vt"><span class="vst s'+(l.st||0)+'" title="点一下切换状态">'+VSTN[l.st||0]+'</span><span class="vn">'+esc(l.t)+'</span></div>'
+      +'<div class="vm">'+(l.dur?'<span>'+esc(l.dur)+'</span>':'')
+      +(l.u?'<a href="'+esc(l.u)+'" target="_blank" rel="noopener">打开视频</a>':'')
+      +(l.doc?'<span>'+Math.round(l.doc.length/1000)+'K 字讲义</span>':'<span style="color:#BA7517">无讲义</span>')+'</div>';
+    d.querySelector('.vst').onclick=function(e){e.stopPropagation();const it=vCur().items[i];it.st=((it.st||0)+1)%3;VDB.put(vCur());renderVLec()};
+    d.onclick=function(){VLEC=i;renderVLec();showLec()};
+    box.appendChild(d);
+  });
+}
+function showLec(){
+  const s=vCur(),box=$('vdoc');if(!box)return;
+  if(!s||VLEC===null||!s.items[VLEC]){box.innerHTML='<div class="wrap"><div class="empty">左边选一讲。</div></div>';return}
+  const l=s.items[VLEC];
+  let h='<h3>'+esc(l.t)+'</h3>'
+    +'<div id="vbar2"><button class="sm pri" data-a="drill">考我这一讲</button>'
+    +'<button class="sm" data-a="key">这讲的重点</button>'
+    +'<button class="sm" data-a="stuck">这节我哪没懂</button>'
+    +'<button class="sm" data-a="ctx">'+(VCTX&&VCTX.k===s.id+'#'+VLEC?'已带到课堂 ✓':'带到课堂当上下文')+'</button>'
+    +'<span class="sp" style="flex:1"></span>'
+    +(l.u?'<a class="sm" href="'+esc(l.u)+'" target="_blank" rel="noopener">跳到视频</a>':'')+'</div>';
+  if(!l.doc)h+='<div class="empty">这一讲没有讲义。<br>重新导入一次带字幕的网课包。</div>';
+  else{
+    l.doc.split(/\n+/).forEach(function(p){
+      p=p.trim();if(!p)return;
+      const m=p.match(/^\[(\d+):(\d+)(?::(\d+))?\]\s*/);
+      const tsm=m?m[0]:'';const body=m?p.slice(m[0].length):p;
+      const html=body.indexOf('$')>=0?md(body):esc(body);
+      if(m){
+        const sec=(+m[1])*60+(+m[2]);
+        const u2=(l.u&&l.u.indexOf('bilibili')>=0)?(l.u+(l.u.indexOf('?')>=0?'&':'?')+'t='+sec):'';
+        h+='<div class="seg">'+(u2?'<b onclick="window.open(\''+u2.replace(/'/g,"\\'")+'\',\'_blank\')">'+tsm+'</b>':'<b>'+tsm+'</b>')+html+'</div>';
+      }else h+='<div class="seg">'+html+'</div>';
+    });
+  }
+  box.innerHTML='<div class="wrap">'+h+'</div>';
+  box.querySelectorAll('#vbar2 [data-a]').forEach(function(b){b.onclick=function(){vAct(b.dataset.a)}});
+}
+function vDoc(){const s=vCur();if(!s||VLEC===null)return null;const l=s.items[VLEC];return l?{s:s,l:l,i:VLEC}:null}
+function vAct(a){
+  const d=vDoc();if(!d)return;
+  const head='【网课第'+(d.i+1)+'讲：'+d.l.t+'（合集：'+d.s.title+'）】\n下面是这一讲的讲义（来自字幕或语音转写，可能有识别错误，别当精确原文引用）：\n\n'
+    +(d.l.doc||'').slice(0,9000)+'\n\n';
+  if(a==='ctx'){
+    const k=d.s.id+'#'+d.i;
+    if(VCTX&&VCTX.k===k){VCTX=null;toast('已从课堂上下文移除')}
+    else{VCTX={k:k,t:d.l.t,doc:(d.l.doc||'').slice(0,9000)};toast('已带到课堂：'+d.l.t)}
+    showLec();return;
+  }
+  document.querySelector('[data-v="lesson"]').click();
+  if(a==='drill'){MODEK='drill';renderModes();ask(head+'按「陪练出题」模式考我这一讲：只出题，不给答案不提示。挑这讲里最容易混淆或最容易算错的点下手。')}
+  else if(a==='key')ask(head+'用三到五句话讲清这一讲的要点，并指出：哪一点最容易考、哪一点最容易错、哪一点讲义里其实没讲透。');
+  else if(a==='stuck')ask(head+'给我 3 个能检验"我是否真懂"的问题——不要复述定义，要我动手算或判断。一题一题来，我答完你再评价，不要一次全问完。');
+}
+async function vAnalyze(){
+  const s=vCur();if(!s){toast('先导入网课包');return}
+  const toc=CH.filter(function(c){return c.level===1}).map(function(c){return c.title}).slice(0,60);
+  let body='';
+  s.items.forEach(function(l,i){
+    body+='- 第'+(i+1)+'讲：'+l.t+(l.dur?'（'+l.dur+'）':'')
+      +(l.doc?('\n  摘要：'+String(l.doc).replace(/\[\d+:\d+(?::\d+)?\]/g,'').replace(/\s+/g,' ').slice(0,240)+'…'):'\n  （无讲义，信息不足）')+'\n';
+  });
+  const q='你现在要评估一个网课合集，并给我补充学习方向。\n\n【我的教材】'+getBkn()
+    +'\n【教材目录】'+(toc.length?toc.join(' / '):'（教材未载入，这项跳过）')
+    +'\n\n【合集】'+s.title+'，共 '+s.items.length+' 讲\n'+body
+    +'\n请输出四部分：\n1) **覆盖度对照表**：教材章节 | 状态（讲到了 / 点到为止 / 没讲）\n'
+    +'2) **这个合集的优点**：最多 3 条，要具体到哪几讲\n'
+    +'3) **缺点与风险**：最多 4 条——跳过的重点、只给结论没讲理由的地方、顺序不合理处、例题量够不够\n'
+    +'4) **补充学习方向**：按优先级列 5–8 条，每条写清「补什么 + 为什么 + 用教材哪一节补」\n\n'
+    +'规则：讲义是语音转写稿，可能有识别错误；信息不足的地方明确写「信息不足」，不要猜。不要为了凑齐条目而编造。';
+  document.querySelector('[data-v="lesson"]').click();
+  ask(q,{temp:0.4});
+}
+function vParse(text,fname){
+  let s=null;
+  try{
+    const j=JSON.parse(text);
+    if(j&&(j.items||j.title)){
+      s={id:newId(),title:j.title||fname||'网课',url:j.url||'',
+         items:(j.items||[]).map(function(x){return {t:x.t||x.title||'未命名',u:x.u||x.url||'',dur:x.dur||x.duration||'',st:x.st||0,doc:x.doc||x.text||''}})};
+    }
+  }catch(e){}
+  if(!s){
+    let title=fname||'网课',items=[],cur=null;
+    String(text).split(/\r?\n/).forEach(function(l){
+      if(/^#\s+/.test(l)){title=l.replace(/^#\s+/,'').trim();return}
+      if(/^##\s+/.test(l)){if(cur)items.push(cur);cur={t:l.replace(/^##\s+/,'').trim(),u:'',dur:'',st:0,doc:''};return}
+      if(cur){
+        const m=l.match(/(https?:\/\/\S+)/);if(m&&!cur.u)cur.u=m[1];
+        cur.doc+=(cur.doc?'\n':'')+l;
+      }
+    });
+    if(cur)items.push(cur);
+    s={id:newId(),title:title,url:'',items:items};
+  }
+  if(!s.items.length){toast('没解析出分讲，检查文件格式');return}
+  VDB.put(s).then(vLoad).then(function(){VSET=s.id;VLEC=0;renderVSets();showLec();
+    const no=s.items.filter(function(x){return !x.doc}).length;
+    toast('已导入：'+s.title+'（'+s.items.length+' 讲'+(no?('，'+no+' 讲无讲义'):'')+'）')});
+}
+
+/* ---------- 上课 ---------- */
+function renderChips(){
+  const b=$('ctxchips');b.innerHTML='';
+  CTX.forEach(function(id){const c=CH.filter(function(x){return x.id===id})[0];
+    const s=document.createElement('span');s.className='chip';s.innerHTML=esc(c?c.title.slice(0,14):id)+'<b>×</b>';
+    s.querySelector('b').onclick=function(){toggleCtx(id)};b.appendChild(s)});
+}
+function renderPs(){
+  ['pbox','pbox2'].forEach(function(box){
+    const b=$(box);b.innerHTML='';
+    pKeys().forEach(function(k){
+      const p=document.createElement('span');p.className='pill'+(who===k?' on':'');p.textContent=getP(k).n;
+      p.onclick=function(){who=k;LS.s('who',k);$('sys').value=PM[k]||getP(k).p;renderPs();reloadMsgs()};
+      b.appendChild(p);
+    });
+  });
+  $('pcur').textContent='当前：'+getP(who).n;
+  renderModes();
+  renderMyPs();
+}
+/* 模式：与人格正交的「这一轮干什么」 */
+function curMode(){return MODE[MODEK]||MODE.teach}
+function renderModes(){
+  ['mbox','mbox2'].forEach(function(box){
+    const b=$(box);if(!b)return;b.innerHTML='';
+    Object.keys(MODE).forEach(function(k){
+      const p=document.createElement('span');p.className='pill'+(MODEK===k?' on':'');p.textContent=MODE[k].n;
+      p.title=MODE[k].p.split('\n')[0].replace(/^【[^\n]*】/,'');
+      p.onclick=function(){MODEK=k;LS.s('mode',k);renderModes();const i=$('in');if(i)i.placeholder=MODE[k].ph;toast('模式：'+MODE[k].n)};
+      b.appendChild(p);
+    });
+    const pv=$('in');if(pv)pv.placeholder=curMode().ph;
+  });
+  const mcur=$('mcur');if(mcur)mcur.textContent=curMode().n;
+}
+function renderMyPs(){
+  const b=$('myplist');if(!b)return;
+  b.innerHTML='';
+  const ks=Object.keys(MYP);
+  if(!ks.length){b.innerHTML='<span style="font-size:12px;color:var(--tx3)">还没有自定义人设。在下面填一个名字和提示词，加完之后它就会出现在上面那排。</span>';return}
+  ks.forEach(function(k){
+    const s=document.createElement('span');s.className='chip';
+    s.innerHTML=esc(MYP[k].n)+' <b>×</b>';
+    s.onclick=function(e){if(e.target.tagName==='B')return;
+      $('mpn').value=MYP[k].n;$('mpp').value=MYP[k].p;$('mpk').value=k;toast('已载入编辑：'+MYP[k].n)};
+    s.querySelector('b').onclick=function(){
+      if(!confirm('删除人设「'+MYP[k].n+'」？'))return;
+      delete MYP[k];LS.s('myps',MYP);delete PM[k];LS.s('pm',PM);
+      if(who===k){who='cauchy';LS.s('who',who)}
+      renderPs();$('sys').value=PM[who]||getP(who).p;toast('已删除')};
+    b.appendChild(s);
+  });
+}
+function curName(){return getP(who).n}
+function addMsg(role,txt){
+  const d=document.createElement('div');d.className='msg'+(role==='user'?' me':'');
+  d.innerHTML='<div class="who">'+(role==='user'?'我':curName())+'</div><div class="body">'+md(txt)+'</div>';
+  if(role==='assistant'){
+    d.__txt=txt;
+    const w=d.querySelector('.who');
+    const b=document.createElement('button');b.type='button';b.className='say';b.textContent='🔊';b.title='朗读这条回复';
+    b.onclick=function(e){e.stopPropagation();const t=this.closest('.msg').__txt;if(t)speak(t)};
+    w.appendChild(b);
+  }
+  $('mw').appendChild(d);$('msgs').scrollTop=$('msgs').scrollHeight;
+  return d.querySelector('.body');
+}
+function reloadMsgs(){$('mw').innerHTML='';MS.forEach(function(m){addMsg(m.r,m.c)})}
+function sysMsg(){
+  return ($('sys').value||getP(who).p)
+    +'\n\n'+ME
+    +'\n\n'+(PACE[PA]||PACE.mid)
+    +'\n\n【输出格式硬要求】'
+    +'数学式一律用 $行内$ 或 $$独立成行$$ 包裹，禁止输出裸露的 LaTeX 命令，禁止用 \\( \\) 或 \\[ \\]；'
+    +'第一次出现某个符号时必须顺带说明它念什么、表示什么（例如“ε（epsilon，任意给定的小正数）”）；'
+    +'能用一句话说清的地方不要堆符号；关键推导分步写，每步用文字点明在做什么。'
+    +'\n\n【教材依据】这门课当前使用：'+getBkn()+'。涉及定理表述、符号约定、例题编号时以该教材为准。'
+    +(COURSE&&COURSE!=='__free'?'\n本轮所属教材文件：'+COURSE:'')
+    /* 模式放最后：它决定本轮行为，要求高于人格的默认习惯 */
+    +'\n\n'+curMode().p
+    +(MODEK!=='teach'?'\n\n（注意：以上模式要求与人格的一贯风格冲突时，以模式要求为准。）':'');
+}
+async function ask(text,opt){
+  opt=opt||{};
+  const key=$('key').value.trim(),base=$('base').value.trim();
+  if(!key||!base){alert('先到「设置」填接口地址和 API Key，点保存。');return}
+  const pack=[{role:'system',content:sysMsg()+'\n\n'+ctxText()}];
+  MS.forEach(function(m){pack.push({role:m.r==='user'?'user':'assistant',content:m.c})});
+  pack.push({role:'user',content:text});
+  if(!opt.silent)addMsg('user',text);
+  const el=addMsg('assistant','<span style="color:#888780">…</span>');
+  MS.push({r:'user',c:text});saveMs();
+  $('stop').disabled=false;ctrl=new AbortController();
+  try{
+    const r=await fetch(base.replace(/\/+$/,'')+'/chat/completions',{method:'POST',signal:ctrl.signal,
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:$('model').value.trim(),messages:pack,temperature:opt.temp||0.6,stream:true})});
+    if(!r.ok){let m=r.status+' '+r.statusText;try{const j=await r.json();m+=' '+(j.error&&j.error.message?j.error.message:JSON.stringify(j).slice(0,150))}catch(e){}
+      throw new Error(m)}
+    const rd=r.body.getReader(),dc=new TextDecoder();let buf='',full='';
+    for(;;){const o=await rd.read();if(o.done)break;
+      buf+=dc.decode(o.value,{stream:true});const ls=buf.split('\n');buf=ls.pop();
+      for(const l of ls){if(!l.startsWith('data: '))continue;const p=l.slice(6).trim();if(p==='[DONE]')continue;
+        try{const j=JSON.parse(p);const dd=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content;
+          if(dd){full+=dd;el.innerHTML=md(full);$('msgs').scrollTop=$('msgs').scrollHeight}
+          if(j.usage){ST.i+=j.usage.prompt_tokens||0;ST.o+=j.usage.completion_tokens||0;LS.s('stats',ST)}}catch(e){}}}
+    if(!full){full='（没有返回内容，检查接口地址与模型名）';el.innerHTML=md(full)}
+    MS.push({r:'a',c:full});saveMs();bump('m');updTok();
+    el.parentNode.__txt=full;
+    if(TTS&&!opt.card)speak(full);
+    if(opt.card)return full;
+  }catch(e){
+    if(String(e.name)==='AbortError'){el.innerHTML=md(full||'（已停止）');return}
+    el.innerHTML='<span style="color:#A32D2D">出错了：'+esc(String(e.message||e))+'</span>';
+    MS.pop();saveMs();return;
+  }finally{$('stop').disabled=true}
+}
+function updTok(){
+  const v=PROV[$('prov').value]&&PROV[$('prov').value].io||[0,0];
+  const c=(ST.i/1e6)*v[0]+(ST.o/1e6)*v[1];
+  $('tok').textContent=Math.round((ST.i+ST.o)/1000)+'K token'+(v[0]?' · 约 ¥'+c.toFixed(2):'');
+  renderFoot();
+}
+function toast(t){let d=$('toast');if(!d){d=document.createElement('div');d.id='toast';
+  d.style.cssText='position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:99;background:#2c2c2a;color:#fff;padding:8px 14px;border-radius:8px;font-size:12.5px;opacity:.95';
+  document.body.appendChild(d)}d.textContent=t;d.style.display='block';clearTimeout(d._t);d._t=setTimeout(function(){d.style.display='none'},2400)}
+
+/* ---------- 语音（对标 Socratopia：你说 · 伙伴答） ---------- */
+const VOICEP={
+  cauchy:{rate:1,pitch:0.9}, leibniz:{rate:1.1,pitch:1.05}, newton:{rate:1,pitch:0.95},
+  aemeath:{rate:1.15,pitch:1.2}, verina:{rate:0.9,pitch:1.1}, changli:{rate:1,pitch:0.95},
+  xiangliyao:{rate:1,pitch:1}, shorekeeper:{rate:0.85,pitch:0.9}
+};
+let VOICES=[];
+function loadVoices(){try{VOICES=speechSynthesis.getVoices();renderVoiceName()}catch(e){}}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+function pickVoice(){
+  if(!VOICES.length){try{VOICES=speechSynthesis.getVoices()}catch(e){}}
+  if(!VOICES.length)return null;
+  const norm=function(l){return String(l||'').toLowerCase().replace('_','-')};
+  let cand=[];
+  ['zh-cn','zh-hans','cmn','zh'].forEach(function(t){cand=cand.concat(VOICES.filter(function(v){return norm(v.lang).indexOf(t)>=0}))});
+  if(!cand.length)cand=VOICES.filter(function(v){return /zh|cmn|chinese|普通话|中文/.test(v.name+v.lang)});
+  if(!cand.length)return null;
+  const nat=cand.filter(function(v){return /natural|neural|online/i.test(v.name)});
+  const pool=(nat.length?nat:cand);
+  const fem=pool.filter(function(v){return /huihui|xiaoxiao|yaoyao|xiaoyi|晓晓|慧慧|婷婷/i.test(v.name)});
+  return (fem.length?fem:pool)[0];
+}
+function renderVoiceName(){
+  const el=$('voicename');if(!el)return;
+  const v=pickVoice();
+  el.textContent=v?('当前朗读音色：'+v.name+'（'+v.lang+'）'):'未检测到系统中文音色，会用浏览器默认音色朗读。';
+}
+function speechText(t){
+  let s=String(t||'');
+  s=s.replace(/```[\s\S]*?```/g,' ').replace(/`[^`\n]*`/g,' ');
+  s=s.replace(/\$\$[\s\S]+?\$\$/g,' ').replace(/\$[^$\n]+\$/g,' ');
+  s=s.replace(/\\\([\s\S]*?\\\)/g,' ').replace(/\\\[[\s\S]*?\\\]/g,' ');
+  s=s.replace(/!\[[^\]]*\]\([^)]*\)/g,' ').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1');
+  s=s.replace(/<[^>]+>/g,' ');
+  s=s.replace(/^#{1,6}\s*/gm,'').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*([^*]+)\*/g,'$1')
+   .replace(/_([^_]+)_/g,'$1').replace(/^>\s?/gm,'').replace(/^\s*[-*+]\s+/gm,'').replace(/\|/g,' ');
+  s=s.replace(/\\[A-Za-z]+/g,' ').replace(/[{}^_\\]/g,' ').replace(/\s+/g,' ').trim();
+  return s;
+}
+function speak(txt){
+  if(!('speechSynthesis' in window)){toast('此浏览器不支持语音朗读');return}
+  try{speechSynthesis.cancel()}catch(e){}
+  const u=new SpeechSynthesisUtterance(speechText(txt));
+  const v=pickVoice();if(v)u.voice=v;
+  u.lang='zh-CN';
+  const prof=VOICEP[who]||{rate:1,pitch:1};
+  u.rate=Math.max(0.5,Math.min(2,(TTSRATE||1)*prof.rate));
+  u.pitch=Math.max(0,Math.min(2,prof.pitch));
+  u.volume=1;
+  speechSynthesis.speak(u);
+  return u;
+}
+function renderTts(){const b=$('tts');if(b){b.classList.toggle('on',!!TTS);b.textContent=TTS?'🔊 朗读':'🔇 朗读'}}
+function updTts(){const a=$('ttsauto');if(a)a.value=TTS?'1':'0'}
+/* 语音输入（SpeechRecognition） */
+let REC=null, RECON=false;
+function renderMic(){
+  const b=$('mic');if(!b)return;
+  b.classList.toggle('on',RECON);
+  b.textContent=RECON?'■':'🎙';
+  b.title=RECON?'点一下停止':'语音输入（点一下开始说，说完自动停下）';
+}
+function startVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast('此浏览器不支持语音输入。换 Chrome / Edge，或用系统听写（Win 键 + H）。');return}
+  if(RECON){try{REC.stop()}catch(e){}return}
+  REC=new SR();
+  REC.lang='zh-CN';REC.interimResults=true;REC.continuous=false;
+  REC.onstart=function(){RECON=true;renderMic();$('micst').textContent='在听…'};
+  REC.onend=function(){RECON=false;renderMic();$('micst').textContent=''};
+  REC.onerror=function(e){RECON=false;renderMic();$('micst').textContent='';
+    if(e.error==='not-allowed'||e.error==='service-not-allowed')toast('麦克风权限被拒绝，请在浏览器地址栏允许麦克风');
+    else if(e.error!=='aborted'&&e.error!=='no-speech')toast('语音识别失败：'+e.error)};
+  REC.onresult=function(e){
+    let fin='',interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)fin+=r[0].transcript;else interim+=r[0].transcript}
+    if(interim)$('micst').textContent=interim;
+    if(fin){const ta=$('in');ta.value=(ta.value.trim()?ta.value+'\n':'')+fin;ta.focus();$('micst').textContent=''}
+  };
+  try{REC.start()}catch(e){toast('无法启动语音识别：'+String(e.message||e))}
+}
+/* 下课小结：一份小结 + 自动把这轮的卡点做成闪卡 */
+async function lessonClose(){
+  if(!MS.length){alert('先聊几句再下课。');return}
+  const b=$('close');if(b)b.disabled=true;
+  try{
+    await ask('我们今天的课先到这里。请你做一份「下课小结」，分三块：\n1. 【今天学会了】3–5 条要点，每条一句话，用我自己的理解说；\n2. 【还不太扎实】诚实指出我哪些点其实没懂、只是跟着点头了；\n3. 【下次从哪接】一句话说清下次从哪里继续。\n不要展开新讲解，只做小结。');
+    await new Promise(function(r){setTimeout(r,400)});
+    const g=$('gen');if(g)g.click();
+  }catch(e){}finally{if(b)b.disabled=false}
+}
+$('mic').onclick=startVoice;
+$('tts').onclick=function(){TTS=TTS?0:1;LS.s('tts',TTS);renderTts();updTts();toast(TTS?'已开启导师朗读':'已关闭导师朗读')};
+$('ttsauto').onchange=function(){TTS=$('ttsauto').value==='1'?1:0;LS.s('tts',TTS);renderTts()};
+$('ttsrate').onchange=function(){TTSRATE=parseFloat($('ttsrate').value)||1;LS.s('ttsrate',TTSRATE)};
+$('close').onclick=lessonClose;
+
+/* ---------- 闪卡 ---------- */
+const IV=[5,60*12,60*24,60*24*2,60*24*4,60*24*8];
+/* 闪卡按教材隔离：c 字段记来源课程；旧卡无 c 视为通用，各课程都可见 */
+function cardList(){return CD.filter(function(c){return !c.c||c.c===COURSE})}
+function dueList(){const n=Date.now();return cardList().filter(function(c){return (c.due||0)<=n})}
+function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function addCards(qas){
+  const n=Date.now();let k=0;
+  qas.forEach(function(p){if(!p.q)return;CD.push({id:newId(),q:p.q,a:p.a||'',box:0,due:n,rep:0,c:COURSE});k++});
+  LS.s('cards',CD);renderCards();return k;
+}
+function parseCards(t){
+  const out=[];String(t).split(/^---+$/m).forEach(function(b){
+    const q=/Q[:：]\s*([\s\S]*?)\n\s*A[:：]\s*([\s\S]*)/.exec(b);
+    if(q)out.push({q:q[1].trim(),a:q[2].trim().split(/\n(?=Q[:：])/)[0].trim()});
+  });
+  if(!out.length){String(t).split(/\n(?=##?\s*问)/).forEach(function(b){})}
+  return out;
+}
+function learnImport(t){
+  const out=[];const blocks=String(t).split(/\n\s*---+\s*\n/);
+  blocks.forEach(function(b){
+    let q=null,a=null;
+    const m1=/^#+\s*(.+)$/m.exec(b),m2=/答案\s*[:：]?\s*\n([\s\S]*)$/.exec(b);
+    const qm=/(?:^|\n)\s*(?:问题|Q|正面)\s*[:：]\s*([\s\S]*?)(?=\n\s*(?:答案|A|背面)\s*[:：])/.exec(b);
+    const am=/(?:^|\n)\s*(?:答案|A|背面)\s*[:：]\s*([\s\S]*)$/.exec(b);
+    if(qm&&am){q=qm[1].trim();a=am[1].trim()}
+    if(q)out.push({q:q,a:a||''});
+  });
+  return out;
+}
+function renderCards(){
+  const d=dueList(),CL=cardList();$('due').textContent='待复习 '+d.length+' / 共 '+CL.length+' · '+cname(COURSE);
+  const box=$('car');
+  if(rev){
+    const c=CD.filter(function(x){return x.id===rev})[0];
+    if(!c){rev=null;revBack=false;return renderCards()}
+    box.innerHTML='<div class="face" style="position:relative"><span class="lbl">问题</span><div>'+md(c.q)+'</div></div>'
+      +(revBack?'<div class="face a" style="position:relative;margin-top:10px"><span class="lbl">答案</span><div>'+md(c.a)+'</div></div>':'')
+      +'<div class="cacts">'+(revBack
+        ?'<button class="sm" id="cf">忘了</button><button class="sm pri" id="ck2">记得</button>'
+        :'<button class="sm pri" id="cf2">看答案</button>')+'</div>';
+    const f=$('cf2');if(f)f.onclick=function(){revBack=true;renderCards()};
+    const g=$('cf');if(g)g.onclick=function(){grade(false)};
+    const h=$('ck2');if(h)h.onclick=function(){grade(true)};
+  }else{
+    box.innerHTML='<div class="empty">'+(CL.length?'点「开始复习」进入今日卡组。':'「'+cname(COURSE)+'」还没有闪卡。<br>上课时点「把本轮变闪卡」，或在这里手动添加。')+'</div>';
+  }
+  const lst=$('clist');lst.innerHTML='';
+  CL.slice().sort(function(a,b){return (a.due||0)-(b.due||0)}).forEach(function(c){
+    const r=document.createElement('div');r.className='crow';
+    r.innerHTML='<div class="q">'+esc(c.q.slice(0,90))+'</div><div class="a">'+esc(String(c.a).slice(0,110))+'</div>'
+      +'<div class="m"><span>第 '+(c.box+1)+' 格</span><span>'+(new Date(c.due||0).toLocaleDateString())+' 到期</span>'
+      +(c.c&&c.c!==COURSE?'':'')
+      +'<span style="cursor:pointer;color:#A32D2D" data-x="'+c.id+'">删除</span></div>';
+    r.querySelector('[data-x]').onclick=function(){CD=CD.filter(function(x){return x.id!==c.id});LS.s('cards',CD);renderCards()};
+    lst.appendChild(r);
+  });
+  renderFoot();
+}
+let revBack=false;
+function grade(ok){
+  const c=cardList().filter(function(x){return x.id===rev})[0];if(!c)return;
+  c.box=ok?Math.min(5,(c.box||0)+1):0;
+  c.rep=(c.rep||0)+1;
+  const mins=IV[c.box];
+  c.due=Date.now()+mins*60000;
+  LS.s('cards',CD);bump('c');revBack=false;
+  const d=dueList();rev=d.length?d[0].id:null;renderCards();
+}
+
+/* ---------- 进度 ---------- */
+function renderProg(){
+  const files={};CH.forEach(function(c){(files[c.file]=files[c.file]||[]).push(c)});
+  let h='';
+  Object.keys(files).forEach(function(f){
+    h+='<div class="ptab"><table><tr><th style="width:40%">'+esc(f.replace('.md',''))+'</th><th>状态</th><th style="width:22%">上下文</th></tr>';
+    files[f].forEach(function(c){
+      const on=CTX.indexOf(c.id)>=0;
+      h+='<tr><td>'+esc(c.title)+'</td><td><select class="sm2" data-p="'+c.id+'"><option value="0"'+(PR[c.id]===0?' selected':'')+'>未学</option>'
+        +'<option value="1"'+((PR[c.id]===1||PR[c.id]===undefined)?' selected':'')+'>在学</option>'
+        +'<option value="2"'+(PR[c.id]===2?' selected':'')+'>已掌握</option></select></td>'
+        +'<td><input type="checkbox" class="ck" data-c="'+c.id+'"'+(on?' checked':'')+'></td></tr>';
+    });
+    h+='</table></div>';
+  });
+  $('ptable').innerHTML=h||'<div class="empty">还没有教材。</div>';
+  $('ptable').querySelectorAll('[data-p]').forEach(function(s){s.onchange=function(){PR[s.dataset.p]=+s.value;saveCourseData();renderBook()}});
+  $('ptable').querySelectorAll('[data-c]').forEach(function(s){s.onchange=function(){toggleCtx(s.dataset.c)}});
+  const done=CH.filter(function(c){return PR[c.id]===2}).length;
+  const doing=CH.filter(function(c){return PR[c.id]===1}).length;
+  const pv2=PROV[pv.value]||{};const v=pv2.io||[0,0];
+  const cost=(ST.i/1e6)*v[0]+(ST.o/1e6)*v[1];
+  $('statc').innerHTML=
+    '<div class="statc"><div class="n">'+streak()+'</div><div class="l">连续学习天数</div></div>'+
+    '<div class="statc"><div class="n">'+done+'</div><div class="l">已掌握节数 / '+CH.length+'</div></div>'+
+    '<div class="statc"><div class="n">'+doing+'</div><div class="l">在学</div></div>'+
+    '<div class="statc"><div class="n">'+cardList().length+'</div><div class="l">闪卡</div></div>'+
+    '<div class="statc"><div class="n">'+((ST.i+ST.o)/1000).toFixed(0)+'K</div><div class="l">累计 token</div></div>'+
+    '<div class="statc"><div class="n">¥'+cost.toFixed(2)+'</div><div class="l">累计花费估算</div></div>';
+}
+function renderFoot(){
+  const d=dueList().length;
+  $('foot').innerHTML='<div>今天：'+(ST.days[today()]?(ST.days[today()].m||0)+' 轮问答':'还没开课')+'</div>'
+    +'<div>闪卡到期：'+d+'</div>';
+}
+
+/* ---------- 绑定 ---------- */
+const pv=$('prov');
+Object.keys(PROV).forEach(function(k){const o=document.createElement('option');o.value=k;o.textContent=PROV[k].n;pv.appendChild(o)});
+pv.onchange=function(){const v=PROV[pv.value];$('base').value=v.b;$('model').value=v.m;updTok()};
+if(CFG){pv.value=CFG.prov||'zhipu';$('base').value=CFG.base||'';$('model').value=CFG.model||'';$('key').value=CFG.key||''}
+else{pv.value='zhipu';$('base').value=PROV.zhipu.b;$('model').value=PROV.zhipu.m}
+$('save').onclick=function(){LS.s('cfg',{prov:pv.value,base:$('base').value,model:$('model').value,key:$('key').value});toast('已保存')};
+$('test').onclick=async function(){
+  $('tst').textContent='测试中…';$('tst').className='';
+  try{
+    const r=await fetch($('base').value.replace(/\/+$/,'')+'/chat/completions',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+$('key').value.trim()},
+      body:JSON.stringify({model:$('model').value.trim(),messages:[{role:'user',content:'只回复两个字：正常'}],stream:false,max_tokens:8})});
+    if(!r.ok){let m=r.status+' '+r.statusText;try{const j=await r.json();m+=' '+(j.error&&j.error.message?j.error.message:'')}catch(e){}throw new Error(m)}
+    $('tst').textContent='连接正常';$('tst').className='okmsg';
+  }catch(e){$('tst').textContent='失败：'+String(e.message||e).slice(0,80);$('tst').className='warn'}
+};
+$('sys').value=PM[who]||getP(who).p;
+$('bkn').value=getBkn();
+$('svb').onclick=function(){setBkn($('bkn').value.trim()||BKDEF);toast('已记下（作用于课程：'+cname(COURSE)+'）')};
+$('pace').value=PA;
+$('pace').onchange=function(){PA=$('pace').value;LS.s('pace',PA);toast('节奏已切换')};
+$('course').onchange=function(){switchCourse(this.value)};
+$('sys').oninput=function(){PM[who]=$('sys').value;LS.s('pm',PM)};
+$('rstd').onclick=function(){delete PM[who];LS.s('pm',PM);$('sys').value=getP(who).p;toast('已恢复默认')};
+
+/* ---------- 自定义人设 ---------- */
+$('mpsave').onclick=function(){
+  const n=$('mpn').value.trim(),pp=$('mpp').value.trim();
+  if(!n||!pp){alert('名字和提示词都要填。');return}
+  let k=$('mpk').value;
+  if(!k){k='my_'+Date.now().toString(36)}
+  MYP[k]={n:n,p:pp};LS.s('myps',MYP);
+  who=k;LS.s('who',who);
+  renderPs();$('sys').value=pp;PM[who]=pp;LS.s('pm',PM);
+  $('mpk').value=k;toast('已添加并切换到：'+n);
+};
+$('mpnew').onclick=function(){$('mpn').value='';$('mpp').value='';$('mpk').value='';toast('已清空，可以填新的')};
+$('mpfill').onclick=function(){
+  $('mpp').value=['你是【角色名】，【一句话说明这个角色是谁、什么处境】。',
+    '',
+    '【你怎么说话】',
+    '- 语气、句式习惯、口头禅',
+    '- 一次说多长',
+    '- 喜欢用什么打比方',
+    '- 绝不会说的话',
+    '',
+    '【招牌提问】',
+    '- 写 2–3 句这个角色会反复问的话，用引号原样写出来',
+    '',
+    '【追问风格】',
+    '- 开场怎么问',
+    '- 学习者答不上时怎么拆',
+    '- 学习者答错时怎么处理',
+    '- 学习者烦躁时怎么反应',
+    '',
+    '【教学原则】',
+    '- 3–4 条这个角色信奉的原则',
+    '- 特别要注意的一条禁忌',
+    '',
+    '最后一定加上：不要跳出角色自称 AI；不要长篇独白，说完就问。'].join('\n');
+  toast('已填入模板，改成你想要的样子');
+};
+$('meth').value=ME;
+$('svm').onclick=function(){ME=$('meth').value;LS.s('meth.v2',ME);toast('规则已保存')};
+
+/* ---------- 符号面板 ---------- */
+const SYMS=[
+ {k:'base',t:'常用运算',s:['±','×','÷','≠','≈','≡','≤','≥','≪','≫','∝','∞','·','°','′','√','∛','→','←','↔','⇒','⇔','∀','∃','¬','∧','∨','∈','∉','⊂','⊆','∪','∩','∅','∣','∥','⊥','∠','≅','∼','⊕','∮','∬','∭','∑','∏','∫','∂','∇']},
+ {k:'greek',t:'希腊字母',s:['α','β','γ','δ','ε','ζ','η','θ','ι','κ','λ','μ','ν','ξ','π','ρ','σ','τ','υ','φ','χ','ψ','ω','Γ','Δ','Θ','Λ','Ξ','Π','Σ','Φ','Ψ','Ω']},
+ {k:'tmpl',t:'公式模板',tm:[
+   ['分式','$\\frac{a}{b}$'],['根号','$\\sqrt{x}$'],['n次根','$\\sqrt[n]{x}$'],
+   ['上标','$x^{n}$'],['下标','$x_{i}$'],['求和','$\\sum_{i=1}^{n}$'],
+   ['定积分','$\\int_{a}^{b}$'],['极限','$\\lim_{x \\to 0}$'],
+   ['导数','$\\frac{\\mathrm{d}y}{\\mathrm{d}x}$'],['偏导','$\\frac{\\partial f}{\\partial x}$'],
+   ['高阶导','$\\frac{\\mathrm{d}^{2}y}{\\mathrm{d}x^{2}}$'],['梯度','$\\nabla f$'],
+   ['泰勒','$f(x)=\\sum_{k=0}^{n}\\frac{f^{(k)}(x_0)}{k!}(x-x_0)^{k}$'],
+   ['向量','$\\vec{a}$'],['点乘叉乘','$\\vec{a}\\cdot\\vec{b},\\ \\vec{a}\\times\\vec{b}$'],
+   ['绝对值','$\\left| x \\right|$'],['范数','$\\left\\| x \\right\\|$'],
+   ['矩阵','$\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}$'],
+   ['行列式','$\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix}$'],
+   ['方程组','$\\begin{cases} x+y=1 \\\\ x-y=0 \\end{cases}$'],
+   ['多行对齐','$\\begin{aligned} a&=b \\\\ c&=d \\end{aligned}$'],
+   ['推论符号','$\\because\\quad\\therefore\\quad\\Rightarrow$'],
+   ['常用希腊','$\\varepsilon,\\ \\delta,\\ \\theta,\\ \\lambda,\\ \\omega$'],
+   ['无穷区间','$[a,+\\infty)$'],['属于','$x\\in[a,b]$'],['映射','$f:A\\to B$']
+ ]}
+];
+let SYMA=LS.g('syma',1), SYMT=LS.g('symt','base');
+function insAt(str){
+  const ta=$('in'),s=ta.value,a=ta.selectionStart,b=ta.selectionEnd;
+  ta.value=s.slice(0,a)+str+s.slice(b);
+  let pos=a+str.length;
+  const i=str.indexOf('{');
+  if(i>=0)pos=a+i+1;
+  ta.setSelectionRange(pos,pos);ta.focus();
+}
+function renderSym(){
+  const tw=$('symtabs'),gw=$('symgrids');
+  tw.innerHTML='';gw.innerHTML='';
+  $('symtoggle').className='sm'+(SYMA?' pri':'');
+  if(!SYMA){tw.style.display='none';return}
+  tw.style.display='flex';
+  SYMS.forEach(function(g){
+    const b=document.createElement('button');b.className='symbtn w'+(SYMT===g.k?' on':'');b.textContent=g.t;
+    b.onclick=function(){SYMT=g.k;LS.s('symt',SYMT);renderSym()};
+    tw.appendChild(b);
+  });
+  const cur=SYMS.filter(function(x){return x.k===SYMT})[0]||SYMS[0];
+  const box=document.createElement('div');box.className='symgrid on';
+  const items=cur.tm||cur.s.map(function(c){return[c,c]});
+  items.forEach(function(it){
+    const b=document.createElement('button');b.className='symbtn'+(it[1].length>2?' w':'');
+    b.textContent=it[0];b.title=it[1];
+    b.onclick=function(){insAt(it[1])};
+    box.appendChild(b);
+  });
+  gw.appendChild(box);
+}
+$('symtoggle').onclick=function(){SYMA=SYMA?0:1;LS.s('syma',SYMA);renderSym()};
+
+$('send').onclick=function(){const t=$('in').value.trim();if(!t)return;$('in').value='';ask(t)};
+$('in').addEventListener('keydown',function(e){
+  if(e.ctrlKey&&e.key==='Enter'){$('send').click();return}
+  if((e.ctrlKey||e.metaKey)&&(e.key==='m'||e.key==='M')){
+    e.preventDefault();
+    const ta=this,s=ta.value,a=ta.selectionStart,b=ta.selectionEnd;
+    if(b>a){ta.value=s.slice(0,a)+'$'+s.slice(a,b)+'$'+s.slice(b);ta.setSelectionRange(a+1,b+1)}
+    else{ta.value=s.slice(0,a)+'$$'+s.slice(a);ta.setSelectionRange(a+1,a+1)}
+    ta.focus();
+  }
+});
+$('stop').onclick=function(){if(ctrl)ctrl.abort()};
+$('start').onclick=function(){
+  const bs=[];CTX.forEach(function(id){const c=CH.filter(function(x){return x.id===id})[0];if(c&&bs.indexOf(c.file)<0)bs.push(c.file)});
+  const t=CTX.map(function(id){const c=CH.filter(function(x){return x.id===id})[0];return c?c.title:''}).filter(Boolean).join('、');
+  let head;
+  if(t)head='我们现在学习'+(bs.length===1?'《'+noExt(bs[0])+'》':'')+'中的〈'+t+'〉。';
+  else head='我们开始今天的课，使用教材：'+getBkn()+'。';
+  head+=MODEK==='teach'?'按你的方式开场：不要直接讲解，先问一个能暴露我是否真懂的问题；我的回答若含糊，请追问量化；我若三轮答不上，请降低难度换更基础的问题。涉及定理表述与符号时以该教材为准。'
+    :'（本轮模式：'+curMode().n+'，严格按该模式的规则执行，不要退回成讲解。）';
+};
+$('gen').onclick=async function(){
+  if(!MS.length){alert('先聊几句。');return}
+  const r=await ask('请基于我们刚才讨论的内容，生成 6–10 张复习闪卡，只覆盖真正卡住过我的点。严格按下面格式，每张之间用单独一行的 --- 分隔，不要任何多余说明：\nQ: 一句话问题\nA: 简洁答案（不超过 80 字）',{card:true,temp:0.4});
+  if(r){const k=addCards(parseCards(r));toast(k?('已新增 '+k+' 张闪卡'):'没能解析出闪卡，可手动添加');if(k)document.querySelector('[data-v="card"]').click()}
+};
+$('exp2').onclick=function(){
+  if(!MS.length){alert('没有内容');return}
+  dl('高数笔记_'+today()+'.md','# 高数学习笔记 '+today()+'\n\n导师：'+curName()+'\n\n'
+    +MS.map(function(m){return (m.r==='user'?'## 我\n':'## '+curName()+'\n')+m.c}).join('\n\n---\n\n'));
+};
+$('clr').onclick=function(){if(!confirm('清空「'+cname(COURSE)+'」的会话？其他教材的对话不受影响，闪卡和进度也不受影响。'))return;MS=[];saveMs();$('mw').innerHTML=''};
+$('newc').onclick=function(){
+  const q=prompt('正面（问题）'),a=q===null?null:prompt('背面（答案）');
+  if(q){addCards([{q:q,a:a||''}]);toast('已添加')}
+};
+$('review').onclick=function(){const d=dueList();if(!d.length){toast('今天没有到期的卡');return}rev=d[0].id;revBack=false;renderCards()};
+$('expc').onclick=function(){dl('闪卡_'+cname(COURSE)+'_'+today()+'.md',cardList().map(function(c){return '问题：'+c.q+'\n答案：'+c.a+'\n'}).join('\n---\n\n'))};
+$('imp').onclick=function(){$('cfile').click()};
+$('cfile').onchange=async function(e){
+  const f=e.target.files[0];if(!f)return;
+  const k=addCards(learnImport(await f.text()));toast('导入 '+k+' 张');e.target.value='';
+};
+$('pickfile').onclick=function(){$('file').click()};
+/* 网课 */
+$('vimp').onclick=function(){$('vfile').click()};
+$('vfile').onchange=async function(){
+  const f=$('vfile').files[0];if(!f)return;
+  try{vParse(await f.text(),f.name.replace(/\.(json|md|markdown|txt)$/i,''))}catch(e){toast('读取失败：'+e.message)}
+  $('vfile').value='';
+};
+$('vset').onchange=function(){VSET=$('vset').value;VLEC=0;renderVLec();showLec()};
+$('vdel').onclick=async function(){
+  const s=vCur();if(!s)return;
+  if(!confirm('删除合集「'+s.title+'」？课表和讲义都会清掉。'))return;
+  await VDB.del(s.id);VSET=null;VLEC=null;VCTX=null;await vLoad();toast('已删除');
+};
+$('vanalyze').onclick=function(){vAnalyze()};
+$('file').onchange=async function(e){
+  for(const f of e.target.files){
+    const nm=f.name.toLowerCase();
+    try{
+      if(nm.endsWith('.pdf')){toast('正在解析 PDF…');await addFile(f.name,await pdfText(await f.arrayBuffer()))}
+      else if(nm.endsWith('.epub')){toast('正在解析 EPUB…');await addFile(f.name,await epubText(await f.arrayBuffer()))}
+      else await addFile(f.name,await f.text());
+      if(!switchCourse(f.name))updateCourses();
+      toast('已载入 '+f.name);
+    }catch(err){alert('解析失败（'+f.name+'）：'+String(err.message||err))}
+  }
+  e.target.value='';
+};
+$('reload').onclick=function(){autoLoad(this)};
+$('bq').oninput=renderBook;
+$('expp').onclick=function(){
+  dl('高数学习数据_'+today()+'.json',JSON.stringify({progress:PR,cards:CD,stats:ST,messages:MS},null,1));
+};
+$('wipe').onclick=async function(){
+  if(!confirm('清空教材、闪卡、进度、会话和 Key？不可恢复。'))return;
+  await IDB.clear();localStorage.clear();location.reload();
+};
+
+/* ---------- 启动 ---------- */
+renderPs();renderModes();$('in').placeholder=curMode().ph;renderChips();updTok();renderSym();renderTts();updTts();renderMic();renderVoiceName();
+vLoad();
+MS=MS.filter(function(m){return m&&m.c});
+reloadMsgs();
+if(!MS.length)addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n- **教材**：进「教材」导入你自己的（md/txt/pdf/epub）；若仓库里放了 `book/` 目录，点“载入自带分册”也行。然后把正在学的那节勾上\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。');
+(async function(){
+  CH=await IDB.all();renderBook();
+  if(!CH.length&&location.protocol!=='file:')await autoLoad(null);
+})();
+/* 公式库若是从备用源延迟加载成功的，加载完重画一遍，把之前裸着的 LaTeX 补上 */
+window.addEventListener('katexready',function(){
+  reloadMsgs();renderCards&&renderCards();renderBook();
+  if(curCh&&typeof showSec==='function')showSec(curCh);
+  toast(window.__kx?'公式渲染已就绪':'公式渲染库加载失败，已转为可读文本模式');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# 教材正文：受版权保护，不要提交
+book/
+
+# 依赖
+node_modules/
+
+# 备份与临时文件
+*.bak
+*.bak-*
+*.tmp
+.DS_Store
+Thumbs.db
+.vscode/
