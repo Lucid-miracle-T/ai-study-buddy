@@ -169,6 +169,8 @@ function fakeStream(win) {
         if (seen.has(key)) continue;
         seen.add(key);
         if (el.disabled) continue;
+        /* 「重发」会真的截断对话并重新请求——留给 test_edit.js 精确验，这里只点开/关编辑器 */
+        if ((el.textContent || '').trim() === '重发') continue;
         const before = errBefore();
         try {
           el.click();

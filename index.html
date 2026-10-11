@@ -146,6 +146,14 @@ button.sm{padding:4px 9px;font-size:12px}
 .msg .who{display:flex;align-items:center;gap:8px}
 .msg .who .say{margin-left:auto;padding:1px 7px;font-size:12px;line-height:1.5;background:none;border:1px solid var(--line2);border-radius:6px;color:var(--tx3);cursor:pointer}
 .msg .who .say:hover{color:var(--blue);border-color:var(--blue-line);background:var(--blue-bg)}
+.msg.editing .body{background:#fff;border-color:var(--blue-line)}
+.edta{width:100%;border:1px solid var(--line2);border-radius:7px;padding:9px 11px;font-family:inherit;font-size:13.5px;line-height:1.72;resize:vertical;min-height:72px;max-height:320px;color:var(--tx)}
+.edbar{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.edhint{font-size:11.5px;color:var(--red);min-width:0}
+body.fs2 .msg .body{font-size:16px;line-height:1.82}
+body.fs3 .msg .body{font-size:18px;line-height:1.88}
+body.fs2 .msg .body table,body.fs2 .msg .body code{font-size:14px}
+body.fs3 .msg .body table,body.fs3 .msg .body code{font-size:15px}
 #in{flex:1;min-height:44px;max-height:190px;padding:11px 13px}
 .katex-display{margin:10px 0;overflow-x:auto;overflow-y:hidden}
 /* book view */
@@ -468,6 +476,35 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
           <div id="mbox2" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
         </div>
         <div class="card2">
+          <h2>操作习惯</h2>
+          <div class="hint">改完立刻生效，存在这台设备上。习惯是你自己的，换教材、换课程都不会动它。</div>
+          <label>发送方式</label>
+          <select id="sendkey">
+            <option value="ctrl">Ctrl + Enter 发送（Enter 换行）</option>
+            <option value="enter">Enter 发送（Shift + Enter 换行）</option>
+          </select>
+          <label>导师一次问几个问题</label>
+          <select id="qden">
+            <option value="one">一次一问（推荐）—— 答完再问下一个</option>
+            <option value="few">一次 2–3 问 —— 想快些过的时候用</option>
+          </select>
+          <label>对话字号</label>
+          <select id="fsz">
+            <option value="1">标准</option>
+            <option value="2">大</option>
+            <option value="3">特大</option>
+          </select>
+          <label>进入页面时符号面板</label>
+          <select id="symadef">
+            <option value="1">默认展开</option>
+            <option value="0">默认收起</option>
+          </select>
+          <div class="help" style="margin-top:10px">
+            中文输入法打字时按 Enter 是在选字，不会被当成发送——这点已经处理好了，不用担心打一半被送出去。<br><br>
+            <b>想改自己说过的话？</b>点你那条消息右上角的「编辑」，改完点「重发」——它之后的内容会一起清掉，导师会拿改过的话重新回答一遍。要是只错了个符号，这比重新问一遍省事得多。
+          </div>
+        </div>
+        <div class="card2">
           <h2>加自己的人设</h2>
           <div class="hint">内置的只有三位数学家和五位鸣潮角色。想让谁陪你学，自己填一个就行——加完会出现在上面那排。</div>
           <div id="myplist" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"></div>
@@ -560,8 +597,15 @@ const PROV={
 
 const PACE={
   slow:"【节奏 · 慢】一次只推进一个点。提出一个问题后必须等学习者回答再继续；每个结论都要求他自己先说一遍；允许在同一个概念上反复深入三层，不催进度。适合啃定理证明和第一次接触的概念。",
-  mid:"【节奏 · 中】默认。一次可以提出 2–3 个递进的小问题；学习者跳过某步时不深究，但要求他把跳过的那一步补写出来；每讲完一个小节，停一次确认是否跟上。",
+  mid:"【节奏 · 中】默认。一次只提出一个问题，等我回答后再推进下一个；学习者跳过某步时不深究，但要求他把跳过的那一步补写出来；每讲完一个小节，停一次确认是否跟上。",
   fast:"【节奏 · 快】一次给出完整思路或多步推导，减少追问，只在关键处停顿确认。适合复习、赶进度、或学习者明确说'我懂了只要过一遍'的时候。"
+};
+/* 提问密度：一轮回复里问几个问题。阅读与思考负担主要来自这里，与「节奏」分开管。
+   —— 节奏是整体的推进速度，密度是「每次要你同时记住几件事」。 */
+let QDEN=LS.g('qden','one');if(['one','few'].indexOf(QDEN)<0)QDEN='one';
+const QDENS={
+  one:"【提问纪律】一次回复最多只提出一个问题。问完就停下等我回答，不要一口气列出两三个问题让我排队。确实需要连续追问时，只挑最关键的那一个先问，其余的等我答完再决定要不要问。",
+  few:"【提问纪律】一次回复最多提出 2–3 个递进的小问题，并在末尾用一句「先答第 1 个」告诉我从哪儿开始。"
 };
 /* 本轮模式：与人格正交——人格决定「怎么说话」，模式决定「这一轮干什么」 */
 const MODE={
@@ -656,6 +700,20 @@ function packByKey(k){for(const p of PACKS)if(p.key===k)return p;return null}
 let MS=LS.g(msKey(),null);
 if(MS===null){MS=LS.g('msgs',[]);LS.s(msKey(),MS);localStorage.removeItem(P+'msgs')}
 function saveMs(){LS.s(msKey(),MS)}
+/* ---- 操作习惯（与课程无关，本机一份） ---- */
+let SENDKEY=LS.g('sendkey','ctrl');if(SENDKEY!=='enter')SENDKEY='ctrl';
+let FSZ=String(LS.g('fsz','1'));if(['1','2','3'].indexOf(FSZ)<0)FSZ='1';
+function sendHint(){return SENDKEY==='enter'?'Enter 发送 · Shift+Enter 换行':'Ctrl+Enter 发送'}
+function phOf(k){return String((MODE[k]||MODE.teach).ph||'').replace(/Ctrl\+Enter 发送/,sendHint())}
+function applyHabit(){
+  document.body.classList.toggle('fs2',FSZ==='2');
+  document.body.classList.toggle('fs3',FSZ==='3');
+  const i=$('in');if(i)i.placeholder=phOf(MODEK);
+  const s=$('sendkey');if(s)s.value=SENDKEY;
+  const f=$('fsz');if(f)f.value=FSZ;
+  const a=$('symadef');if(a)a.value=(typeof SYMA!=='undefined'&&SYMA)?'1':'0';
+  const q=$('qden');if(q)q.value=QDEN;
+}
 /* ---- 每本教材一套独立记录：进度 / 上下文勾选 / 对话 ---- */
 function prKey(){return 'prog.'+COURSE}
 function ctxKey(){return 'ctx.'+COURSE}
@@ -1155,7 +1213,7 @@ function vAct(a){
   document.querySelector('[data-v="lesson"]').click();
   if(a==='drill'){MODEK='drill';renderModes();ask(head+'按「陪练出题」模式考我这一讲：只出题，不给答案不提示。挑这讲里最容易混淆或最容易算错的点下手。')}
   else if(a==='key')ask(head+'用三到五句话讲清这一讲的要点，并指出：哪一点最容易考、哪一点最容易错、哪一点讲义里其实没讲透。');
-  else if(a==='stuck')ask(head+'给我 3 个能检验"我是否真懂"的问题——不要复述定义，要我动手算或判断。一题一题来，我答完你再评价，不要一次全问完。');
+  else if(a==='stuck')ask(head+'出 1 个能检验"我是否真懂"的问题——不要复述定义，要我动手算或判断。只问这一个，等我答完你再评价，然后你再决定要不要出下一个。');
 }
 async function vAnalyze(){
   const s=vCur();if(!s){toast('先导入网课包');return}
@@ -1232,10 +1290,10 @@ function renderModes(){
     Object.keys(MODE).forEach(function(k){
       const p=document.createElement('span');p.className='pill'+(MODEK===k?' on':'');p.textContent=MODE[k].n;
       p.title=MODE[k].p.split('\n')[0].replace(/^【[^\n]*】/,'');
-      p.onclick=function(){MODEK=k;LS.s('mode',k);renderModes();const i=$('in');if(i)i.placeholder=MODE[k].ph;toast('模式：'+MODE[k].n)};
+      p.onclick=function(){MODEK=k;LS.s('mode',k);renderModes();const i=$('in');if(i)i.placeholder=phOf(k);toast('模式：'+MODE[k].n)};
       b.appendChild(p);
     });
-    const pv=$('in');if(pv)pv.placeholder=curMode().ph;
+    const pv=$('in');if(pv)pv.placeholder=phOf(MODEK);
   });
   const mcur=$('mcur');if(mcur)mcur.textContent=curMode().n;
 }
@@ -1258,12 +1316,17 @@ function renderMyPs(){
   });
 }
 function curName(){return getP(who).n}
-function addMsg(role,txt){
+function addMsg(role,txt,idx){
   const d=document.createElement('div');d.className='msg'+(role==='user'?' me':'');
-  d.innerHTML='<div class="who">'+(role==='user'?'我':curName())+'</div><div class="body">'+md(txt)+'</div>';
-  if(role==='assistant'){
+  d.dataset.i=String(idx===undefined?MS.length:idx);
+  d.innerHTML='<div class="who">'+(role==='user'?'我':esc(curName()))+'</div><div class="body">'+md(txt)+'</div>';
+  const w=d.querySelector('.who');
+  if(role==='user'){
+    const b=document.createElement('button');b.type='button';b.className='say';b.textContent='编辑';b.title='改这句话，然后重新回答（它之后的对话会被清掉）';
+    b.onclick=function(e){e.stopPropagation();startEdit(+this.closest('.msg').dataset.i)};
+    w.appendChild(b);
+  }else{
     d.__txt=txt;
-    const w=d.querySelector('.who');
     const b=document.createElement('button');b.type='button';b.className='say';b.textContent='🔊';b.title='朗读这条回复';
     b.onclick=function(e){e.stopPropagation();const t=this.closest('.msg').__txt;if(t)speak(t)};
     w.appendChild(b);
@@ -1271,11 +1334,44 @@ function addMsg(role,txt){
   $('mw').appendChild(d);$('msgs').scrollTop=$('msgs').scrollHeight;
   return d.querySelector('.body');
 }
-function reloadMsgs(){$('mw').innerHTML='';MS.forEach(function(m){addMsg(m.r,m.c)})}
+function reloadMsgs(){$('mw').innerHTML='';MS.forEach(function(m,i){addMsg(m.r,m.c,i)})}
+/* 就地编辑自己说过的话：改完重发，之后的内容截断后重新回答 */
+function startEdit(i){
+  const m=MS[i];if(!m||m.r!=='user')return;
+  const d=$('mw').querySelector('.msg[data-i="'+i+'"]');
+  if(!d||d.classList.contains('editing'))return;
+  const body=d.querySelector('.body'),old=body.innerHTML,later=MS.length-i-1;
+  d.classList.add('editing');body.innerHTML='';
+  const ta=document.createElement('textarea');ta.className='edta';ta.value=m.c;
+  const bar=document.createElement('div');bar.className='edbar';
+  const ok=document.createElement('button');ok.className='sm pri';ok.textContent='重发';
+  const no=document.createElement('button');no.className='sm';no.textContent='取消';
+  bar.appendChild(ok);bar.appendChild(no);
+  if(later){const h=document.createElement('span');h.className='edhint';h.textContent='重发会清掉后面 '+later+' 条对话';bar.appendChild(h)}
+  body.appendChild(ta);body.appendChild(bar);
+  ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
+  const close=function(){d.classList.remove('editing');body.innerHTML=old};
+  no.onclick=close;
+  ta.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){e.preventDefault();close();return}
+    if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)&&!e.isComposing){e.preventDefault();ok.click()}
+  });
+  ok.onclick=async function(){
+    const v=ta.value.trim();
+    if(!v){toast('内容不能为空');ta.focus();return}
+    /* 先确认接口可用：否则截断了对话却发不出去，白丢 */
+    if(!$('key').value.trim()||!$('base').value.trim()){alert('先到「设置」填接口地址和 API Key，点保存。');return}
+    if(v===m.c&&!later){close();return}
+    if(later&&!confirm('这会删除这条之后的 '+later+' 条对话，然后重新回答。继续？'))return;
+    MS=MS.slice(0,i);saveMs();reloadMsgs();
+    await ask(v);
+  };
+}
 function sysMsg(){
   return ($('sys').value||getP(who).p)
     +'\n\n'+ME
     +'\n\n'+(PACE[PA]||PACE.mid)
+    +'\n\n'+(QDENS[QDEN]||QDENS.one)
     +'\n\n【输出格式硬要求】'
     +'数学式一律用 $行内$ 或 $$独立成行$$ 包裹，禁止输出裸露的 LaTeX 命令，禁止用 \\( \\) 或 \\[ \\]；'
     +'第一次出现某个符号时必须顺带说明它念什么、表示什么（例如“ε（epsilon，任意给定的小正数）”）；'
@@ -1297,8 +1393,11 @@ async function ask(text,opt){
   const pack=[{role:'system',content:sysMsg()+'\n\n'+ctxText()}];
   MS.forEach(function(m){pack.push({role:m.r==='user'?'user':'assistant',content:m.c})});
   pack.push({role:'user',content:text});
-  if(!opt.silent)addMsg('user',text);
-  const el=addMsg('assistant','<span style="color:#888780">…</span>');
+  /* 先把要占的下标算出来：两条消息是在 MS.push 之前就渲染的，
+     若让 addMsg 自己取 MS.length，两条会拿到同一个数（编辑功能依赖这个下标） */
+  const bi=MS.length;
+  if(!opt.silent)addMsg('user',text,bi);
+  const el=addMsg('assistant','<span style="color:#888780">…</span>',bi+1);
   MS.push({r:'user',c:text});saveMs();
   $('stop').disabled=false;ctrl=new AbortController();
   try{
@@ -1658,11 +1757,15 @@ function renderSym(){
   });
   gw.appendChild(box);
 }
-$('symtoggle').onclick=function(){SYMA=SYMA?0:1;LS.s('syma',SYMA);renderSym()};
+$('symtoggle').onclick=function(){SYMA=SYMA?0:1;LS.s('syma',SYMA);renderSym();applyHabit()};
 
 $('send').onclick=function(){const t=$('in').value.trim();if(!t)return;$('in').value='';ask(t)};
 $('in').addEventListener('keydown',function(e){
-  if(e.ctrlKey&&e.key==='Enter'){$('send').click();return}
+  /* 中文输入法选字时的 Enter 不是发送意图 */
+  if(e.isComposing||e.keyCode===229)return;
+  if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();$('send').click();return}
+  if(e.key==='Enter'&&SENDKEY==='enter'&&!e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey){
+    e.preventDefault();$('send').click();return}
   if((e.ctrlKey||e.metaKey)&&(e.key==='m'||e.key==='M')){
     e.preventDefault();
     const ta=this,s=ta.value,a=ta.selectionStart,b=ta.selectionEnd;
@@ -1672,6 +1775,16 @@ $('in').addEventListener('keydown',function(e){
   }
 });
 $('stop').onclick=function(){if(ctrl)ctrl.abort()};
+$('sendkey').onchange=function(){
+  SENDKEY=this.value==='enter'?'enter':'ctrl';LS.s('sendkey',SENDKEY);applyHabit();
+  toast(SENDKEY==='enter'?'发送方式：Enter':'发送方式：Ctrl+Enter');
+};
+$('qden').onchange=function(){
+  QDEN=this.value==='few'?'few':'one';LS.s('qden',QDEN);applyHabit();
+  toast(QDEN==='one'?'导师一次只问一个问题':'导师一次可问 2–3 个问题');
+};
+$('fsz').onchange=function(){FSZ=String(this.value);LS.s('fsz',FSZ);applyHabit()};
+$('symadef').onchange=function(){SYMA=this.value==='1'?1:0;LS.s('syma',SYMA);renderSym();applyHabit()};
 $('start').onclick=function(){
   const bs=[];CTX.forEach(function(id){const c=CH.filter(function(x){return x.id===id})[0];if(c&&bs.indexOf(c.file)<0)bs.push(c.file)});
   const t=CTX.map(function(id){const c=CH.filter(function(x){return x.id===id})[0];return c?c.title:''}).filter(Boolean).join('、');
@@ -1749,7 +1862,7 @@ $('wipe').onclick=async function(){
 };
 
 /* ---------- 启动 ---------- */
-renderPs();renderModes();$('in').placeholder=curMode().ph;renderChips();updTok();renderSym();renderTts();updTts();renderMic();renderVoiceName();
+renderPs();renderModes();applyHabit();renderChips();updTok();renderSym();renderTts();updTts();renderMic();renderVoiceName();
 vLoad();
 MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();
