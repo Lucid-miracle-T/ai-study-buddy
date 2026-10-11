@@ -171,11 +171,17 @@ button.sm{padding:4px 9px;font-size:12px}
 #vbar2{display:flex;gap:7px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#faf9f6;align-items:center}
 #bwrap{flex:1;display:flex;min-height:0}
 #blist{width:290px;border-right:1px solid var(--line);background:var(--panel);overflow-y:auto;flex-shrink:0}
+.cgrp{border-bottom:2px solid var(--line2)}
+.cgrp>h3{font-size:12.5px;font-weight:600;padding:9px 12px;background:#f0eee7;cursor:pointer;display:flex;align-items:center;gap:6px}
+.cgrp>h3:hover{background:#e8e5db}
+.cgrp .tot{font-size:11px;color:var(--tx3);font-weight:400;margin-left:auto}
 .grp{border-bottom:1px solid var(--line)}
-.grp>h3{font-size:13px;font-weight:500;padding:9px 12px;background:#faf9f6;cursor:pointer;display:flex;align-items:center;gap:6px}
+.grp>h3{font-size:12.5px;font-weight:500;padding:8px 12px 8px 24px;background:#faf9f6;cursor:pointer;display:flex;align-items:center;gap:6px}
 .grp>h3:hover{background:#f1efe8}
-.grp .cnt{font-size:11px;color:var(--tx3);font-weight:400}
-.item{display:flex;align-items:center;gap:7px;padding:7px 12px 7px 20px;border-top:1px solid #f1efe8;cursor:pointer;font-size:12.5px;color:var(--tx2)}
+.grp .cnt{font-size:11px;color:var(--tx3);font-weight:400;margin-left:auto}
+.cgrp>h3::before,.grp>h3::before{content:'▸';font-size:9px;color:var(--tx3);flex:0 0 auto}
+.cgrp.open>h3::before,.grp.open>h3::before{content:'▾'}
+.item{display:flex;align-items:center;gap:7px;padding:7px 12px 7px 34px;border-top:1px solid #f1efe8;cursor:pointer;font-size:12.5px;color:var(--tx2)}
 .item:hover{background:#faf9f6}
 .item.on{background:var(--blue-bg);color:#0C447C}
 .item .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -365,6 +371,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
         <button class="sm" id="reload">载入全部内置教材</button>
         <button class="sm" id="ldg">仅高数</button>
         <button class="sm" id="ldl">仅线代</button>
+        <button class="sm" id="ldc">仅 C 语言</button>
         <button class="sm pri" id="pickfile">导入教材</button>
         <input type="file" id="file" accept=".md,.markdown,.txt,.pdf,.epub" multiple style="display:none">
       </div>
@@ -390,7 +397,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
         <button class="sm" id="vanalyze" title="拿整个合集的标题与各讲摘要，对照教材目录做覆盖度分析">分析整个合集</button>
       </div>
       <div class="bar" style="background:#faf9f6;font-size:11.5px;color:var(--tx3)">
-        网课包由离线生成（B站 AI 字幕或语音转写），格式：<code>{"title":"合集名","items":[{"t":"讲标题","u":"链接","dur":"时长","doc":"[mm:ss] 内容…"}]}</code>　·　讲义里的 <b>[mm:ss]</b> 可点，会打开视频跳到对应时刻
+        已内置翁恺 C 语言（132 讲）和两套江协 STM32，打开就有。也可以自己导入：<code>{"title":"合集名","items":[{"t":"讲标题","u":"链接","dur":"时长","doc":"[mm:ss] 内容…"}]}</code>（由 B 站 AI 字幕或语音转写离线生成）　·　讲义里的 <b>[mm:ss]</b> 可点，会打开视频跳到对应时刻
       </div>
       <div id="vwrap">
         <div id="vlist"><div class="empty">还没有网课包。</div></div>
@@ -608,12 +615,16 @@ let COURSE=LS.g('course','__free'), PA=LS.g('pace','mid');
 /* 教材名按课程分开存：否则线代课会拿到高数的书名，导师收到矛盾指令 */
 const BKDEF='同济大学数学科学学院《高等数学》第八版上册';
 function noExt(f){return String(f).replace(/\.(md|txt|pdf|epub)$/i,'')}
+/* 自然序：不这么做，「第10章」会排在「第1章」前面（字符串比较按字符逐位比） */
+function natKey(s){return String(s).replace(/\d+/g,function(d){return ('000000'+d).slice(-6)})}
+function natCmp(a,b){a=natKey(a);b=natKey(b);return a<b?-1:(a>b?1:0)}
 function getBkn(){
   const v=LS.g('bkn.'+COURSE,null);if(v)return v;
+  const pk=packByKey(COURSE);
+  if(pk)return pk.bk||('《'+pk.name+'》');    /* 内置包各有自己的默认书名，绝不串到别的课 */
+  if(COURSE&&COURSE!=='__free')return '《'+cname(COURSE)+'》'; /* 单文件课程默认用文件名 */
   const g=LS.g('bkn',null);
-  if(g&&g!==BKDEF)return g;                                   /* 用户明确设过全局书名 → 沿用 */
-  if(COURSE&&COURSE!=='__free'&&COURSE!==LOCAL_KEY)return '《'+cname(COURSE)+'》'; /* 文件课程默认用文件名 */
-  return g||BKDEF;
+  return (g&&g!==BKDEF)?g:BKDEF;
 }
 function setBkn(v){LS.s('bkn.'+COURSE,v);if(COURSE==='__free'||COURSE===LOCAL_KEY)LS.s('bkn',v)}
 let TTS=LS.g('tts',0), TTSRATE=parseFloat(LS.g('ttsrate',1))||1;
@@ -621,14 +632,24 @@ function msKey(){return 'msgs.'+COURSE}
 /* 自带教材包：book/ 下的 md 按包合并成一门课程，不要拆成多个对话框 */
 const LOCAL_KEY='__local',  LOCAL_NAME='高等数学 · 第八版上册';
 const LOCAL_KEY2='__local2', LOCAL_NAME2='线性代数与解析几何';
+const LOCAL_KEY3='__local3', LOCAL_NAME3='C语言程序设计 · 现代方法';
 const PACKS=[
-  {key:LOCAL_KEY, name:LOCAL_NAME, dir:'book/', files:[
+  {key:LOCAL_KEY, name:LOCAL_NAME, bk:BKDEF, dir:'book/', files:[
     '第1章_函数与极限.md','第2章_导数与微分.md','第3章_微分中值定理与导数的应用.md','第4章_不定积分.md',
     '第5章_定积分.md','第6章_定积分的应用.md','第7章_微分方程.md','附录.md','习题答案与提示.md']},
-  {key:LOCAL_KEY2, name:LOCAL_NAME2, dir:'book/线代/', files:[
+  {key:LOCAL_KEY2, name:LOCAL_NAME2, bk:'《线性代数与解析几何》', dir:'book/线代/', files:[
     '第1章 行列式.md','第2章 矩阵及其运算.md','第3章 空间解析几何与向量运算.md',
     '第4章 矩阵的初等变换与线性方程组.md','第5章 向量组的线性相关性（n 维向量）.md',
-    '第6章 矩阵相似对角化.md','第7章 二次型.md','附录 A 线性空间与线性变换.md']}
+    '第6章 矩阵相似对角化.md','第7章 二次型.md','附录 A 线性空间与线性变换.md']},
+  {key:LOCAL_KEY3, name:LOCAL_NAME3, bk:'《C语言程序设计：现代方法（第2版）》', dir:'book/C语言/', files:[
+    '第1章 C语言概述.md','第2章 C语言基本概念.md','第3章 格式化输入_输出.md','第4章 表达式.md',
+    '第5章 选择语句.md','第6章 循环.md','第7章 基本类型.md','第8章 数组.md','第9章 函数.md',
+    '第10章 程序结构.md','第11章 指针.md','第12章 指针和数组.md','第13章 字符串.md','第14章 预处理器.md',
+    '第15章 编写大型程序.md','第16章 结构、联合和枚举.md','第17章 指针的高级应用.md','第18章 声明.md',
+    '第19章 程序设计.md','第20章 底层程序设计.md','第21章 标准库.md','第22章 输入_输出.md',
+    '第23章 库对数值和字符数据的支持.md','第24章 错误处理.md','第25章 国际化特性.md',
+    '第26章 其他库函数.md','第27章 C99对数学计算的新增支持.md','第28章 C1X新增的多线程和原子操作支持.md',
+    '附录 A-F.md']}
 ];
 function packOf(f){for(const p of PACKS)if(p.files.indexOf(f)>=0)return p;return null}
 function packByKey(k){for(const p of PACKS)if(p.key===k)return p;return null}
@@ -653,7 +674,11 @@ function loadCourseData(){
   }
 }
 function saveCourseData(){LS.s(prKey(),PR);LS.s(ctxKey(),CTX)}
-function cname(k){return k==='__free'?'自由问答':k===LOCAL_KEY?LOCAL_NAME:k===LOCAL_KEY2?LOCAL_NAME2:String(k).replace(/\.(md|txt|pdf|epub)$/i,'')}
+function cname(k){
+  if(k==='__free')return '自由问答';
+  const p=packByKey(k);if(p)return p.name;   /* 内置包课程直接读包名，加减包不用再改这里 */
+  return String(k).replace(/\.(md|txt|pdf|epub)$/i,'');
+}
 /* 第一次进入某个「自带教材包」课程时，把散落在各分册名下的旧记录合并过来 */
 function migratePack(key,files){
   if(LS.g('msgs.'+key,null)!==null)return;   /* 已迁移过就不再动 */
@@ -802,7 +827,7 @@ async function addFile(file,src){
   const got=parseFile(file,src);
   for(const c of await IDB.all()){if(c.file===file)await IDB.del(c.id)}
   for(const c of got)await IDB.put(c);
-  CH=await IDB.all();CH.sort(function(a,b){return a.id<b.id?-1:1});
+  CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)});
   renderBook();toast('已载入 '+file+' · '+got.length+' 节');
   LS.s('hasbook',1);
   const pk=packOf(file);
@@ -811,7 +836,7 @@ async function addFile(file,src){
 }
 async function removeFile(file){
   for(const c of await IDB.all())if(c.file===file)await IDB.del(c.id)
-  CH=await IDB.all();renderBook();updateCourses();
+  CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)});renderBook();updateCourses();
 }
 /* 载入某个内置教材包（默认全部） */
 async function autoLoad(btn,pk){
@@ -831,7 +856,7 @@ async function autoLoad(btn,pk){
   }
   if(btn){btn.disabled=false;btn.textContent=label}
   if(n){
-    toast('已载入 '+n+' 个分册'+(packs.length>1?'（高数 + 线代）':''));
+    toast('已载入 '+n+' 个分册'+(packs.length>1?'（全部内置教材）':''));
     /* 从课程标签栏点「载入」时，自动切到刚载入的那门课 */
     if(btn&&!switchCourse(packs[packs.length-1].key))toast('到「教材」页勾选正在学的那一节');
   }
@@ -927,6 +952,14 @@ function titleHtml(t){
   if(String(t).indexOf('$')<0)return esc(t);
   return md(t).replace(/^<p>/,'').replace(/<\/p>\s*$/,'');
 }
+/* 目录折叠状态（会话内记忆）。课程层默认展开；分册层默认只展开正在读的那本，
+   否则十几本分册的所有章节平铺一列，找一节要滚很久。 */
+let COPEN={},BOPEN={};
+function bookIsReading(f){
+  if(!curCh)return false;
+  const c=CH.filter(function(x){return x.id===curCh})[0];
+  return !!c&&c.file===f;
+}
 function renderBook(){
   const q=$('bq').value.trim().toLowerCase();
   updateCourses();
@@ -934,25 +967,53 @@ function renderBook(){
   CH.forEach(function(c){if(q&&c.title.toLowerCase().indexOf(q)<0&&c.txt.toLowerCase().indexOf(q)<0)return;(files[c.file]=files[c.file]||[]).push(c)});
   const box=$('blist');box.innerHTML='';
   const names=Object.keys(files);
-  if(!names.length){box.innerHTML='<div class="empty">还没有教材。<br>点右上角导入 md。</div>'}
-  names.forEach(function(f){
-    const g=document.createElement('div');g.className='grp';
-    const h=document.createElement('h3');
-    const done=files[f].filter(function(c){return PR[c.id]===2}).length;
-    h.innerHTML='<span class="cnt">'+done+'/'+files[f].length+'</span><span>'+esc(f.replace('.md',''))+'</span>';
-    g.appendChild(h);
-    files[f].forEach(function(c){
-      if(c.level!==1&&c.level!==2)return;
-      const d=document.createElement('div');d.className='item'+(curCh===c.id?' on':'');
-      const ck=document.createElement('input');ck.type='checkbox';ck.className='ck';ck.checked=CTX.indexOf(c.id)>=0;
-      ck.onclick=function(e){e.stopPropagation();toggleCtx(c.id)};
-      const dt=document.createElement('span');dt.className='dot'+(PR[c.id]?' s'+PR[c.id]:'');
-      const tt=document.createElement('span');tt.className='t';tt.innerHTML=titleHtml(c.title);
-      d.appendChild(ck);d.appendChild(dt);d.appendChild(tt);
-      d.onclick=function(e){if(e.target!==ck){curCh=c.id;openCh(c);renderBook()}};
-      g.appendChild(d);
+  if(!names.length){box.innerHTML='<div class="empty">'+(q?'没有匹配的章节，换个关键词试试。':'还没有教材。<br>点右上角导入 md。')+'</div>'}
+  /* 先按课程归组：课程 → 分册 → 章节，一眼看清「这是哪门课的哪一本」 */
+  const groups=[],used={};
+  PACKS.forEach(function(p){
+    const fs=names.filter(function(f){return p.files.indexOf(f)>=0});
+    if(fs.length){groups.push({k:p.key,name:p.name,files:fs});fs.forEach(function(f){used[f]=1})}
+  });
+  names.forEach(function(f){if(!used[f])groups.push({k:f,name:noExt(f),files:[f]})});
+
+  groups.forEach(function(grp){
+    const cw=document.createElement('div');
+    /* 搜索时强制全展开，否则搜到了却藏在折叠里 */
+    const copen=q?true:(COPEN[grp.k]!==undefined?COPEN[grp.k]:true);
+    cw.className='cgrp'+(copen?' open':' closed');
+    const all=grp.files.reduce(function(a,f){return a+files[f].length},0);
+    const allDone=grp.files.reduce(function(a,f){return a+files[f].filter(function(c){return PR[c.id]===2}).length},0);
+    const ch3=document.createElement('h3');
+    ch3.innerHTML='<span>'+esc(grp.name)+'</span><span class="tot">'
+      +(allDone?allDone+'/'+all+' 掌握':all+' 节')+'</span>';
+    ch3.title='点一下展开 / 收起这门课';
+    ch3.onclick=function(){COPEN[grp.k]=!copen;renderBook()};
+    cw.appendChild(ch3);
+    if(copen)grp.files.forEach(function(f){
+      const g=document.createElement('div');
+      const bopen=q?true:(BOPEN[f]!==undefined?BOPEN[f]:(bookIsReading(f)||grp.files.length===1));
+      g.className='grp'+(bopen?' open':' closed');
+      const done=files[f].filter(function(c){return PR[c.id]===2}).length;
+      const h=document.createElement('h3');
+      h.innerHTML='<span>'+esc(noExt(f))+'</span><span class="cnt">'+done+'/'+files[f].length+'</span>';
+      h.title='点一下展开 / 收起这本分册';
+      h.onclick=function(){BOPEN[f]=!bopen;renderBook()};
+      g.appendChild(h);
+      if(bopen)files[f].forEach(function(c){
+        if(c.level!==1&&c.level!==2)return;
+        const d=document.createElement('div');d.className='item'+(curCh===c.id?' on':'');
+        const ck=document.createElement('input');ck.type='checkbox';ck.className='ck';ck.checked=CTX.indexOf(c.id)>=0;
+        ck.onclick=function(e){e.stopPropagation();toggleCtx(c.id)};
+        const dt=document.createElement('span');dt.className='dot'+(PR[c.id]?' s'+PR[c.id]:'');
+        const tt=document.createElement('span');tt.className='t';tt.innerHTML=titleHtml(c.title);
+        d.appendChild(ck);d.appendChild(dt);d.appendChild(tt);
+        /* 点开某节时强制展开它所在分册，免得选中的高亮藏在折叠里 */
+        d.onclick=function(e){if(e.target!==ck){curCh=c.id;BOPEN[f]=true;openCh(c);renderBook()}};
+        g.appendChild(d);
+      });
+      cw.appendChild(g);
     });
-    box.appendChild(g);
+    box.appendChild(cw);
   });
   const total=CH.length,learned=CH.filter(function(c){return PR[c.id]===2}).length;
   $('bstat').textContent=total?('共 '+total+' 节 · 已掌握 '+learned):'未载入';
@@ -991,11 +1052,43 @@ const VDB=(function(){
 })();
 let VS=[], VSET=null, VLEC=null, VCTX=null;
 const VSTN=['未看','在看','已看'];
+/* 内置网课包：跟站点一起分发，首次打开自动入库（换设备、换浏览器都在），
+   「看没看」的状态就地存在 IndexedDB 里。以后改了包内容就把 VPKGVER 加一。 */
+const VPKGVER='1';
+const VBUILTIN=[
+  {id:'__v_c',    name:'C语言程序设计 · 翁恺（132 讲）', f:'翁恺C语言程序设计_网课包.json'},
+  {id:'__v_stm1', name:'STM32 入门教程2023 · 江协科技（50 讲）', f:'江协科技STM32入门教程2023版_网课包.json'},
+  {id:'__v_stm2', name:'STM32 案例 HAL库重制 · 水手勇敢（48 讲）', f:'江协STM32案例HAL库重制_网课包.json'}
+];
 function vCur(){const a=VS.filter(function(s){return s.id===VSET});return a.length?a[0]:null}
+async function vSeedBuiltin(existing){
+  if(location.protocol==='file:')return 0;   /* 本地双击打开读不到同目录的 json，跳过 */
+  let n=0;
+  for(const b of VBUILTIN){
+    const old=existing.filter(function(s){return s.id===b.id})[0];
+    if(old&&old.ver===VPKGVER)continue;      /* 已是最新版，连网络都不走 */
+    try{
+      const r=await fetch('video/'+encodeURIComponent(b.f));
+      if(!r.ok)continue;
+      const j=await r.json();
+      if(!j||!j.items||!j.items.length)continue;   /* 空包或格式不对就当没有 */
+      if(old&&Array.isArray(old.items)){     /* 换版本时把「看没看」按讲标题搬过去 */
+        const m={};old.items.forEach(function(it){m[it.t]=it.st});
+        (j.items||[]).forEach(function(it){if(m[it.t]!==undefined)it.st=m[it.t]});
+      }
+      await VDB.put({id:b.id,title:j.title||b.name,url:j.url||'',items:j.items||[],builtin:true,ver:VPKGVER});
+      n++;
+    }catch(e){}
+  }
+  return n;
+}
 async function vLoad(){
-  VS=await VDB.all()||[];
-  VS.sort(function(a,b){return String(a.id)<String(b.id)?-1:1});
+  const cur=await VDB.all()||[];
+  const seeded=await vSeedBuiltin(cur);
+  VS=seeded?(await VDB.all()||[]):cur;
+  VS.sort(function(a,b){return natCmp(a.id,b.id)});
   renderVSets();
+  if(seeded)toast('已自动载入内置网课包');
 }
 function renderVSets(){
   const sel=$('vset');if(!sel)return;
@@ -1624,6 +1717,7 @@ $('vfile').onchange=async function(){
 $('vset').onchange=function(){VSET=$('vset').value;VLEC=0;renderVLec();showLec()};
 $('vdel').onclick=async function(){
   const s=vCur();if(!s)return;
+  if(s.builtin){toast('这是内置合集，随站点自动载入；想少看点就在上面换一个合集');return}
   if(!confirm('删除合集「'+s.title+'」？课表和讲义都会清掉。'))return;
   await VDB.del(s.id);VSET=null;VLEC=null;VCTX=null;await vLoad();toast('已删除');
 };
@@ -1644,6 +1738,7 @@ $('file').onchange=async function(e){
 $('reload').onclick=function(){autoLoad(this)};
 $('ldg').onclick=function(){autoLoad(this,packByKey(LOCAL_KEY))};
 $('ldl').onclick=function(){autoLoad(this,packByKey(LOCAL_KEY2))};
+$('ldc').onclick=function(){autoLoad(this,packByKey(LOCAL_KEY3))};
 $('bq').oninput=renderBook;
 $('expp').onclick=function(){
   dl('高数学习数据_'+today()+'.json',JSON.stringify({progress:PR,cards:CD,stats:ST,messages:MS},null,1));
@@ -1660,7 +1755,7 @@ MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();
 if(!MS.length)addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n- **教材**：进「教材」点「载入全部内置教材」，一次拿到高数八上 + 线代合编本；也可点「仅高数」/「仅线代」，或自己导入 md / pdf / epub。然后把正在学的那节勾上\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。');
 (async function(){
-  CH=await IDB.all();renderBook();
+  CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)});renderBook();
   if(!CH.length&&location.protocol!=='file:'){await autoLoad(null);renderBook()}
 })();
 /* 公式库若是从备用源延迟加载成功的，加载完重画一遍，把之前裸着的 LaTeX 补上 */

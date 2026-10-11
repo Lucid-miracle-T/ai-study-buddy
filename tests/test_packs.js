@@ -68,27 +68,46 @@ function installIDB(win) {
   log('=== 1. 包定义 ===');
   const packs = ev('PACKS.map(p=>({key:p.key,name:p.name,dir:p.dir,n:p.files.length}))');
   log(JSON.stringify(packs));
-  ok(packs.length === 2, '两个内置包');
+  ok(packs.length === 3, '三个内置包（高数 / 线代 / C语言）');
   ok(packs[0].name.indexOf('高等数学') >= 0, '高数包名正确');
   ok(packs[1].name.indexOf('线性代数') >= 0, '线代包名正确');
+  ok(packs[2].name.indexOf('C语言') >= 0, 'C语言包名正确');
+  ok(packs[2].dir === 'book/C语言/', 'C语言包目录正确，实际 ' + packs[2].dir);
+  ok(packs[2].n === 29, 'C语言 28 章 + 附录 = 29 个分册，实际 ' + packs[2].n);
   ok(ev('packOf("第1章 行列式.md")') && ev('packOf("第1章 行列式.md").key') === '__local2', '线代分册归属正确包');
   ok(ev('packOf("第1章_函数与极限.md").key') === '__local', '高数分册归属正确包');
+  ok(ev('packOf("第10章 程序结构.md").key') === '__local3', 'C语言分册归属正确包');
   ok(ev('packOf("C语言.md")') === null, '外部教材不属于任何包');
+  /* packOf() 是按文件名归属的，两个包不能有同名分册，否则会被判给前面那个包 */
+  const allFiles = ev('PACKS.reduce(function(a,p){return a.concat(p.files)},[])');
+  ok(new Set(allFiles).size === allFiles.length, '三门课的分册名互不重名（共 ' + allFiles.length + ' 个）');
+  ok(ev('packOf("附录 A-F.md").key') === '__local3', 'C语言附录归属正确，没被高数的同名附录抢走');
 
   log('');
   log('=== 2. 课程标签栏 ===');
-  // 模拟：两包全部载入
+  // 模拟：三个包全部载入
   ev(`
     PACKS.forEach(p=>p.files.forEach(f=>window.__idb.push({id:f+'#1',file:f,title:'测试节',txt:'内容'})));
-    CH=window.__idb.slice(); updateCourses();
+    CH=window.__idb.slice(); CH.sort(function(a,b){return natCmp(a.id,b.id)}); updateCourses(); renderBook();
   `);
   await wait(50);
   const tabs = [...doc.querySelectorAll('#ctabs .ctab')].map(b => b.textContent);
   log('标签: ' + JSON.stringify(tabs));
-  ok(tabs.length === 3, '标签数 3（自由问答 + 两门内置课），实际 ' + tabs.length);
+  ok(tabs.length === 4, '标签数 4（自由问答 + 三门内置课），实际 ' + tabs.length);
   ok(tabs.some(t => t.indexOf('线性代数与解析几何') >= 0), '线代作为一个标签出现');
   ok(tabs.some(t => t.indexOf('高等数学') >= 0), '高数作为一个标签出现');
+  ok(tabs.some(t => t.indexOf('C语言') >= 0), 'C语言作为一个标签出现');
   ok(!tabs.some(t => t.indexOf('行列式.md') >= 0), '没有按分册拆出标签');
+
+  log('');
+  log('=== 2b. 分册自然序（第1章 要排在第10章 前）===');
+  const subs = [...doc.querySelectorAll('#blist .grp>h3')].map(h => h.textContent.trim());
+  log('前 6 个分册: ' + JSON.stringify(subs.slice(0, 6)));
+  const i1 = subs.findIndex(s => s.indexOf('第1章 C语言概述') === 0);
+  const i2 = subs.findIndex(s => s.indexOf('第2章 C语言基本概念') === 0);
+  const i10 = subs.findIndex(s => s.indexOf('第10章 程序结构') === 0);
+  ok(i1 >= 0 && i10 >= 0, 'C语言分册都出现在目录树里');
+  ok(i2 === i1 + 1 && i10 > i2, '分册按自然序排（第1/第2/…/第10），实际 i1=' + i1 + ' i2=' + i2 + ' i10=' + i10);
 
   log('');
   log('=== 3. 两门课记录互相隔离 ===');

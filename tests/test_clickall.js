@@ -154,7 +154,7 @@ function fakeStream(win) {
     await wait(60);
 
     /* 先收集该视图（及全局）所有可点元素的下标，边点边点重新查询，避免失效引用 */
-    const sel = '.pill, button, .chip, .ctab, [data-a], [data-c], [data-x], .seg b, .rcT, .rcF, .vw';
+    const sel = '.pill, button, .chip, .ctab, [data-a], [data-c], [data-x], .seg b, .rcT, .rcF, .vw, #blist h3, #blist .item';
     const seen = new Set();
     for (let round = 0; round < 3; round++) {
       const els = [...doc.querySelectorAll(sel)];
