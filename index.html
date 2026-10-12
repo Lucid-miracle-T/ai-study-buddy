@@ -1127,10 +1127,49 @@ function niceTex(s){
   t=t.replace(/[{}]/g,'').replace(/\s+/g,' ').trim();
   return t;
 }
+/* 从符号面板反复插入公式模板，会在公式里再套一层公式，写下
+   $\left| $\left| x_{n}-a \right|$ \right|$ 这样的东西。
+   md() 提取 $...$ 用的是非贪婪配对，会把它拆成「外层半截 + 内层整段 + 外层另半截」：
+   \left| 与 \right| 各自成了缺另一半的残段，KaTeX 只能把原文用红字吐回来 ——
+   看着像「导师坏了」，其实是两段不完整的公式。
+   这里把这种嵌套压平（去掉内层那两个 $）。判据很严，四条同时满足才合并：
+     ① 前段 \left 多于 \right   ② 后段 \right 多于 \left
+     ③ 内层自成对                ④ 三段合起来正好成对
+   再加一条形状检查：前段必须以「\left+定界符」收尾、后段以「\right+定界符」开头。
+   所以「$5$ 和 $10$」这种相邻的独立公式、以及「$\left| x \right|$ 和 $\left| y \right|$」
+   都不会被动。 */
+const TEX_LEFT_TAIL=/\\(?:left|bigl|Bigl)\s*[|(.\\[{\x27"<]\s*$/;
+const TEX_RIGHT_HEAD=/^\s*\\(?:right|bigr|Bigr)\s*[|).\\\]}\x27">]/;
+function healNestedTex(src){
+  let s=String(src);
+  if(s.indexOf('\\left')<0&&s.indexOf('\\right')<0)return s;   /* 绝大多数文本直接放过 */
+  const cnt=function(x,re){return (x.match(re)||[]).length};
+  for(let pass=0;pass<4;pass++){
+    const d=[];                 /* 单独的 $ 位置：跳过 \$ 与 $$ */
+    for(let i=0;i<s.length;i++)
+      if(s[i]==='$'&&s[i-1]!=='\\'&&s[i+1]!=='$'&&s[i-1]!=='$')d.push(i);
+    if(d.length<4)break;
+    const seg=[];               /* seg[k]：第 k 个 $ 与第 k+1 个 $ 之间的正文 */
+    for(let i=0;i+1<d.length;i++)seg.push(s.slice(d[i]+1,d[i+1]));
+    const c=seg.map(function(x){return [cnt(x,/\\left\b/g),cnt(x,/\\right\b/g)]});
+    let hit=false;
+    for(let k=0;k+2<seg.length;k++){
+      const A=c[k],B=c[k+1],C=c[k+2];
+      if(A[0]>A[1]&&C[1]>C[0]&&B[0]===B[1]&&A[0]+B[0]+C[0]===A[1]+B[1]+C[1]
+         &&TEX_LEFT_TAIL.test(seg[k])&&TEX_RIGHT_HEAD.test(seg[k+2])){
+        s=s.slice(0,d[k])+'$'+seg[k]+seg[k+1]+seg[k+2]+'$'+s.slice(d[k+3]+1);
+        hit=true;break;
+      }
+    }
+    if(!hit)break;
+  }
+  return s;
+}
 function md(src){
   let s=normGlyph(String(src));const st=[];
   /* 模型常用 \(...\) / \[...\]，统一成 $ 形式 */
   s=s.replace(/\\\[([\s\S]+?)\\\]/g,'$$$$$1$$$$').replace(/\\\(([\s\S]+?)\\\)/g,'$$$1$$');
+  s=healNestedTex(s);      /* 面板反复插入留下的 $ 套 $ 先压平，再配对 */
   if(typeof katex!=='undefined'){
     s=s.replace(/\$\$([\s\S]+?)\$\$/g,function(m,p){try{st.push(katex.renderToString(p,{displayMode:true,throwOnError:false}))}catch(e){st.push('<code>'+esc(niceTex(p))+'</code>')}return "%%M"+st.length+"%%"});
     s=s.replace(/(^|[^\\$])\$([^$\n]+?)\$/g,function(m,pre,p){try{st.push(katex.renderToString(p,{displayMode:false,throwOnError:false}))}catch(e){st.push('<code>'+esc(niceTex(p))+'</code>')}return pre+"%%M"+st.length+"%%"});
@@ -2512,13 +2551,36 @@ const SYMS=[
  ]}
 ];
 let SYMA=LS.g('syma',1), SYMT=LS.g('symt','base');
+/* 光标落在哪几段 $...$ 里（配对方式与 md() 完全一致，所见即所得）。
+   md() 提取公式用的是非贪婪配对，这里必须用同一套，否则会出现
+   「看着像在公式里、其实不在」这种错判。 */
+function mathRanges(s){
+  const out=[];
+  String(s).replace(/\$\$([\s\S]+?)\$\$/g,function(m,_p,off){out.push([off,off+m.length]);return m});
+  /* pre 是 $ 前那个字符（^ 时为空），所以 $ 的位置是 off + pre.length */
+  String(s).replace(/(^|[^\\$])\$([^$\n]+?)\$/g,function(m,pre,_p,off){
+    out.push([off+pre.length,off+m.length]);return m});
+  return out;
+}
 function insAt(str){
   const ta=$('in'),s=ta.value,a=ta.selectionStart,b=ta.selectionEnd;
-  ta.value=s.slice(0,a)+str+s.slice(b);
-  let pos=a+str.length;
-  const i=str.indexOf('{');
-  if(i>=0)pos=a+i+1;
-  ta.setSelectionRange(pos,pos);ta.focus();
+  /* 已经站在一段公式里，还要再插一个 $...$ 模板 → 只插"肉"，不再套一层 $。
+     否则会得到 $\left| $\left| x \right|$ \right|$：md() 的非贪婪配对会把它拆成
+     「外层半截 + 内层整段 + 外层另半截」，\left| 与 \right| 各自成了缺另一半的残段，
+     KaTeX 只能把原文用红字吐回来 —— 看着像「坏了」，其实是被拆散的两段。 */
+  const inMath=mathRanges(s).some(function(r){return a>r[0]&&a<r[1]});
+  let ins=str;
+  if(inMath&&/^\$/.test(str))ins=str.replace(/^\$+/,'').replace(/\$+$/,'');
+  ta.value=s.slice(0,a)+ins+s.slice(b);
+  /* 光标落点：优先进 {} 的沟里 */
+  const i=ins.indexOf('{');
+  if(i>=0){const p=a+i+1;ta.setSelectionRange(p,p);ta.focus();return}
+  /* 没有 {} 的模板（如 $\left| x \right|$）：把那个占位字母选中，用户一打字就替换掉它。
+     不能简单地把光标停在收尾 $ 前 —— 那样接着打字会得到 $\left| x 打的字$，
+     又缺 \right|，又是一片红。挑"孤立的一个字母"（前后都不是字母、且不是 \命令 的一部分）。 */
+  const m=/(^|[^A-Za-z\\])([A-Za-z])(?=[^A-Za-z]|$)/.exec(ins);
+  if(m){const p=a+m.index+m[1].length;ta.setSelectionRange(p,p+1);ta.focus();return}
+  const p=a+ins.length;ta.setSelectionRange(p,p);ta.focus();
 }
 function renderSym(){
   const tw=$('symtabs'),gw=$('symgrids');
