@@ -634,7 +634,10 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
             <button id="impall">从备份恢复</button>
             <button id="wipe">清空全部本地数据</button>
           </div>
-          <input id="impf" type="file" accept=".json,application/json" style="display:none">
+          <!-- accept 里必须带上 application/octet-stream：手机（尤其安卓）经微信/QQ 传过去的
+               .json 常被系统标成 octet-stream，只写 .json+application/json 的话，
+               手机文件选择器会把它显示成灰色、点不动 —— 这是「换设备后恢复不了」的头号原因。 -->
+          <input id="impf" type="file" accept=".json,application/json,text/plain,application/octet-stream" style="display:none">
           <div class="help" style="margin-top:10px">
             导出的是<b>全部对话、闪卡、掌握进度、勾选、习惯设置、导师与接口配置</b>；<b>不含 API Key</b>，也不含教材正文（换设备后重新「载入全部内置教材」即可）。<br><br>
             换手机、换浏览器、清缓存之前先导出一次；在新环境里点「从备份恢复」选中那个文件，记录就回来了。
