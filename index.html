@@ -86,7 +86,11 @@ body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;backgroun
 .nv button{display:block;width:100%;text-align:left;padding:8px 10px;border:none;background:none;border-radius:7px;cursor:pointer;font-size:13px;font-family:inherit;color:var(--tx2);margin-bottom:2px}
 .nv button:hover{background:#f1efe8}
 .nv button.on{background:var(--blue-bg);color:var(--blue);font-weight:500}
-.nv .foot{margin-top:auto;padding:10px;font-size:11px;color:var(--tx3);line-height:1.6;border-top:1px solid var(--line)}
+/* 用 #foot 而不是 .nv .foot：这个页脚是 <nav> 的子元素、并不在 .nv 里面，
+   写成 .nv .foot 的话两条规则都永远匹配不上 —— 桌面端 margin-top:auto 失效（不贴底），
+   手机端更明显：display:none 没生效，它作为横向导航条的第三项被挤到最右边，
+   窄窄一条竖排文字溢出屏幕。 */
+#foot{margin-top:auto;padding:10px;font-size:11px;color:var(--tx3);line-height:1.6;border-top:1px solid var(--line)}
 /* main */
 #stage{flex:1;display:flex;flex-direction:column;min-width:0}
 section.view{display:none;flex:1;min-height:0}
@@ -146,7 +150,19 @@ button.sm{padding:4px 9px;font-size:12px}
 /* 字体缺字：点状下划线 + 悬停可见码位，让人知道是「这个字显示不出来」而不是「导师坏了」 */
 .msg .body .noglyph{border-bottom:1px dotted #BA7517;cursor:help}
 #inbar{border-top:1px solid var(--line);background:var(--panel);padding:11px 24px;flex-shrink:0}
-#inbar .wrap{display:flex;gap:8px;align-items:flex-end}
+#inbar .wrap{display:block}
+.inrow{display:flex;gap:8px;align-items:flex-end}
+/* 拍题：待发送的那张图先摆出来看一眼，拍糊了可以直接撤掉重拍 */
+#photo{height:44px;font-size:16px;padding:0 12px;flex-shrink:0}
+.pendimg{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.pendimg img{max-height:84px;max-width:170px;border-radius:7px;border:1px solid var(--line2);background:#fff;object-fit:contain;display:block}
+.pendimg button{width:22px;height:22px;padding:0;border-radius:50%;font-size:13px;line-height:1;cursor:pointer;background:#fff;border:1px solid var(--line2);color:var(--tx2)}
+.pendimg button:hover{color:var(--red);border-color:#E5A9A9;background:var(--red-bg)}
+/* 对话里上传的题目图（点一下看大图） */
+.qimg{margin-bottom:8px}
+.qimg img{max-width:min(380px,100%);border-radius:8px;border:1px solid var(--line2);background:#fff;display:block;cursor:zoom-in}
+#zoom{position:fixed;inset:0;background:rgba(20,20,18,.9);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;cursor:zoom-out}
+#zoom img{max-width:100%;max-height:100%;border-radius:8px}
 /* 语音 */
 #mic{height:44px;font-size:16px;padding:0 12px;flex-shrink:0}
 #mic.on{background:var(--red-bg);border-color:#E5A9A9;color:var(--red)}
@@ -317,7 +333,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
   .brand p{display:none}
   .nv{display:flex;padding:6px;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
   .nv button{width:auto;white-space:nowrap;margin-bottom:0;padding:9px 12px;font-size:13px}
-  .nv .foot{display:none}
+  #foot{display:none}   /* 手机上导航条是横的，这块统计挤在右边就是一条竖排乱码 */
   /* 通用留白收紧 */
   .bar{padding:8px 12px;gap:6px}
   .wrap{max-width:100%}
@@ -419,11 +435,17 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
         <div id="symgrids"></div>
       </div></div>
       <div id="inbar"><div class="wrap">
-        <textarea id="in" placeholder="说点什么。Ctrl+Enter 发送"></textarea>
-        <button id="mic" title="语音输入：点一下开始说，说完自动停下">🎙</button>
-        <span id="micst"></span>
-        <button class="pri" id="send" style="height:44px">发送</button>
-      </div></div>
+        <div id="pendimg" class="pendimg" style="display:none"></div>
+        <div class="inrow">
+          <textarea id="in" placeholder="说点什么。Ctrl+Enter 发送"></textarea>
+          <!-- 不带 capture：手机上系统会给出「拍照 / 从相册选」两个入口，桌面端就是选文件 -->
+          <button id="photo" title="拍题目或选一张图给导师看">📷</button>
+          <button id="mic" title="语音输入：点一下开始说，说完自动停下">🎙</button>
+          <span id="micst"></span>
+          <button class="pri" id="send" style="height:44px">发送</button>
+        </div>
+      </div>
+      <input type="file" id="imgf" accept="image/*" style="display:none"></div>
     </section>
 
     <!-- 教材 -->
@@ -540,7 +562,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
         </div>
         <div class="card2">
           <h2>导师人格</h2>
-          <div class="hint">点一个再改提示词；改动会记住。<span id="pcur" style="color:var(--blue)"></span></div>
+          <div class="hint">点一个再改提示词；改动会记住。<b>每一节各自记着自己的导师</b>——换节就换人，互不牵连；新开一节默认沿用当前这位。<span id="pcur" style="color:var(--blue)"></span></div>
           <div id="pbox2" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px"></div>
           <label>系统提示词</label><textarea id="sys" rows="9"></textarea>
           <div style="display:flex;gap:6px;margin-top:8px"><button id="rstd">恢复这个人设的默认提示词</button></div>
@@ -938,6 +960,7 @@ function switchCourse(k){
   if(packByKey(k))migratePack(k,packByKey(k).files);
   loadCourseData();MS=LS.g(msKey(),[])||[];
   rev=null;revBack=false;
+  applySessWho();      /* 换了书就换了节，导师也跟着换回这一节自己记的那位 */
   updateCourses();renderChips();renderBook();reloadMsgs();renderCards();
   toast('已切到「'+cname(k)+'」');
   return true;
@@ -1038,17 +1061,18 @@ function switchSess(id){
   if(id===CURS)return;
   saveMs();
   CURS=id;saveSess();
+  applySessWho();      /* 先换人再重绘：气泡上的导师名与系统提示词都得跟上这一节 */
   reloadMsgs();renderSTabs();renderCards();
   settleBottom(900);
-  toast('已切到「'+sessLabel(id)+'」');
+  toast('已切到「'+sessLabel(id)+'」 · 导师 '+getP(who).n);
 }
 /* 开新一节。当前节还是空的就直接用它——免得连点两下多出一串空节 */
 function newSess(silent){
   if(!curMsgs().length){if(!silent)toast('这一节还没开始，直接在这儿上就行');return CURS}
   saveMs();
-  SESS.push({id:newSid(),t:Date.now(),title:''});
+  SESS.push({id:newSid(),t:Date.now(),title:'',who:who});   /* 新节默认还是这位，想换就点上面那排 */
   CURS=SESS[SESS.length-1].id;saveSess();
-  renderSTabs();reloadMsgs();renderCards();
+  applySessWho();renderSTabs();reloadMsgs();renderCards();
   if(!silent)toast('已开第 '+SESS.length+' 节 · 前面几节随时点回去看');
   return CURS;
 }
@@ -1060,6 +1084,7 @@ function delSess(id){
   if(!SESS.length)SESS=[{id:newSid(),t:Date.now(),title:''}];
   if(CURS===id)CURS=SESS[SESS.length-1].id;
   saveSess();saveMs();
+  applySessWho();
   reloadMsgs();renderSTabs();renderCards();
   toast('已删除那一节');
 }
@@ -1792,16 +1817,37 @@ function renderChips(){
     const s=document.createElement('span');s.className='chip';s.innerHTML=esc(c?c.title.slice(0,14):id)+'<b>×</b>';
     s.querySelector('b').onclick=function(){toggleCtx(id)};b.appendChild(s)});
 }
+/* ---------- 每一节记自己的导师 ----------
+   同一门课里，讲导数的这一节可能想让牛顿带、讲证明的那一节想让柯西带。
+   导师存在节对象上（s.who）；升级前的节没有这个字段，
+   就回落到全局 who —— 也就是你之前选的那位，行为跟以前一模一样。 */
+function sessWho(id){
+  const s=sessOf(id);
+  return (s&&s.who)||LS.g('who','cauchy');
+}
+function setSessWho(k){
+  const s=sessOf(CURS);if(s){s.who=k;saveSess()}
+}
+/* 换节/换课后把人换过来，顺手刷新系统提示词与顶栏那排高亮 */
+function applySessWho(){
+  who=sessWho(CURS);
+  const t=$('sys');if(t)t.value=PM[who]||getP(who).p;
+  renderPs();
+}
 function renderPs(){
   ['pbox','pbox2'].forEach(function(box){
     const b=$(box);b.innerHTML='';
     pKeys().forEach(function(k){
       const p=document.createElement('span');p.className='pill'+(who===k?' on':'');p.textContent=getP(k).n;
-      p.onclick=function(){who=k;LS.s('who',k);$('sys').value=PM[k]||getP(k).p;renderPs();reloadMsgs()};
+      p.onclick=function(){
+        who=k;LS.s('who',k);setSessWho(k);   /* 写回这一节：别的节各有各的导师，互不牵连 */
+        $('sys').value=PM[k]||getP(k).p;renderPs();reloadMsgs();
+        toast('本节导师：'+getP(k).n);
+      };
       b.appendChild(p);
     });
   });
-  $('pcur').textContent='当前：'+getP(who).n;
+  $('pcur').textContent='本节导师：'+getP(who).n;
   renderModes();
   renderMyPs();
 }
@@ -1833,7 +1879,7 @@ function renderMyPs(){
     s.querySelector('b').onclick=function(){
       if(!confirm('删除人设「'+MYP[k].n+'」？'))return;
       delete MYP[k];LS.s('myps',MYP);delete PM[k];LS.s('pm',PM);
-      if(who===k){who='cauchy';LS.s('who',who)}
+      if(who===k){who='cauchy';LS.s('who',who);setSessWho(who)}
       renderPs();$('sys').value=PM[who]||getP(who).p;toast('已删除')};
     b.appendChild(s);
   });
@@ -2004,16 +2050,21 @@ function renderRout(){
 }
 function applyRec(k,mK,pK){
   if(!PERSONA[k]&&!MYP[k])return;
-  who=k;LS.s('who',who);$('sys').value=PM[k]||getP(k).p;
+  who=k;LS.s('who',who);setSessWho(k);$('sys').value=PM[k]||getP(k).p;
   if(mK&&MODE[mK]){MODEK=mK;LS.s('mode',mK)}
   if(pK){PA=pK;LS.s('pace',pK);const pe=$('pace');if(pe)pe.value=pK}
   renderPs();
+  reloadMsgs();   /* 顶栏换了人，这一节气泡上的名字也跟着换 */
   toast('已换成：'+getP(k).n+(mK?(' · '+MODE[mK].n):'')+(pK?(' · 节奏'+RPACEN[pK]):''));
 }
-function addMsg(role,txt,idx){
+function addMsg(role,txt,idx,img){
   const d=document.createElement('div');d.className='msg'+(role==='user'?' me':'');
   d.dataset.i=String(idx===undefined?MS.length:idx);
-  d.innerHTML='<div class="who">'+(role==='user'?'我':esc(curName()))+'</div><div class="body">'+md(txt)+'</div>';
+  /* 题目图摆在文字上面：先看清题，再读自己写的那句话 */
+  const pic=img?'<div class="qimg"><img src="'+img+'" alt="上传的题目">'+'</div>':'';
+  d.innerHTML='<div class="who">'+(role==='user'?'我':esc(curName()))+'</div><div class="body">'+pic+md(txt)+'</div>';
+  /* 题目图点一下看大图：手机屏幕上缩略图看不清条件 */
+  if(img){const im=d.querySelector('.qimg img');if(im)im.onclick=function(){zoomImg(img)}}
   const w=d.querySelector('.who');
   if(role==='user'){
     const b=document.createElement('button');b.type='button';b.className='say';b.textContent='编辑';b.title='改这句话，然后重新回答（它之后的对话会被清掉）';
@@ -2034,7 +2085,7 @@ function reloadMsgs(){
   const m=$('msgs'),keep=m?m.scrollTop:0;
   $('mw').innerHTML='';
   /* 只画当前这一节。其他节的对话仍在 MS 里（存着、能回看），只是不在这一屏 */
-  MS.forEach(function(x,i){if(sid(x)===CURS)addMsg(x.r,x.c,i)});
+  MS.forEach(function(x,i){if(sid(x)===CURS)addMsg(x.r,x.c,i,x.img)});
   if(!curMsgs().length&&!BUSY)$('mw').innerHTML='<div class="empty" id="sempty">这一节还没开始。<br>点上面「开始今天的一课」，或者直接在下面提问。</div>';
   if(PINB)toBottom();else if(m)m.scrollTop=keep;
 }
@@ -2115,7 +2166,8 @@ function startEdit(i){
     if(v===m.c&&!later){close();return}
     if(later&&!confirm('这会删除这条之后的 '+later+' 条对话，然后重新回答。继续？'))return;
     MS=MS.slice(0,i).concat(MS.slice(i).filter(function(x){return sid(x)!==CURS}));saveMs();reloadMsgs();
-    await ask(v);
+    /* 这条原本带着题目图，重发时把图一并带上——否则改个字就得重新拍一次 */
+    await ask(v,{img:m.img});
   };
 }
 function sysMsg(){
@@ -2163,17 +2215,17 @@ async function ask(text,opt){
   const pack=[{role:'system',content:sysMsg()+'\n\n'+ctxText()}];
   /* 只把「这一节」的对话发给导师：各节独立，新节从零开始，
      也顺带解决了「越聊越长、越聊越慢」——旧节随时点回去看，但不占上下文 */
-  MS.forEach(function(m){if(sid(m)!==CURS)return;pack.push({role:m.r==='user'?'user':'assistant',content:m.c})});
-  pack.push({role:'user',content:text});
+  MS.forEach(function(m){if(sid(m)!==CURS)return;pack.push({role:m.r==='user'?'user':'assistant',content:packContent(m.c,m.img)})});
+  pack.push({role:'user',content:packContent(text,opt.img)});
   /* 先把要占的下标算出来：两条消息是在 MS.push 之前就渲染的，
      若让 addMsg 自己取 MS.length，两条会拿到同一个数（编辑功能依赖这个下标） */
   const bi=MS.length;
-  if(!opt.silent)addMsg('user',text,bi);
+  if(!opt.silent)addMsg('user',text,bi,opt.img);
   const el=addMsg('assistant','<span style="color:#888780">…</span>',bi+1);
   /* 记下这条对话属于哪门课：流式回答进行中用户可能切走，回答必须写回**原课程**。
      切课会把全局 MS 换成另一门课的数组，若结束时不加判断地 MS.push，回答会串课。 */
   const myCourse=COURSE, myMs=MS, mySess=CURS;
-  MS.push({r:'user',c:text,s:CURS});saveMs();
+  MS.push({r:'user',c:text,s:CURS,img:opt.img||''});saveMs();
   renderSTabs();
   $('stop').disabled=false;ctrl=new AbortController();
   const myCtrl=ctrl;
@@ -2549,6 +2601,7 @@ const SYMS=[
    ['方程组','$\\begin{cases} x+y=1 \\\\ x-y=0 \\end{cases}$'],
    ['多行对齐','$\\begin{aligned} a&=b \\\\ c&=d \\end{aligned}$'],
    ['推论符号','$\\because\\quad\\therefore\\quad\\Rightarrow$'],
+   ['推出','$\\Rightarrow$'],['等价','$\\Leftrightarrow$'],
    ['常用希腊','$\\varepsilon,\\ \\delta,\\ \\theta,\\ \\lambda,\\ \\omega$'],
    ['无穷区间','$[a,+\\infty)$'],['属于','$x\\in[a,b]$'],['映射','$f:A\\to B$']
  ]}
@@ -2609,7 +2662,75 @@ function renderSym(){
 }
 $('symtoggle').onclick=function(){SYMA=SYMA?0:1;LS.s('syma',SYMA);renderSym();applyHabit()};
 
-$('send').onclick=function(){const t=$('in').value.trim();if(!t)return;$('in').value='';ask(t)};
+/* ---------- 拍题上传 ----------
+   学生最常干的事是「拍一张题给老师看」，而不是把题一个字一个字敲出来。
+   走法：拍照/选图 → 压到最长边 1200 + JPEG → 存进这条消息（base64）→
+   发给导师时换成多模态格式（content 由字符串变成数组）。
+   压缩是必须的：手机原图动辄 4–8MB，直接塞 localStorage 会当场撑爆配额（约 5MB）。 */
+const IMG_MAX=1200, IMG_Q=0.72;
+let PEND=null;   /* 待发送的那张图（dataURL） */
+/* 带图的提问要按多模态格式发；不带图的必须保持字符串——纯文本模型收到数组会直接报错 */
+function packContent(text,img){
+  if(!img)return text||'';
+  return [{type:'text',text:text||'请看这张图里的题目。'},
+          {type:'image_url',image_url:{url:img}}];
+}
+function zoomImg(src){
+  const old=$('zoom');if(old)old.remove();
+  const z=document.createElement('div');z.id='zoom';
+  const im=document.createElement('img');im.src=src;
+  z.appendChild(im);z.onclick=function(){z.remove()};
+  document.body.appendChild(z);
+}
+function shrinkImg(file){
+  return new Promise(function(res,rej){
+    const fr=new FileReader();
+    fr.onerror=function(){rej(new Error('文件读不出来'))};
+    fr.onload=function(){
+      const im=new Image();
+      im.onerror=function(){rej(new Error('这不是一张能显示的图片'))};
+      im.onload=function(){
+        try{
+          let w=im.naturalWidth||im.width,h=im.naturalHeight||im.height;
+          if(!w||!h){rej(new Error('读不到图片尺寸'));return}
+          if(w>IMG_MAX||h>IMG_MAX){const s=IMG_MAX/Math.max(w,h);w=Math.max(1,Math.round(w*s));h=Math.max(1,Math.round(h*s))}
+          const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+          const g=cv.getContext&&cv.getContext('2d');
+          if(!g){rej(new Error('这个浏览器画不了图'));return}
+          /* 先铺一层白底：手机截屏常带透明区，转 JPEG 会变成黑块 */
+          g.fillStyle='#fff';g.fillRect(0,0,w,h);
+          g.drawImage(im,0,0,w,h);
+          res(cv.toDataURL('image/jpeg',IMG_Q));
+        }catch(e){rej(e)}
+      };
+      im.src=fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+function imgThumb(){
+  const b=$('pendimg');if(!b)return;
+  if(!PEND){b.style.display='none';b.innerHTML='';return}
+  b.style.display='flex';
+  b.innerHTML='<img src="'+PEND+'" alt="待发送的题目图"><button type="button" title="撤掉这张图">×</button>';
+  b.querySelector('button').onclick=function(){PEND=null;imgThumb()};
+}
+$('photo').onclick=function(){$('imgf').click()};
+$('imgf').onchange=async function(){
+  const f=this.files&&this.files[0];this.value='';
+  if(!f)return;
+  toast('正在处理图片…');
+  try{PEND=await shrinkImg(f);imgThumb();toast('图放好了，点「发送」发给导师')}
+  catch(e){PEND=null;imgThumb();toast('这张图用不了：'+((e&&e.message)||e))}
+};
+
+$('send').onclick=function(){
+  const t=$('in').value.trim();
+  if(!t&&!PEND)return;      /* 空手发不出去；但只要有图，题面一个字不写也行 */
+  const img=PEND;PEND=null;imgThumb();
+  $('in').value='';
+  ask(t,{img:img});
+};
 $('in').addEventListener('keydown',function(e){
   /* 中文输入法选字时的 Enter 不是发送意图 */
   if(e.isComposing||e.keyCode===229)return;
@@ -2820,7 +2941,9 @@ window.addEventListener('unhandledrejection',function(e){
 /* ---------- 启动 ---------- */
 /* 这里不要再加「要读教材才能画」的东西：此刻 CH 还是空的。
    renderChips 就因此搬到了下面 await IDB.all() 之后。 */
-renderPs();renderModes();applyHabit();updTok();renderSym();renderTts();updTts();renderMic();renderVoiceName();
+/* applySessWho 顶替原来的 renderPs()：它内部就会 renderPs，还会按「当前这一节」把导师、
+   系统提示词一起摆正 —— 否则刷新后节条停在第 3 节，导师却还是上次全局选的那位。 */
+applySessWho();renderModes();applyHabit();updTok();renderSym();renderTts();updTts();renderMic();renderVoiceName();
 vLoad().catch(function(e){storeWarn(e,'网课库')});
 MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();

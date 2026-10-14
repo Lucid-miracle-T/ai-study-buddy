@@ -267,6 +267,30 @@ const KX_STUB =
     ok(ta.selectionStart === ta.value.length, '落点在公式之后（这类模板后面就是接着写正文）');
   }
 
+  /* === 7b. 推出 / 等价符号 === */
+  log('');
+  log('=== 7b. 面板里的「推出」与「等价」 ===');
+  {
+    const ta = doc.getElementById('in');
+    const tmap = JSON.parse(ev('JSON.stringify(SYMS.filter(function(g){return g.k==="tmpl"})[0].tm)'));
+    const names = tmap.map(x => x[0]);
+    const get = n => (tmap.filter(x => x[0] === n)[0] || [])[1];
+    ok(names.indexOf('推出') >= 0, '模板组里有「推出」');
+    ok(names.indexOf('等价') >= 0, '模板组里有「等价」');
+    ok(get('推出') === '$\\Rightarrow$', '「推出」插的是 \\Rightarrow（⟹）：' + JSON.stringify(get('推出')));
+    ok(get('等价') === '$\\Leftrightarrow$', '「等价」插的是 \\Leftrightarrow（⟺）：' + JSON.stringify(get('等价')));
+
+    ta.value = 'A'; ta.selectionStart = ta.selectionEnd = 1;
+    ev('insAt(' + JSON.stringify(get('推出')) + ')');
+    ok(ta.value === 'A' + get('推出'), '点一下插进来的是完整的 $…$：' + JSON.stringify(ta.value));
+    ok((ta.value.match(/\$/g) || []).length === 2, '一对 $，不多不少');
+
+    ev('__tex.length=0');
+    ev('md(' + JSON.stringify(ta.value) + ')');
+    const t = JSON.parse(ev('JSON.stringify(__tex)') || '[]');
+    ok(t.length === 1 && t[0] === '\\Rightarrow', 'md() 把它当一段公式喂给 KaTeX：' + JSON.stringify(t));
+  }
+
   /* === 8. 源码里确实用上了这两处新逻辑 === */
   log('');
   log('=== 8. 接线检查 ===');
