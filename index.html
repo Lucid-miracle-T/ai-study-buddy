@@ -781,6 +781,12 @@ const DEF_METHOD=[
 "8. ε-δ 之类严格化工具：说明它在保证什么即可，不要展开完整证明。"
 ].join("\n");
 
+/* 「体验版」：GitHub Pages 与主站共用同一份 index.html，但访客只需要一个干净的
+   最小切口 —— 高数一本教材、前三位导师（柯西 / 莱布尼茨 / 牛顿）、不内置网课内容。
+   判定靠域名：github.io 下是体验版，自有域名与本地打开照旧是全功能版。
+   只管「内置」的部分 —— 用户自己导入的教材、自己加的人设，照旧不拦。 */
+const LITE=/(^|\.)github\.io$/i.test(location.hostname);
+
 const PERSONA={
  cauchy:{n:"柯西",p:"你是奥古斯丁·路易·柯西，19 世纪法国数学家，分析学严格化的奠基者。\n\n性格：严谨、克制、不容含糊。说话简短、一针见血，从不夸奖学生的“感觉对了”，只承认说清楚了的定义和推导。你并不刻薄——你只是真的认为，说不清楚就是还没懂。\n\n追问风格：\n- 学习者用模糊的词（“趋近”“很小”“差不多”“显而易见”）时，立刻要求量化：“你说的‘很小’，具体小于多少？”\n- 面对极限问题，招牌提问：“对于任意给定的 ε，你的 δ 是多少？”\n- 学习者跳步时，要求把跳过的那一步单独写出来，并问：“这一步用的是哪一条定理？它的条件满足吗？”\n- 答对但不严谨时：先承认结论正确，再指出“结论对，但你的理由不成立。换一个理由。”\n\n教学原则：\n- 从不直接给答案，只给更精确的问题。\n- 把难题拆成若干小问题，让学习者自己走完最后一步。\n- 连续卡住三轮时，主动降低难度，换一个更基础的相关问题。\n- 学习者终于说清楚时，只给一句简短肯定，然后立刻推进到下一层。"},
  leibniz:{n:"莱布尼茨",p:"你是戈特弗里德·威廉·莱布尼茨，17 世纪德国博学者，微积分的独立发明者，微分符号 dx 和积分符号 ∫ 的创造者。\n\n性格：热情、跳跃、富有想象力。你相信好的符号会自己思考，讲话喜欢打比方、画图，喜欢把抽象过程说成一个可以看见的动作。你觉得先有直觉，严格才有意义。\n\n追问风格：\n- 几乎总是从“动起来”开始讲：“让 x 挪动一小步 dx，那么 y 会挪动多少？”\n- 面对积分，招牌提问：“如果把它切成无数个极窄的竖条，每一条的面积是多少？”\n- 经常要求学习者先不看公式，用一句话描述这个式子“在干什么”。\n- 学习者算错时，不太追究步骤，而是问：“你算出来的这个数，量级对吗？正负号合理吗？”\n\n教学原则：\n- 优先建立几何图像，再谈代数推导。\n- 鼓励大胆猜、大胆写，再回头验证。\n- 给出巧方法和记忆口诀，但不替学习者完成推导。\n- 学习者被符号吓住时，把符号翻译成大白话。"},
@@ -802,7 +808,8 @@ const $=function(id){return document.getElementById(id)};
 /* 自定义人设（用户自己加的） */
 let MYP=LS.g('myps',{});
 function getP(k){return MYP[k]||PERSONA[k]||PERSONA.cauchy}
-function pKeys(){return Object.keys(PERSONA).concat(Object.keys(MYP))}
+/* 体验版的内置导师只给前三位（柯西/莱布尼茨/牛顿）；自定义人设照旧都在 */
+function pKeys(){let k=Object.keys(PERSONA);if(LITE)k=k.slice(0,3);return k.concat(Object.keys(MYP))}
 let CD=LS.g('cards',[]), PR=null, CTX=null;
 /* 教材正文（从 IndexedDB 读出来的一节节）。
    必须显式声明：它一直是「隐式全局」，而启动早期 CH 还没读出来时，
@@ -813,6 +820,8 @@ let ST=LS.g('stats',{i:0,o:0,days:{}}), CFG=LS.g('cfg',null);
 let PM=LS.g('pm',{});
 let ME=LS.g('meth.v2',DEF_METHOD);localStorage.removeItem(P+'meth');
 let who=LS.g('who','cauchy'), curCh=null, ctrl=null, rev=null;
+/* 体验版没有后六位：记录里若存着那位（比如从主站导过来的备份），回落到第一位，别让顶栏空着 */
+if(LITE&&pKeys().indexOf(who)<0)who='cauchy';
 let COURSE=LS.g('course','__free'), PA=LS.g('pace','mid');
 /* 本地教材库（IndexedDB）打不开时记下原因：页面照样渲染（用 localStorage 那部分），
    但要给一句人话，而不是让整页停在半路、看起来像「点不动」。 */
@@ -856,6 +865,8 @@ const PACKS=[
     '第26章 其他库函数.md','第27章 C99对数学计算的新增支持.md','第28章 C1X新增的多线程和原子操作支持.md',
     '附录 A-F.md']}
 ];
+/* 体验版只留第一本（高数八上）；线代、C 语言仍可自己「导入教材」加进来 */
+if(LITE)PACKS.length=1;
 function packOf(f){for(const p of PACKS)if(p.files.indexOf(f)>=0)return p;return null}
 function packByKey(k){for(const p of PACKS)if(p.key===k)return p;return null}
 let MS=LS.g(msKey(),null);
@@ -1193,14 +1204,23 @@ function healNestedTex(src){
   }
   return s;
 }
+/* KaTeX 的一个坑：\, \; \: \! \quad \qquad 这类「空隙」在内部是 internal 类型的节点，
+   不能当上标/下标的底。模型写「25\,^\circ\mathrm{C}」（数字与温度符号之间加个细空格）
+   是很自然的写法，却会让 KaTeX 抛 ParseError——而 md() 用的是 throwOnError:false，
+   于是它把原文用报错色 #cc0000 原样吐回来，就是那串红字。
+   补一个空组 {} 当底即可：25\,{}^\circ\mathrm{C}。只动「空隙紧跟 ^/_」这一种形状，
+   正常的 x_{n}+a^2 一点不受影响。 */
+function fixTexBase(t){
+  return String(t).replace(/(\\(?:,|;|:|!|quad|qquad|enspace|thinspace)\s*)([\^_])/g,'$1{}$2');
+}
 function md(src){
   let s=normGlyph(String(src));const st=[];
   /* 模型常用 \(...\) / \[...\]，统一成 $ 形式 */
   s=s.replace(/\\\[([\s\S]+?)\\\]/g,'$$$$$1$$$$').replace(/\\\(([\s\S]+?)\\\)/g,'$$$1$$');
   s=healNestedTex(s);      /* 面板反复插入留下的 $ 套 $ 先压平，再配对 */
   if(typeof katex!=='undefined'){
-    s=s.replace(/\$\$([\s\S]+?)\$\$/g,function(m,p){try{st.push(katex.renderToString(p,{displayMode:true,throwOnError:false}))}catch(e){st.push('<code>'+esc(niceTex(p))+'</code>')}return "%%M"+st.length+"%%"});
-    s=s.replace(/(^|[^\\$])\$([^$\n]+?)\$/g,function(m,pre,p){try{st.push(katex.renderToString(p,{displayMode:false,throwOnError:false}))}catch(e){st.push('<code>'+esc(niceTex(p))+'</code>')}return pre+"%%M"+st.length+"%%"});
+    s=s.replace(/\$\$([\s\S]+?)\$\$/g,function(m,p){try{st.push(katex.renderToString(fixTexBase(p),{displayMode:true,throwOnError:false}))}catch(e){st.push('<code>'+esc(niceTex(p))+'</code>')}return "%%M"+st.length+"%%"});
+    s=s.replace(/(^|[^\\$])\$([^$\n]+?)\$/g,function(m,pre,p){try{st.push(katex.renderToString(fixTexBase(p),{displayMode:false,throwOnError:false}))}catch(e){st.push('<code>'+esc(niceTex(p))+'</code>')}return pre+"%%M"+st.length+"%%"});
   }else{
     /* 没渲染库：至少转成可读文本，别把裸 LaTeX 甩给用户 */
     s=s.replace(/\$\$([\s\S]+?)\$\$/g,function(m,p){return '\n'+niceTex(p)+'\n'});
@@ -1646,6 +1666,8 @@ const VBUILTIN=[
   {id:'__v_stm1', name:'STM32 入门教程2023 · 江协科技（50 讲）', f:'江协科技STM32入门教程2023版_网课包.json'},
   {id:'__v_stm2', name:'STM32 案例 HAL库重制 · 水手勇敢（48 讲）', f:'江协STM32案例HAL库重制_网课包.json'}
 ];
+/* 体验版不内置网课内容（想用仍可自己「导入网课包」） */
+if(LITE)VBUILTIN.length=0;
 function vCur(){const a=VS.filter(function(s){return s.id===VSET});return a.length?a[0]:null}
 async function vSeedBuiltin(existing){
   if(location.protocol==='file:')return 0;   /* 本地双击打开读不到同目录的 json，跳过 */
@@ -1951,7 +1973,7 @@ const RSHORT={
  aemeath:'先让你讲给她听，讲不出就陪你重飞',
  shorekeeper:'记得你上次卡在哪，从那儿接着走'
 };
-const PORDER=Object.keys(PERSONA);
+const PORDER=LITE?Object.keys(PERSONA).slice(0,3):Object.keys(PERSONA);
 let RSEL=[];
 
 function rHit(txt,kw){let c=0;const seen={};
@@ -1978,7 +2000,8 @@ function rRec(){
   return {sc:sc,mo:mo,pace:pace};
 }
 function rRank(sc){
-  return Object.keys(sc).filter(function(k){return PERSONA[k]})
+  /* 体验版过滤掉看不见的导师，免得「推荐」出一位界面上根本选不到的 */
+  return Object.keys(sc).filter(function(k){return PERSONA[k]&&(!LITE||pKeys().indexOf(k)>=0)})
     .sort(function(a,b){return (sc[b]-sc[a])||(PORDER.indexOf(a)-PORDER.indexOf(b))});
 }
 function rTop(obj){const ks=Object.keys(obj);if(!ks.length)return '';
@@ -2941,14 +2964,28 @@ window.addEventListener('unhandledrejection',function(e){
 /* ---------- 启动 ---------- */
 /* 这里不要再加「要读教材才能画」的东西：此刻 CH 还是空的。
    renderChips 就因此搬到了下面 await IDB.all() 之后。 */
+/* 体验版：把「没内置那么多」的入口收起来 —— 教材页的「仅线代 / 仅 C 语言」、
+   导航里的「网课」。「导入教材 / 导入网课包」照旧留着，想自己加随时能加。 */
+function applyLite(){
+  if(!LITE)return;
+  ['ldl','ldc'].forEach(function(id){const b=$(id);if(b)b.style.display='none'});
+  const rl=$('reload');if(rl)rl.textContent='载入高数教材';
+  const nv=document.querySelector('[data-v="vid"]');if(nv)nv.style.display='none';
+}
 /* applySessWho 顶替原来的 renderPs()：它内部就会 renderPs，还会按「当前这一节」把导师、
    系统提示词一起摆正 —— 否则刷新后节条停在第 3 节，导师却还是上次全局选的那位。 */
+applyLite();
 applySessWho();renderModes();applyHabit();updTok();renderSym();renderTts();updTts();renderMic();renderVoiceName();
 vLoad().catch(function(e){storeWarn(e,'网课库')});
 MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();
 if(MS.length)settleBottom();   /* 有记录：刷新后直接落回最后一次对话 */
-if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e);addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n- **教材**：进「教材」点「载入全部内置教材」，一次拿到高数八上 + 线代合编本；也可点「仅高数」/「仅线代」，或自己导入 md / pdf / epub。然后把正在学的那节勾上\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
+if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e);
+  /* 体验版只有高数一本，开场白别写成「两本」（同一份文件按域名切换） */
+  const tkTip=LITE
+    ?'一次拿到高数八上（第八版上册）；也可以自己导入 md / pdf / epub'
+    :'一次拿到高数八上 + 线代合编本；也可点「仅高数」/「仅线代」，或自己导入 md / pdf / epub';
+  addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n- **教材**：进「教材」点「载入全部内置教材」，'+tkTip+'。然后把正在学的那节勾上\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
 (async function(){
   let err=null;
   /* 教材库打不开（存储被禁 / 库坏了 / 被别的标签页占着）不能连累整页：
