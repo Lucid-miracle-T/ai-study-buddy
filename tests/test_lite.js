@@ -101,11 +101,22 @@ async function boot(url) {
     ok(ldc && ldc.style.display === 'none', '教材页「仅 C 语言」已收起');
     const vid = d.querySelector('[data-v="vid"]');
     ok(vid && vid.style.display === 'none', '导航里的「网课」入口已收起');
-    const rl = d.querySelector('#reload');
-    ok(rl && rl.textContent === '载入高数教材', '按钮改叫「载入高数教材」：' + (rl && rl.textContent));
-    ok(!!d.querySelector('#ldg'), '「仅高数」还在（本来就是高数）');
+    /* 体验版根本没有教材正文：book/ 在 .gitignore 里（版权），GitHub Pages 上全 404。
+       这排「载入」按钮点了只会弹「教材文件没取到」，所以整体收起，只留「导入教材」。 */
+    const rl = d.querySelector('#reload'), lg = d.querySelector('#ldg');
+    ok(rl && rl.style.display === 'none', '「载入」按钮收起（正文不在仓库，点了必然 404）');
+    ok(lg && lg.style.display === 'none', '「仅高数」也收起（同理，载不到）');
     ok(!!d.querySelector('#pickfile'), '「导入教材」仍然留着 —— 用户想自己加不该被拦');
     ok(!!d.querySelector('#vimp'), '「导入网课包」仍然留着');
+
+    /* 别再白抓一轮：LITE 下 autoLoad 直接短路返回 0，不去请求那 9 个注定 404 的 md */
+    const r = await A.ev('autoLoad(null)');
+    ok(r === 0, '体验版载入函数直接短路（返回 0，指引导入），实际：' + JSON.stringify(r));
+
+    /* 开场白不能再让人去点一个已经被收起的按钮 */
+    const intro = d.querySelector('.msg .body');
+    ok(intro && !/载入全部内置教材/.test(intro.textContent), '开场白里没有「载入全部内置教材」了');
+    ok(intro && /导入教材/.test(intro.textContent), '开场白改指「导入教材」');
   }
   log('');
   log('--- 体验版异常 ---');

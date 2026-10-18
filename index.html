@@ -1364,6 +1364,7 @@ async function dropCourse(g){
 /* 载入某个内置教材包（默认全部） */
 async function autoLoad(btn,pk){
   if(location.protocol==='file:'){toast('本地打开时无法自动读取，请用“导入 md”按钮');return}
+  if(LITE){toast('演示版不带内置教材正文，请用「导入教材」上传自己的文件');return 0}
   const packs=pk?[pk]:PACKS;
   const label=btn?btn.textContent:'';
   if(btn){btn.disabled=true;btn.textContent='载入中…'}
@@ -1534,9 +1535,12 @@ function renderBook(){
            +'<div style="margin-top:8px;color:#8A7327">'+esc((DBERR&&DBERR.message)||'存储不可用')+'</div>'
            +'<div style="margin:12px 0"><button class="sm pri" id="ldempty">再试一次</button></div>'
            +'<div>若反复如此：关掉其它打开本站的标签页，或检查浏览器是否禁用了本站的本地存储。</div>'
-          :'<div>还没有教材。</div>'
-           +'<div style="margin:12px 0"><button class="sm pri" id="ldempty">载入全部内置教材</button></div>'
-           +'<div>也可以点右上角「导入教材」，上传你自己的 md / pdf / epub。</div>'))) +'</div>';
+          :(LITE
+            ?'<div>在线演示版不带教材正文。</div>'
+             +'<div style="margin-top:10px">点右上角「导入教材」，上传你自己的 md / pdf / epub 就能开始学。</div>'
+            :'<div>还没有教材。</div>'
+             +'<div style="margin:12px 0"><button class="sm pri" id="ldempty">载入全部内置教材</button></div>'
+             +'<div>也可以点右上角「导入教材」，上传你自己的 md / pdf / epub。</div>')))) +'</div>';
     const eb=box.querySelector('#ldempty');
     if(eb)eb.onclick=function(){ if(DBERR){DBERR=null;location.reload()} else autoLoad(eb) };
   }
@@ -2968,8 +2972,10 @@ window.addEventListener('unhandledrejection',function(e){
    导航里的「网课」。「导入教材 / 导入网课包」照旧留着，想自己加随时能加。 */
 function applyLite(){
   if(!LITE)return;
-  ['ldl','ldc'].forEach(function(id){const b=$(id);if(b)b.style.display='none'});
-  const rl=$('reload');if(rl)rl.textContent='载入高数教材';
+  /* 体验版没有教材正文：book/ 在 .gitignore 里（教材受版权保护，不进公开仓库），
+     GitHub Pages 上那些 md 全是 404。这排「载入」按钮点了只会 toast
+     「教材文件没取到」，倒像站点坏了 —— 索性收起，只留「导入教材」。 */
+  ['reload','ldg','ldl','ldc'].forEach(function(id){const b=$(id);if(b)b.style.display='none'});
   const nv=document.querySelector('[data-v="vid"]');if(nv)nv.style.display='none';
 }
 /* applySessWho 顶替原来的 renderPs()：它内部就会 renderPs，还会按「当前这一节」把导师、
@@ -2981,11 +2987,11 @@ MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();
 if(MS.length)settleBottom();   /* 有记录：刷新后直接落回最后一次对话 */
 if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e);
-  /* 体验版只有高数一本，开场白别写成「两本」（同一份文件按域名切换） */
-  const tkTip=LITE
-    ?'一次拿到高数八上（第八版上册）；也可以自己导入 md / pdf / epub'
-    :'一次拿到高数八上 + 线代合编本；也可点「仅高数」/「仅线代」，或自己导入 md / pdf / epub';
-  addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n- **教材**：进「教材」点「载入全部内置教材」，'+tkTip+'。然后把正在学的那节勾上\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
+  /* 体验版不带教材正文，开场白不能让人去点一个不存在的按钮 */
+  const tkLine=LITE
+    ?'- **教材**：演示版不带教材正文，进「教材」点「导入教材」上传自己的 md / pdf / epub；然后把正在学的那节勾上'
+    :'- **教材**：进「教材」点「载入全部内置教材」，一次拿到高数八上 + 线代合编本；也可点「仅高数」/「仅线代」，或自己导入 md / pdf / epub。然后把正在学的那节勾上';
+  addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n'+tkLine+'\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
 (async function(){
   let err=null;
   /* 教材库打不开（存储被禁 / 库坏了 / 被别的标签页占着）不能连累整页：
@@ -3001,7 +3007,9 @@ if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e
     if(rv!=='lesson'&&rv!=='set'&&$('v-'+rv))goView(rv);
     const had=COURSE;                      /* updateCourses 可能回落，先把原课程记下来 */
     renderBook();
-    if(!err&&!CH.length&&location.protocol!=='file:'){
+    /* 体验版不去抓教材：book/ 不在公开仓库里，抓九次全 404、白等两轮再弹一句
+       「教材文件没取到」—— 什么都没坏，只是演示版本来就不带正文。 */
+    if(!LITE&&!err&&!CH.length&&location.protocol!=='file:'){
       const got=await autoLoad(null);
       /* 第一次一无所获：多半是正撞上部署空档（沙盒在重启），或网络抖了一下。
          这时页面会空着一片、而且不会自己再试，所以隔一会儿补一次。 */
