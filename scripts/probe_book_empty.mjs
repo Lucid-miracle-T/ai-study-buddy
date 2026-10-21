@@ -38,7 +38,7 @@ console.log('  空状态里有可点的载入按钮:', await ev('!!document.quer
 console.log('  这个按钮点得中吗:', await ev(`(function(){var b=document.querySelector('#ldempty');if(!b)return '没有按钮';
   var r=b.getBoundingClientRect();var t=document.elementFromPoint(Math.round(r.left+r.width/2),Math.round(r.top+r.height/2));
   return t===b?'✓ 就是它':(b.contains(t)?'△ 子元素':'✗ 被挡住')})()`));
-await shot('C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-教材空白.png');
+await shot('preview-教材空白.png');
 
 console.log('\n=== 2. 网络恢复，点那个按钮（不再需要刷新）===');
 await send('Network.setBlockedURLs', { urls: [] });
@@ -48,7 +48,7 @@ console.log('  CH.length:', await ev('CH.length'));
 console.log('  课程组/分册:', await ev('document.querySelectorAll("#blist .cgrp").length+" / "+document.querySelectorAll("#blist .grp").length'));
 console.log('  bstat:', await ev('document.querySelector("#bstat").textContent'));
 console.log('  提示条:', JSON.stringify(await ev('(document.querySelector("#toast")||{}).textContent||""')));
-await shot('C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-教材已恢复.png');
+await shot('preview-教材已恢复.png');
 
 console.log('\n=== 3. 恢复后照常能点：展开分册 → 打开一节 ===');
 await ev(`(function(){var h=document.querySelector('#blist .grp h3');if(h)h.click()})()`); await sleep(700);

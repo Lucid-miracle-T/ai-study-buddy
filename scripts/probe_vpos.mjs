@@ -74,7 +74,7 @@ console.log('  按钮:', await ev(`(function(){var b=document.querySelector('#vb
 console.log('  左侧下拉当前值:', await ev(`document.querySelector('#vset').value===VSET`));
 console.log('  讲义区显示的是当前讲的正文:', await ev(`document.querySelector('#vdoc').textContent.indexOf((vCur().items[VLEC]||{}).t.slice(0,6))>=0`));
 console.log('  localStorage 里有正文吗:', await ev(`String(localStorage.getItem('gx.vpos.ctx')).length>40`));
-await shot('C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-网课刷新.png');
+await shot('preview-网课刷新.png');
 
 console.log('\n【3. 再刷一次（位置不漂）+ 设置页不覆盖】');
 await reload(6000);
@@ -93,5 +93,5 @@ console.log('选中行在视野内:', await ev(`(function(){
 
 await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 await sleep(700);
-await shot('C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-网课刷新手机.png');
+await shot('preview-网课刷新手机.png');
 ws.close();

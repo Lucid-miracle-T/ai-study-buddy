@@ -69,7 +69,7 @@ await sleep(700);
 console.log('  课程组:', await ev(`document.querySelectorAll('#blist .cgrp').length`));
 console.log('  分册:', await ev(`document.querySelectorAll('#blist .grp').length`));
 console.log('  空状态在不在:', await ev(`!!document.querySelector('#blist .empty')`));
-await shot('C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-线上教材.png');
+await shot('preview-线上教材.png');
 
 console.log('\n【3. 真实鼠标点开第一本分册、第一节】');
 console.log('  点分册:', await realClick('#blist .grp', 0));
@@ -78,7 +78,7 @@ console.log('  展开后条目数:', await ev(`document.querySelectorAll('#blist
 console.log('  点第一节:', await realClick('#blist .item', 0));
 await sleep(700);
 console.log('  阅读区字数:', await ev(`document.querySelector('#reader')?document.querySelector('#reader').textContent.length:'（无 #reader）'`));
-await shot('C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-线上教材2.png');
+await shot('preview-线上教材2.png');
 
 console.log('\n【4. 异常】', errs.length ? errs.slice(0, 5) : '无');
 

@@ -9,6 +9,10 @@ book/*
 # 依赖
 node_modules/
 
+# Python 缓存（scripts/ 里有几个教材处理脚本）
+__pycache__/
+*.pyc
+
 # 备份与临时文件
 *.bak
 *.bak-*

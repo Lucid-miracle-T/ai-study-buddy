@@ -50,7 +50,7 @@ await ev(`document.querySelector('[data-v="book"]').click()`);
 await sleep(600);
 console.log('          #blist 子元素:', await ev(`document.querySelector('#blist').children.length`));
 console.log('          #bstat 文案:', JSON.stringify(await ev(`document.querySelector('#bstat').textContent`)));
-await shot('C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-复现空白.png');
+await shot('preview-复现空白.png');
 
 console.log('\n【控制台异常】');
 console.log(errs.length ? errs.slice(0, 4) : '（无）');

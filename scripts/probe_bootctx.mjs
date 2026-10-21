@@ -67,7 +67,7 @@ console.log('  勾选仍在     :', await ev('(CTX||[]).length'));
 console.log('  带到课堂 chip:', await ev(`document.querySelectorAll('#ctxchips .chip').length`));
 console.log('  存储告警条   :', await ev(`!!document.querySelector('#storwarn')`));
 console.log('  当前视图     :', await ev(`(document.querySelector('.nv button.on')||{}).textContent`));
-await shot('C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-教材恢复.png');
+await shot('preview-教材恢复.png');
 
 console.log('\n【异常】', errs.length ? errs.slice(0, 3) : '无');
 ws.close();

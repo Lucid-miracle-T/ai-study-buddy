@@ -2,7 +2,7 @@
 """分析 C语言程序设计现代方法.md 的标题结构，判断怎么切分章节。"""
 import re, sys, collections
 
-path = r"C:\Users\35343\Desktop\学习资料\高数\导入包\C语言程序设计现代方法.md"
+path = sys.argv[1] if len(sys.argv) > 1 else "book/C语言/第1章 C语言概述.md"
 src = open(path, encoding="utf-8", errors="replace").read()
 lines = src.split("\n")
 print("总行数", len(lines), "总字符", len(src))

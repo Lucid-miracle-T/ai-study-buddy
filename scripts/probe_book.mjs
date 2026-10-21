@@ -93,7 +93,7 @@ for (const w of [360, 480, 640, 700, 768, 1024, 1440]) {
 }
 await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false }); await sleep(400);
 await ev(`document.querySelector('.nv button[data-v="book"]').click()`); await sleep(600);
-await shot('C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-教材诊断.png');
+await shot('preview-教材诊断.png');
 
 console.log('\n【7. 页面异常汇总】');
 console.log(errs.length ? errs.slice(0, 10).join('\n') : '（全程无异常）');

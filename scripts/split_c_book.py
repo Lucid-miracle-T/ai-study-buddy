@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""把《C语言程序设计：现代方法（第2版）》单文件切成 book/C语言/ 下的分册。
+r"""把《C语言程序设计：现代方法（第2版）》单文件切成 book/C语言/ 下的分册。
 
 思路与 book/ 下的高数、线代分册保持一致：一章一个 .md，文件首行是 `# 第N章 …`，
 让站点的 parseFile() 按 `#`/`##` 切出小节。附录 A–F 与「延伸阅读」合并为一个 附录.md。
@@ -9,9 +9,12 @@
 """
 import os
 import re
+import sys
 
-SRC = r"C:\Users\35343\Desktop\学习资料\高数\导入包\C语言程序设计现代方法.md"
-OUT = r"C:\Users\35343\Desktop\学习资料\高数\高数网站\book\C语言"
+# 原书路径与输出目录都从命令行给，别把作者本机的路径写死在仓库里：
+#   python scripts/split_c_book.py 原书.md book/C语言
+SRC = sys.argv[1] if len(sys.argv) > 1 else "原书.md"
+OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join("book", "C语言")
 
 PROV = ("> 摘自《C语言程序设计：现代方法（第2版）》（[美] K. N. 金 著，吕秀锋、黄倩 译，"
         "人民邮电出版社 2021）\n> 分册版：只含本章内容，用于降低单轮上下文体积。")

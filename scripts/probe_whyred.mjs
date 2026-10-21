@@ -87,7 +87,7 @@ console.log('  红色文字节点       : ' + await ev(`(function(){
   return JSON.stringify(reds)})()`));
 
 const b = JSON.parse(await ev(`(function(){var r=document.querySelector('#mw .msg').getBoundingClientRect();return JSON.stringify({x:r.left-10,y:r.top-6,w:r.width+20,h:r.height+12})})()`));
-await shot('C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-公式已修好.png', { x: Math.max(0, b.x), y: Math.max(0, b.y), width: b.w, height: b.h, scale: 1 });
+await shot('preview-公式已修好.png', { x: Math.max(0, b.x), y: Math.max(0, b.y), width: b.w, height: b.h, scale: 1 });
 
 console.log('\n【4】真点一次符号面板（这才是当初出事的入口）');
 console.log(await ev(`(function(){try{

@@ -85,6 +85,6 @@ console.log('只看第一节:', await ev(`(function(){CARD_S=SESS[0].id;renderCa
 console.log('只看第二节:', await ev(`(function(){CARD_S=SESS[1].id;renderCards();return document.getElementById('due').textContent+' / 列表 '+document.querySelectorAll('#clist .crow').length+' 行'})()`));
 
 const shot = await send('Page.captureScreenshot', { format: 'png' });
-fs.writeFileSync('C:/Users/35343/Desktop/学习资料/高数/高数网站/preview-节.png', Buffer.from(shot.result.data, 'base64'));
+fs.writeFileSync('preview-节.png', Buffer.from(shot.result.data, 'base64'));
 console.log('\n截图已保存');
 ws.close();

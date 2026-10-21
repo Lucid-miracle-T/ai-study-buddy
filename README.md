@@ -4,7 +4,7 @@
 
 - **在线体验**：https://lucid-miracle-t.github.io/ai-study-buddy/ —— **精简版**：前三位导师（柯西 / 莱布尼茨 / 牛顿）、不含内置网课；教材给一份**自制示例讲义**（真教材正文受版权限制，不随仓库分发）。完整的「三本教材 + 八位导师 + 网课」走下面的备用入口
 - **备用入口（完整版）**：https://gaoshu-xuexi.app.workbuddy.host/
-- **技术形态**：单个 `index.html`（约 200 KB）。无框架、无构建、无后端、无依赖安装
+- **技术形态**：单个 `index.html`（约 200 KB）。无框架、无构建、无后端；**站点本身零依赖**，只有跑测试才需要装 jsdom
 
 ---
 
@@ -128,7 +128,13 @@ python -m http.server 8000
 改完跑测试：
 
 ```bash
-npm i jsdom
+npm install     # 只装一个 jsdom（仅测试用，站点本身零依赖）
+npm test        # 一次跑完全部 36 套，按退出码汇总，约 3-4 分钟
+```
+
+也可以单跑某一套（测试没有统一的成功文案，**判成败请看退出码**，别 grep 输出）：
+
+```bash
 node tests/smoke.js              # 整体冒烟（视图、符号面板、人格、进度）
 node tests/test_buttons.js       # 每个「会发消息」的按钮都真的调了 ask()
 node tests/test_clickall.js      # 暴力点击：页面上每个可点元素都不抛错
