@@ -107,8 +107,11 @@ function boot(store, verdict, lsSeed) {
   ok(!/点右上角导入 md/.test(A.txt()), '不再只说「点右上角导入 md」——那句话人都不知道该点哪儿');
   ok(!!A.doc.querySelector('#reload'), '顶部那排按钮也还在（两条路都能走）');
   const bookCalls1 = b1.calls.book().length;
-  const perRound = A.ev('PACKS.reduce(function(n,p){return n+p.files.length},0)');   /* 一轮要取的分册总数 */
-  ok(bookCalls1 >= perRound * 2, '首次一无所获时自动重试了一轮（取书 ' + bookCalls1 + ' 次 = ' + perRound + ' 册 × 至少两轮）');
+  /* 现在不再挨个抓几十个注定 404 的分册：先 HEAD 探一册，确认没有就直接去载示例。
+     但「自己再试一轮」这件事必须还在 —— 部署空档那几十秒里第一次会全失败。 */
+  ok(bookCalls1 >= 2, '首次一无所获时自动重试了一轮（实际 ' + bookCalls1 + ' 次请求）');
+  ok(b1.calls.book().some(c => c.opts && c.opts.method === 'HEAD'),
+    '先用 HEAD 探一下这个站点到底带没带教材（探到 404 就不再挨个抓一遍）');
   ok(b1.calls.book().every(c => c.opts && c.opts.cache === 'no-store'), '取教材用的是 no-store，不会被缓存住一个失败响应');
 
   /* ============ 2. 点那个按钮，网络已经好了 ============ */

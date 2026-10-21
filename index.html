@@ -867,8 +867,17 @@ const PACKS=[
 ];
 /* 体验版只留第一本（高数八上）；线代、C 语言仍可自己「导入教材」加进来 */
 if(LITE)PACKS.length=1;
-function packOf(f){for(const p of PACKS)if(p.files.indexOf(f)>=0)return p;return null}
-function packByKey(k){for(const p of PACKS)if(p.key===k)return p;return null}
+/* 随仓库附带的示例讲义（book/示例/，自己写的，不以 PACKS 的形式出现）。
+   为什么不塞进 PACKS：PACKS 是「这个站点部署时真带了的教材」——主站部署目录里有 book/。
+   示例只该在「一份内置教材都取不到」时兜底：clone 下来的人、GitHub Pages 体验版。
+   放进 PACKS 的话，主站教材页会永远多出一门用不上的「示例课」。 */
+const SAMPLE_KEY='__sample', SAMPLE_NAME='示例讲义 · 极限与导数入门';
+const SAMPLE={key:SAMPLE_KEY,name:SAMPLE_NAME,bk:'自制示例讲义（非出版物）',dir:'book/示例/',files:['极限与导数入门.md'],sample:true};
+/* 课程归属 / 分组判定要连示例一起看：只认 PACKS 的话，示例课会被当成
+   「一本导入的单文件教材」单独列出来，名字也不对。 */
+function allPacks(){return PACKS.concat([SAMPLE])}
+function packOf(f){for(const p of allPacks())if(p.files.indexOf(f)>=0)return p;return null}
+function packByKey(k){for(const p of allPacks())if(p.key===k)return p;return null}
 let MS=LS.g(msKey(),null);
 if(MS===null){MS=LS.g('msgs',[]);LS.s(msKey(),MS);localStorage.removeItem(P+'msgs')}
 function saveMs(){LS.s(msKey(),MS)}
@@ -980,7 +989,7 @@ function switchCourse(k){
 function courseList(){
   const fs=[];CH.forEach(function(c){if(fs.indexOf(c.file)<0)fs.push(c.file)});
   const gs=[{k:'__free',f:[]}], locals=[];
-  PACKS.forEach(function(p){
+  allPacks().forEach(function(p){
     const l=fs.filter(function(f){return p.files.indexOf(f)>=0});
     if(l.length){gs.push({k:p.key,f:l});locals.push.apply(locals,l)}
   });
@@ -1344,7 +1353,7 @@ function clearCourse(g){
 async function dropCourse(g){
   const files=g.f.slice();
   if(!files.length)return;
-  const s=cstat(g.k,files),built=PACKS.some(function(p){return p.key===g.k});
+  const s=cstat(g.k,files),built=allPacks().some(function(p){return p.key===g.k});
   if(!confirm('删除课程「'+cname(g.k)+'」？\n\n会删掉：教材 '+files.length+' 册（'+s.sec+' 节）、对话 '+s.ms+' 条、闪卡 '+s.cd+' 张、掌握进度 '+s.done+' 节。课程会从课程栏消失。'
     +(built?'\n\n这是内置教材，之后点「载入全部内置教材」（或对应的「仅高数 / 仅线代 / 仅 C 语言」）还能载入回来。':'')
     +'\n\n删掉的记录不可恢复，重要的话先在下面导出一份。'))return;
@@ -1364,12 +1373,23 @@ async function dropCourse(g){
 /* 载入某个内置教材包（默认全部） */
 async function autoLoad(btn,pk){
   if(location.protocol==='file:'){toast('本地打开时无法自动读取，请用“导入 md”按钮');return}
-  if(LITE){toast('演示版不带内置教材正文，请用「导入教材」上传自己的文件');return 0}
   const packs=pk?[pk]:PACKS;
   const label=btn?btn.textContent:'';
   if(btn){btn.disabled=true;btn.textContent='载入中…'}
   let n=0,miss=0,dbfail=0;
-  for(const p of packs){
+  /* 先探一册：这个站点到底带没带教材正文？
+     book/ 在 .gitignore 里，clone 下来和 GitHub Pages 上本来就没有；不探的话，
+     得把 45 个文件挨个抓一遍 404（串行两三秒）才发现，人会以为页面卡住了。
+     只有明确回 404/403 才认「没带」；探测本身出错就照常抓，不能因为探测失败把真教材漏掉。 */
+  let hasBook=true;
+  if(!pk){
+    try{
+      const probe=await fetch(PACKS[0].dir+encodeURIComponent(PACKS[0].files[0]),{method:'HEAD',cache:'no-store'});
+      if(probe.status===404||probe.status===403)hasBook=false;
+    }catch(e){}
+    if(!hasBook)miss++;    /* 记一笔「确实没有」，后面统一走回退示例那条路 */
+  }
+  if(hasBook)for(const p of packs){
     for(const f of p.files){
       let txt=null;
       try{
@@ -1383,15 +1403,37 @@ async function autoLoad(btn,pk){
       catch(e){dbfail++;DBERR=DBERR||e}
     }
   }
+  /* 一份内置教材都没取到、且点的不是某个具体包 —— 这不是网络故障。
+     book/ 在 .gitignore 里（教材受版权保护，不进公开仓库），clone 下来本来就该是空的。
+     所以别弹「没取到、再试一次」，直接用随仓库附带的示例讲义顶上，
+     让人先看见「课程 → 分册 → 章节」长什么样。 */
+  let sample=!!(packs.length===1&&packs[0].sample&&n);
+  if(!n&&!dbfail&&!pk&&miss){
+    if(btn)btn.textContent='载入示例讲义…';
+    try{
+      const r=await fetch(SAMPLE.dir+encodeURIComponent(SAMPLE.files[0]),{cache:'no-store'});
+      if(r.ok){await addFile(SAMPLE.files[0],await r.text());n++;sample=true}
+    }catch(e){}
+  }
   if(btn){btn.disabled=false;btn.textContent=label}
   if(n){
+    /* 真教材到手了，说明刚才那份示例是「正撞上部署空档」时误判的兜底 —— 清掉，
+       别在课程栏里留一门用不上的「示例讲义」。只动教材，用户可能在示例课上
+       聊过的记录留着（教材删了课程就消失，记录不会再被看到，但也无害）。 */
+    if(!sample&&!LITE&&!pk){
+      const olds=await IDB.all();let drop=0;
+      for(const c of olds)if(SAMPLE.files.indexOf(c.file)>=0){await IDB.del(c.id);drop++}
+      if(drop){CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)})}
+    }
     renderBook();   /* 载完先自己重画一次。别指望 switchCourse —— 当前课程刚好就是最后一个包时它会提前 return，列表会一直是空的 */
-    toast('已载入 '+n+' 个分册'+(packs.length>1?'（全部内置教材）':''));
+    toast(sample
+      ? '仓库不带教材正文，已放一份示例讲义；想换成自己的点「导入教材」'
+      : '已载入 '+n+' 个分册'+(packs.length>1?'（全部内置教材）':''));
     /* 从课程标签栏点「载入」时，自动切到刚载入的那门课 */
-    if(btn&&!switchCourse(packs[packs.length-1].key))toast('到「教材」页勾选正在学的那一节');
+    if(!sample&&btn&&!switchCourse(packs[packs.length-1].key))toast('到「教材」页勾选正在学的那一节');
   }
   else if(dbfail){storeWarn(DBERR,'教材库');toast('教材取回来了，但本地存储打不开、存不下');renderBook()}
-  else if(miss)toast('教材文件没取到（多半是部署空档或网络抖了一下）。点「载入全部内置教材」再试一次，或「导入教材」上传自己的 md / pdf / epub。');
+  else if(miss)toast('教材文件没取到（多半是网络抖了一下）。若这个站点确实带了教材，点「载入全部内置教材」再试一次；也可以用「导入教材」上传自己的 md / pdf / epub。');
   else toast('内置教材已经都在了。');
   return n;
 }
@@ -1536,7 +1578,7 @@ function renderBook(){
            +'<div style="margin:12px 0"><button class="sm pri" id="ldempty">再试一次</button></div>'
            +'<div>若反复如此：关掉其它打开本站的标签页，或检查浏览器是否禁用了本站的本地存储。</div>'
           :(LITE
-            ?'<div>在线演示版不带教材正文。</div>'
+            ?'<div>教材没取到。</div>'
              +'<div style="margin-top:10px">点右上角「导入教材」，上传你自己的 md / pdf / epub 就能开始学。</div>'
             :'<div>还没有教材。</div>'
              +'<div style="margin:12px 0"><button class="sm pri" id="ldempty">载入全部内置教材</button></div>'
@@ -1546,7 +1588,7 @@ function renderBook(){
   }
   /* 先按课程归组：课程 → 分册 → 章节，一眼看清「这是哪门课的哪一本」 */
   const groups=[],used={};
-  PACKS.forEach(function(p){
+  allPacks().forEach(function(p){
     const fs=names.filter(function(f){return p.files.indexOf(f)>=0});
     if(fs.length){groups.push({k:p.key,name:p.name,files:fs});fs.forEach(function(f){used[f]=1})}
   });
@@ -2972,9 +3014,9 @@ window.addEventListener('unhandledrejection',function(e){
    导航里的「网课」。「导入教材 / 导入网课包」照旧留着，想自己加随时能加。 */
 function applyLite(){
   if(!LITE)return;
-  /* 体验版没有教材正文：book/ 在 .gitignore 里（教材受版权保护，不进公开仓库），
-     GitHub Pages 上那些 md 全是 404。这排「载入」按钮点了只会 toast
-     「教材文件没取到」，倒像站点坏了 —— 索性收起，只留「导入教材」。 */
+  /* 体验版没有真教材正文：book/ 在 .gitignore 里（教材受版权保护，不进公开仓库），
+     GitHub Pages 上那些 md 全是 404。界面给的是随仓库附带的示例讲义（SAMPLE），
+     所以这排「载入真教材」的按钮没有意义，收起后只留「导入教材」。 */
   ['reload','ldg','ldl','ldc'].forEach(function(id){const b=$(id);if(b)b.style.display='none'});
   const nv=document.querySelector('[data-v="vid"]');if(nv)nv.style.display='none';
 }
@@ -2989,8 +3031,8 @@ if(MS.length)settleBottom();   /* 有记录：刷新后直接落回最后一次�
 if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e);
   /* 体验版不带教材正文，开场白不能让人去点一个不存在的按钮 */
   const tkLine=LITE
-    ?'- **教材**：演示版不带教材正文，进「教材」点「导入教材」上传自己的 md / pdf / epub；然后把正在学的那节勾上'
-    :'- **教材**：进「教材」点「载入全部内置教材」，一次拿到高数八上 + 线代合编本；也可点「仅高数」/「仅线代」，或自己导入 md / pdf / epub。然后把正在学的那节勾上';
+    ?'- **教材**：演示版自带一份示例讲义（极限与导数入门），进「教材」勾一节就能开课；想用完整教材点「导入教材」上传自己的 md / pdf / epub'
+    :'- **教材**：进「教材」勾选正在学的那一节；站点没带教材正文时会自动放一份示例讲义兜底，也可以用「导入教材」换成自己的 md / txt / pdf / epub';
   addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n'+tkLine+'\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
 (async function(){
   let err=null;
@@ -3007,13 +3049,17 @@ if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e
     if(rv!=='lesson'&&rv!=='set'&&$('v-'+rv))goView(rv);
     const had=COURSE;                      /* updateCourses 可能回落，先把原课程记下来 */
     renderBook();
-    /* 体验版不去抓教材：book/ 不在公开仓库里，抓九次全 404、白等两轮再弹一句
-       「教材文件没取到」—— 什么都没坏，只是演示版本来就不带正文。 */
-    if(!LITE&&!err&&!CH.length&&location.protocol!=='file:'){
-      const got=await autoLoad(null);
-      /* 第一次一无所获：多半是正撞上部署空档（沙盒在重启），或网络抖了一下。
-         这时页面会空着一片、而且不会自己再试，所以隔一会儿补一次。 */
-      if(!got){await new Promise(function(r){setTimeout(r,1500)});await autoLoad(null)}
+    /* 体验版不去抓真教材：book/ 不在公开仓库里，那 9 个文件必然 404。
+       直接载示例讲义，省掉 9 次白请求和两轮等待。 */
+    if(!err&&!CH.length&&location.protocol!=='file:'){
+      const got=LITE?await autoLoad(null,SAMPLE):await autoLoad(null);
+      /* 隔一会儿再补一次，两种情况：
+         ① 一无所获 —— 多半是正撞上部署空档（沙盒在重启）或网络抖了一下；
+         ② 只载到示例 —— 可能是这个仓库本来就不带教材，也可能同样是部署空档。
+            是后者的话这一轮能把真教材补上，示例会被自动清掉。 */
+      if(!LITE&&(!got||COURSE===SAMPLE_KEY)){
+        await new Promise(function(r){setTimeout(r,1500)});await autoLoad(null)
+      }
       renderBook();
     }
     /* 课程被回落、但那门课其实聊过 —— 多半是教材没载入（换设备、换浏览器、
