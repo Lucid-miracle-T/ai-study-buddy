@@ -1222,6 +1222,60 @@ function healNestedTex(src){
 function fixTexBase(t){
   return String(t).replace(/(\\(?:,|;|:|!|quad|qquad|enspace|thinspace)\s*)([\^_])/g,'$1{}$2');
 }
+/* 复制导师写的公式，粘出来总是「前后两个模样」 —— 因为 KaTeX 默认 output:'htmlAndMathml'，
+   同一个公式在 DOM 里存了两份：.katex-mathml（给读屏软件，视觉上裁到 1px 但仍可被选中）
+   和 .katex-html（画出来的那个）。复制时两份一起被带走，annotation 里的 LaTeX 原文也算文本，
+   于是 f(x)=2x^{2}+3x-1 粘出来成了「𝑓(𝑥)=2𝑥2+3𝑥−1f(x)=2x2+3x−1」：
+   前半是数学斜体字母、后半是摊平的上标，中间夹着源码。
+   这里在 copy 时接管：碰到的公式一律换回它自己的 LaTeX 原文（$…$ / $$…$$），
+   粘回输入框还是公式，粘到笔记里也还是能读的源码。 */
+function kxTexOf(k){
+  const a=k.querySelector('annotation[encoding="application/x-tex"]');
+  return a?a.textContent:null;
+}
+function kxBlock(k){
+  return k.classList.contains('katex-display')||!!k.closest('.katex-display');
+}
+/* 返回该写进剪贴板的文本；不该接管时返回 null（照浏览器的默认行为复制） */
+function texCopyText(sel){
+  if(!sel||sel.isCollapsed||!sel.rangeCount)return null;
+  const r=sel.getRangeAt(0);
+  let sn=r.startContainer, en=r.endContainer;
+  if(sn&&sn.nodeType===3)sn=sn.parentNode;
+  if(en&&en.nodeType===3)en=en.parentNode;
+  if(!sn||!sn.closest)return null;
+  const k1=sn.closest('.katex');
+  if(k1&&en&&en.closest&&en.closest('.katex')===k1){
+    /* 只圈住了一条公式：整条给它，免得粘出半个 \\frac */
+    const t=kxTexOf(k1);
+    if(t!=null)return kxBlock(k1)?'$$'+t+'$$':'$'+t+'$';
+  }
+  const frag=r.cloneContents();
+  if(!frag||!frag.querySelector||!frag.querySelector('.katex'))return null;   /* 没碰到公式，别插手 */
+  /* 离屏量一遍：靠 innerText 按块级边界给换行（jsdom 没有 innerText，退 textContent）。
+     别加 white-space:pre-wrap —— marked 输出的 HTML 源码里本来就有换行，
+     pre-wrap 会连它们一起保留，粘出来就成了三四层空行。 */
+  const box=document.createElement('div');
+  box.style.cssText='position:fixed;left:-9999px;top:0;width:900px';
+  box.appendChild(frag);
+  box.querySelectorAll('.katex').forEach(function(k){
+    const t=kxTexOf(k);if(t==null)return;
+    k.parentNode.replaceChild(document.createTextNode(kxBlock(k)?'$$'+t+'$$':'$'+t+'$'),k);
+  });
+  document.body.appendChild(box);
+  const out=(typeof box.innerText==='string'?box.innerText:box.textContent).replace(/\u00a0/g,' ');
+  box.remove();
+  return out;
+}
+document.addEventListener('copy',function(e){
+  try{
+    if(e.target&&/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;   /* 在输入框里复制，别插手 */
+    const out=texCopyText(window.getSelection());
+    if(out==null||!out)return;
+    e.clipboardData.setData('text/plain',out);
+    e.preventDefault();
+  }catch(err){/* 复制本身不能因为公式处理而失败 */}
+});
 function md(src){
   let s=normGlyph(String(src));const st=[];
   /* 模型常用 \(...\) / \[...\]，统一成 $ 形式 */
