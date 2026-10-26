@@ -65,7 +65,8 @@ python -m http.server 8000
 
 直接双击 `index.html` 也能用大部分功能，但 `file://` 协议下读不到 `book/` 目录、也装不了 PWA，建议起个静态服务。
 
-> **别给这个仓库加 `start` / `serve` / `dev` 脚本。** 它是纯静态站，云平台靠 `index.html` 就能托管；一旦 `package.json` 里出现启动脚本，平台会把它当 Node 应用，按脚本里的端口（比如 8000）起服务，而平台探的是注入的 `$PORT`（3000），于是永远报「服务没有在指定端口上响应」。`package.json` 里只留 `test` 就行。
+> **别在这个目录里放 `package.json`。** 它是纯静态站，云平台靠 `index.html` 就能托管；一旦出现 `package.json`（哪怕只写了 `scripts.test`，只要有依赖或构建声明），平台就按「Node 应用」处理：要么找不到启动入口直接拒绝发布，要么按脚本里写死的端口起服务，而平台探的是注入的 `$PORT`，于是报「服务没有在指定端口上响应」。
+> 所以测试依赖用 `npm install jsdom --no-save` 装，跑 `node tests/run_all.js`，不需要 `package.json`。
 
 ---
 
@@ -130,8 +131,8 @@ python -m http.server 8000
 改完跑测试：
 
 ```bash
-npm install     # 只装一个 jsdom（仅测试用，站点本身零依赖）
-npm test        # 一次跑完全部 37 套，按退出码汇总，约 5 分钟
+npm install jsdom --no-save   # 只装一个 jsdom（仅测试用），不生成 package.json
+node tests/run_all.js         # 一次跑完全部 37 套，按退出码汇总，约 5 分钟
 ```
 
 也可以单跑某一套（测试没有统一的成功文案，**判成败请看退出码**，别 grep 输出）：
