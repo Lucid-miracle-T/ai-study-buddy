@@ -163,6 +163,15 @@ function boot() {
   await wait(80);
   ok(ev('CTX.join()') === 'c.md#1', '10b. 切回来还是本课那一节自己的，没被别的课覆盖');
 
+  /* ---- 界面要说得清「勾给哪一节」：教材页提示 + 节条 title ---- */
+  const bs = () => String((doc.getElementById('bsess') || {}).textContent || '');
+  ok(/第 2 节/.test(bs()), '11. 教材页标出勾选落在哪一节，实际：' + bs());
+  ev('switchSess("sA")');
+  await wait(50);
+  ok(/第 1 节/.test(bs()), '11b. 切节后这行提示跟着换，实际：' + bs());
+  const tt = (doc.querySelector('.stab[data-s="sA"]') || {}).title || '';
+  ok(/带 3 章/.test(tt), '11c. 节条提示里写明这一节带了几章，实际：' + tt.replace(/\n/g, ' / '));
+
   if (errs.length) { log('--- 页面报错 ---'); errs.forEach(e => log(e)); }
   console.log(out.join('\n'));
   if (errs.length || errors.length) {

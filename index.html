@@ -464,6 +464,9 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
       <div class="bar" style="background:#faf9f6;font-size:11.5px;color:var(--tx3)">
         支持 <b>md / txt</b>（最佳）、<b>PDF</b>、<b>EPUB</b>。
         PDF 取的是文本层：<b>公式和上下标基本会串位</b>，理工教材建议先用 MinerU 转成 Markdown 再导入。
+        <span class="sp"></span>
+        <!-- 勾选是按节存的，不写清楚「现在勾给哪一节」，人会以为改的是整门课 -->
+        <span class="tag" id="bsess" title="每一节各记各的：在这里勾选只改当前这一节">勾选记在当前这一节</span>
       </div>
       <div id="bwrap">
         <div id="blist"></div>
@@ -1038,7 +1041,7 @@ function renderSTabs(){
     const n=MS.filter(function(m){return sid(m)===s.id}).length;
     const t=s.title||sessAuto(s.id);
     h+='<button class="stab'+(CURS===s.id?' on':'')+'" data-s="'+esc(s.id)+'" title="'
-      +esc('第 '+(i+1)+' 节'+(t?' · '+t:'')+'（'+n+' 条对话）\n右键或长按可改名、删除')+'">'
+      +esc('第 '+(i+1)+' 节'+(t?' · '+t:'')+'（'+n+' 条对话 · 带 '+sessCtx(s.id).length+' 章教材）\n右键或长按可改名、删除')+'">'
       +esc('第 '+(i+1)+' 节'+(t?' · '+t:''))+(n?'<span class="n">'+n+'</span>':'')+'</button>';
   });
   h+='<button class="stab new" id="newsess" title="开一节新的：对话各自独立，互不干扰，旧节随时点回来看">＋ 新一节</button>';
@@ -1700,12 +1703,21 @@ function renderBook(){
   });
   const total=CH.length,learned=CH.filter(function(c){return PR[c.id]===2}).length;
   $('bstat').textContent=total?('共 '+total+' 节 · 已掌握 '+learned):'未载入';
+  /* 教材页也标一下「勾给哪一节」——节条虽在，但人在这个页面才勾选，容易以为改的是整门课 */
+  const bs=$('bsess');
+  if(bs){
+    const i=sessIdx(CURS),s=sessOf(CURS);
+    const t=s&&(s.title||sessAuto(CURS));
+    bs.textContent='勾选记在 第 '+(i+1)+' 节'+(t?' · '+t:'')+'（各节独立）';
+  }
   renderFoot();
 }
 function toggleCtx(id){
   const i=CTX.indexOf(id);if(i>=0)CTX.splice(i,1);else CTX.push(id);
   setSessCtx();          /* 只写回当前这一节：别的节勾的章节一律不动 */
   renderChips();renderBook();
+  /* 明确回一句「记到哪一节了」——不然改完看不出这次改动落在哪儿 */
+  toast('第 '+(sessIdx(CURS)+1)+' 节 · 带 '+CTX.length+' 章（只影响本节）');
 }
 function openCh(c){
   PR[c.id]=PR[c.id]===undefined?1:PR[c.id];saveCourseData();
