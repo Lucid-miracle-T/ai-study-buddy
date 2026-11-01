@@ -118,7 +118,7 @@ function fakeStream(win) {
     '               {id:"t.md#2",file:"t.md",title:"行列式的性质",txt:"互换两行变号"}];',
     'CH=window.__idb.slice();',
     'COURSE="__local"; LS.s("course",COURSE);',
-    'CTX=["t.md#1"]; saveCourseData();'
+    'CTX=["t.md#1"]; setSessCtx();'
   ].join('\n'));
   await wait(50);
 

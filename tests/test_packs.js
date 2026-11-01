@@ -129,7 +129,8 @@ function installIDB(win) {
   log('=== 4. 切走再切回，状态恢复 ===');
   ev('switchCourse("__local2")');
   await wait(30);
-  ev('CTX=["第1章 行列式.md#1"]; saveCourseData()');
+  /* 勾选是按节存的（s.ch），所以这里走用户真点勾选时那条路 */
+  ev('CTX=["第1章 行列式.md#1"]; setSessCtx()');
   ev('switchCourse("__free")');
   await wait(30);
   ok(ev('CTX.length') === 0, '自由问答的勾选是空的，不串线代');

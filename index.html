@@ -811,6 +811,9 @@ function getP(k){return MYP[k]||PERSONA[k]||PERSONA.cauchy}
 /* 体验版的内置导师只给前三位（柯西/莱布尼茨/牛顿）；自定义人设照旧都在 */
 function pKeys(){let k=Object.keys(PERSONA);if(LITE)k=k.slice(0,3);return k.concat(Object.keys(MYP))}
 let CD=LS.g('cards',[]), PR=null, CTX=null;
+/* 课程级的老勾选：只给「从没单独选过章节」的节当默认值（见 sessCtx）。
+   CTX 从「全课共用一份」改成「当前节这一份」之后，原来的值就退居成兜底。 */
+let CTX0=[];
 /* 教材正文（从 IndexedDB 读出来的一节节）。
    必须显式声明：它一直是「隐式全局」，而启动早期 CH 还没读出来时，
    renderChips() 里那句 CH.filter 就会 ReferenceError，把整个启动脚本当场打断——
@@ -906,19 +909,24 @@ function loadCourseData(){
     Object.keys(old).forEach(function(k){if(COURSE==='__free'||k.indexOf(COURSE+'#')===0)PR[k]=old[k]});
     if(Object.keys(PR).length)LS.s(prKey(),PR);
   }
-  CTX=LS.g(ctxKey(),null);
-  if(CTX===null){
+  CTX0=LS.g(ctxKey(),null);
+  if(CTX0===null){
     const old2=LS.g('ctx',null)||[];
-    CTX=old2.filter(function(k){return COURSE==='__free'||k.indexOf(COURSE+'#')===0});
-    if(CTX.length)LS.s(ctxKey(),CTX);
+    CTX0=old2.filter(function(k){return COURSE==='__free'||k.indexOf(COURSE+'#')===0});
+    if(CTX0.length)LS.s(ctxKey(),CTX0);
   }
+  if(!Array.isArray(CTX0))CTX0=[];
   loadSess();
   loadCsel();
+  /* 章节勾选跟着节走：这一节自己选过就用它的，没选过才回落到上面的老勾选。
+     注意必须在 loadSess() 之后同步 —— 先有 CURS，才知道该取哪一节的。 */
+  CTX=sessCtx(CURS).slice();
 }
 /* 闪卡也按节分：默认看全部，也可以只看某一节攒下来的卡 */
 function cselKey(){return 'csel.'+COURSE}
 function loadCsel(){const v=LS.g(cselKey(),'all');CARD_S=(v==='all'||sessOf(v))?v:'all'}
-function saveCourseData(){LS.s(prKey(),PR);LS.s(ctxKey(),CTX)}
+/* 课程级只存进度与兜底勾选；当前节的勾选由 setSessCtx 写进 sess.<课程> 里 */
+function saveCourseData(){LS.s(prKey(),PR);LS.s(ctxKey(),CTX0)}
 /* ---------- 「节」：课程内部的学习单元 ----------
    课程标签＝一本书（少而稳），节＝一次学习（想开多少开多少）。
    这样「标签无穷无尽」和「旧内容找不到」两件事同时解决：
@@ -1082,15 +1090,17 @@ function switchSess(id){
   saveMs();
   CURS=id;saveSess();
   applySessWho();      /* 先换人再重绘：气泡上的导师名与系统提示词都得跟上这一节 */
-  reloadMsgs();renderSTabs();renderCards();
+  applySessCtx();      /* 章节勾选同理：换回这一节自己带的那几章 */
+  reloadMsgs();renderSTabs();renderCards();renderBook();
   settleBottom(900);
-  toast('已切到「'+sessLabel(id)+'」 · 导师 '+getP(who).n);
+  /* 切节顺带报一下「这一节带了几章」：勾选现在按节分，不提醒容易以为教材丢了 */
+  toast('已切到「'+sessLabel(id)+'」 · 导师 '+getP(who).n+' · 教材 '+(CTX.length?CTX.length+' 章':'未勾选'));
 }
 /* 开新一节。当前节还是空的就直接用它——免得连点两下多出一串空节 */
 function newSess(silent){
   if(!curMsgs().length){if(!silent)toast('这一节还没开始，直接在这儿上就行');return CURS}
   saveMs();
-  SESS.push({id:newSid(),t:Date.now(),title:'',who:who});   /* 新节默认还是这位，想换就点上面那排 */
+  SESS.push({id:newSid(),t:Date.now(),title:'',who:who,ch:CTX.slice()});   /* 新节默认还是这位导师、这几章，想换就自己改 */
   CURS=SESS[SESS.length-1].id;saveSess();
   applySessWho();renderSTabs();reloadMsgs();renderCards();
   if(!silent)toast('已开第 '+SESS.length+' 节 · 前面几节随时点回去看');
@@ -1105,7 +1115,8 @@ function delSess(id){
   if(CURS===id)CURS=SESS[SESS.length-1].id;
   saveSess();saveMs();
   applySessWho();
-  reloadMsgs();renderSTabs();renderCards();
+  applySessCtx();
+  reloadMsgs();renderSTabs();renderCards();renderBook();
   toast('已删除那一节');
 }
 loadCourseData();
@@ -1691,7 +1702,11 @@ function renderBook(){
   $('bstat').textContent=total?('共 '+total+' 节 · 已掌握 '+learned):'未载入';
   renderFoot();
 }
-function toggleCtx(id){const i=CTX.indexOf(id);if(i>=0)CTX.splice(i,1);else CTX.push(id);saveCourseData();renderChips();renderBook()}
+function toggleCtx(id){
+  const i=CTX.indexOf(id);if(i>=0)CTX.splice(i,1);else CTX.push(id);
+  setSessCtx();          /* 只写回当前这一节：别的节勾的章节一律不动 */
+  renderChips();renderBook();
+}
 function openCh(c){
   PR[c.id]=PR[c.id]===undefined?1:PR[c.id];saveCourseData();
   $('rw').innerHTML='<div class="meta">'+esc(c.file.replace('.md',''))+' · '+titleHtml(c.title)
@@ -1947,6 +1962,17 @@ function sessWho(id){
   const s=sessOf(id);
   return (s&&s.who)||LS.g('who','cauchy');
 }
+/* ---------- 每一节记自己的「带进课堂的章节」----------
+   和 s.who 完全同一套思路：节上有 ch 就用节的，没有才回落到课程级老勾选（CTX0）。
+   于是第 1 节勾「第一章」、第 2 节勾「第二章」，两边互不影响，
+   发出去的系统提示词与教材片段（ctxText）也跟着当前节走。
+   升级前的节没有 ch 字段，行为与以前一模一样，不改写任何历史数据。 */
+function sessCtx(id){
+  const s=sessOf(id);
+  return (s&&Array.isArray(s.ch))?s.ch:CTX0;
+}
+function setSessCtx(){const s=sessOf(CURS);if(s){s.ch=CTX.slice();saveSess()}}
+function applySessCtx(){CTX=sessCtx(CURS).slice();renderChips()}
 function setSessWho(k){
   const s=sessOf(CURS);if(s){s.who=k;saveSess()}
 }

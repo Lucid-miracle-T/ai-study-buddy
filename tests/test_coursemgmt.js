@@ -85,7 +85,7 @@ function boot(preset) {
   await wait(120);
   ev('COURSE="线代.md";LS.s("course",COURSE);'
     + 'MS=[{r:"user",c:"甲"},{r:"a",c:"乙"}];saveMs();'
-    + 'PR={"线代.md#1":2};CTX=["线代.md#1"];saveCourseData();'
+    + 'PR={"线代.md#1":2};CTX=["线代.md#1"];saveCourseData();setSessCtx();'
     + 'CD=[{id:"k1",q:"问",a:"答",c:"线代.md",box:0,due:0},{id:"k2",q:"问",a:"答",c:"__free",box:0,due:0}];LS.s("cards",CD);'
     + 'LS.s("ctx.C语言.md",["C语言.md#1"]);LS.s("bkn.线代.md","测试教材");'
     + 'updateCourses();renderBook();');

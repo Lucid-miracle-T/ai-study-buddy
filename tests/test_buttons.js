@@ -72,7 +72,7 @@ function installIDB(win) {
     'window.__idb=[{id:"t.md#1",file:"t.md",title:"行列式按行(列)展开",txt:"按第i行展开"}];',
     'CH=window.__idb.slice();',
     'COURSE="__local"; LS.s("course",COURSE);',
-    'CTX=["t.md#1"]; saveCourseData();'
+    'CTX=["t.md#1"]; setSessCtx();'
   ].join('\n'));
   await wait(50);
 
@@ -113,13 +113,13 @@ function installIDB(win) {
 
   log('');
   log('=== 3. 换课程后开课，用的是那门课的教材 ===');
-  ev('CTX=[]; saveCourseData(); COURSE="__free"; LS.s("course",COURSE); loadCourseData()');
+  ev('CTX=[]; setSessCtx(); COURSE="__free"; LS.s("course",COURSE); loadCourseData()');
   b = n();
   doc.getElementById('start').click();
   await wait(80);
   ok(n() > b, '自由问答也能开课');
   ok(lastCall().indexOf('使用教材') >= 0, '没勾选时用教材名开场，实际: ' + lastCall().slice(0, 40));
-  ev('COURSE="__local"; loadCourseData(); CTX=["t.md#1"]; saveCourseData()');
+  ev('COURSE="__local"; loadCourseData(); CTX=["t.md#1"]; setSessCtx()');
 
   log('');
   log('=== 4. 停在别的页签时点开课，会切回上课页 ===');
