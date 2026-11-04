@@ -189,6 +189,33 @@ const DONE = 'data: [DONE]\n\n';
   ok(B3.length === 2 && B3[1].c === '线代答', '新课程的回答落在新课程');
   ok(A3.length === 2 && A3[1].c === 'AB', '原课程记录没有被新课程的回答覆盖');
 
+  /* === 4. 生成闪卡时切课程：卡片必须留在原课程那一节，不能记到切过去的那节头上 === */
+  log('');
+  log('=== 4. 出闪卡时切走：卡片不串课（分块矩阵进高数第 4 节的老毛病）===');
+  ev('switchCourse("__local2")');
+  await wait(30);
+  ev('MS=[];saveMs();');
+  const sessB = ev('CURS');
+  const nCards0 = J('CD.length');
+  ev('MS=[{r:"user",c:"线代提问",s:CURS}];saveMs();CARD_S="all";');
+  feeder = makeFeeder();
+  ev('$("gen").click()');        /* 触发变闪卡：内部 await ask，几十秒后才 addCards */
+  await wait(40);
+  feeder.feed(seg('Q: 卡一\nA: 答一\n---\nQ: 卡二\nA: 答二'));
+  feeder.feed(DONE);
+  feeder.end();
+  ev('switchCourse("__local")'); /* 回答还没回来就切到高数 */
+  await wait(120);
+  const added = J('CD.slice(' + nCards0 + ')');
+  log('  新增卡片归属 = ' + JSON.stringify(added.map(c => [c.c, c.s])));
+  ok(added.length === 2, '两张卡都加进来了（实际 ' + added.length + '）');
+  ok(added.every(c => c.c === '__local2'), '卡片课程记的是发起时的线代，不是切过去的高数');
+  ok(added.every(c => c.s === sessB), '卡片记的是发起时那一节');
+  ok(!J('CD.slice(' + nCards0 + ')').some(c => c.c === '__local'), '高数里没有混进这两张卡');
+  ev('switchCourse("__local2")');
+  await wait(30);
+  ok(J('cardList().length') === 2, '回到线代，这两张卡在列表里（实际 ' + ev('cardList().length') + '）');
+
   log('');
   log(errors.length ? ('✗ 失败 ' + errors.length + ' 项：' + errors.join(' | ')) : '✓ 全部通过');
   console.log(out.join('\n'));

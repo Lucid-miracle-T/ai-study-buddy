@@ -107,6 +107,8 @@ button:hover{background:#f1efe8;border-color:#b4b2a9}
 button.pri{background:var(--blue);border-color:var(--blue);color:#fff}
 button.pri:hover{background:#0C447C}
 button.sm{padding:4px 9px;font-size:12px}
+/* 只在窄屏出现的控件（桌面上用两排完整工具栏，不需要摘要按钮） */
+.monly{display:none}
 .pill{padding:5px 11px;border:1px solid var(--line2);border-radius:20px;cursor:pointer;font-size:12px;background:#fff}
 .pill.on{background:var(--blue-bg);border-color:#378ADD;color:#0C447C}
 .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:var(--blue-bg);border:1px solid var(--blue-line);border-radius:6px;font-size:11.5px;color:#0C447C}
@@ -334,20 +336,66 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
   .nv{display:flex;padding:6px;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
   .nv button{width:auto;white-space:nowrap;margin-bottom:0;padding:9px 12px;font-size:13px}
   #foot{display:none}   /* 手机上导航条是横的，这块统计挤在右边就是一条竖排乱码 */
+  #nav{padding-top:env(safe-area-inset-top)}
+  /* 标签栏自己能横滑，滚动条在手机上只会占地方 */
+  #ctabs,#stabs{scrollbar-width:none}
+  #ctabs::-webkit-scrollbar,#stabs::-webkit-scrollbar{display:none}
+  /* 关键：stage 是 column 弹性项，默认 min-height:auto 会被内容撑破。
+     上课页两排工具栏 + 符号栏 + 输入栏一旦超过 100dvh，后面的输入框会被裁掉，
+     body 又是 overflow:hidden —— 手机上连「发送」都点不到。 */
+  #stage{min-height:0;overflow:hidden}
+  /* 只在窄屏出现的控件（导师摘要、教材/网课目录按钮） */
+  .monly{display:inline-flex;align-items:center}
   /* 通用留白收紧 */
   .bar{padding:8px 12px;gap:6px}
   .wrap{max-width:100%}
   #msgs,#cards,#prog,#set{padding:14px 12px;-webkit-overflow-scrolling:touch}
-  #inbar{padding:9px 12px}
+  #msgs,#reader,#vdoc,#cards,#prog,#set{overscroll-behavior:contain}
+  #inbar{padding:9px 12px calc(9px + env(safe-area-inset-bottom))}
+  /* 课堂工具条：手机上默认只留一行「柯西 · 讲解」，点开才展开全部导师/模式。
+     原来两排 pill 要占 360px 高，桌子还没开始，屏幕已经没了大半。 */
+  #lbar1,#lbar2{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+  #lbar1::-webkit-scrollbar,#lbar2::-webkit-scrollbar{display:none}
+  /* 不要压缩按钮：中文会在两个字之间折行，把「开始今天的一课」压成竖排。
+     放不下就横向滑动，按钮保持单行。 */
+  #lbar1>*,#lbar2>*{flex-shrink:0}
+  #lbar2 button{white-space:nowrap}
+  #lbar1>.sp,#lbar2>.sp{flex:0 0 1px}
+  #lbar1>.mlabel,#lbar1>.msep,#lbar1>#pbox,#lbar1>#mbox,#lbar1>#ctxchips,
+  #lbar1>#rgo2,#lbar1>#pace,#lbar1>#tok,#lbar1>#kxst,#lbar1>#tts{display:none!important}
+  #mctrl{display:inline-flex;align-items:center;flex:0 0 auto;max-width:100%;
+         overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #lbar1.mopen{flex-wrap:wrap;max-height:52vh;overflow-y:auto;padding-bottom:8px}
+  #lbar1.mopen>.mlabel{display:inline!important}
+  #lbar1.mopen>.msep{display:inline-block!important}
+  #lbar1.mopen>#pbox,#lbar1.mopen>#mbox,#lbar1.mopen>#ctxchips{display:flex!important;flex:1 1 100%}
+  #lbar1.mopen>#rgo2,#lbar1.mopen>#tts{display:inline-flex!important}
+  #lbar1.mopen>#pace,#lbar1.mopen>#tok,#lbar1.mopen>#kxst{display:inline-block!important}
+  /* 符号栏：手机上隐藏操作提示（Ctrl+M 在手机上也没用），把高度还给对话 */
+  .symhint{display:none}
+  #symbar{position:relative;z-index:15}
   #symbar .wrap{padding:6px 12px 7px}
+  #symbar .symrow{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  #symbar .symrow::-webkit-scrollbar{display:none}
+  #symtoggle,#symtabs .symbtn{flex-shrink:0;white-space:nowrap}
   .symbtn{min-width:40px;height:36px;font-size:17px}
   .symbtn.w{height:32px;font-size:12px}
-  .symgrid{max-height:126px}
+  /* 符号键盘浮在对话上方，不把消息区挤成一条缝（小屏尤其明显） */
+  #symbar .symgrid{position:absolute;left:0;right:0;bottom:100%;margin:0;padding:8px 12px;
+    max-height:40vh;background:#faf9f6;border-top:1px solid var(--line);
+    box-shadow:0 -6px 18px rgba(0,0,0,.08);z-index:19}
+  /* 教材/网课那条长说明在手机上占三四行，把高度还给正文 */
+  .bookhint,.vidhint{display:none}
+  /* 设置/进度跟当前课程、节无关：把两条标签栏收起来 */
+  body[data-view="set"] #ctabs,body[data-view="set"] #stabs,
+  body[data-view="prog"] #ctabs,body[data-view="prog"] #stabs{display:none}
   /* iOS 聚焦不放大：表单字号 ≥16px */
   #in,input,select,textarea{font-size:16px}
   /* 教材页：目录栏改到上方 */
   #bwrap,#vwrap{flex-direction:column}
   #blist,#vlist{width:100%;max-height:40vh;flex-shrink:0;border-right:none;border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch}
+  /* 选完一章/一讲就把目录收起，正文拿满高度；点「目录」再展开 */
+  #bwrap.toc-off #blist,#vwrap.toc-off #vlist{display:none}
   #vdoc{padding:14px 13px;-webkit-overflow-scrolling:touch}
   #reader{padding:16px 14px;-webkit-overflow-scrolling:touch}
   #reader h1{font-size:18px}#reader h2{font-size:16px}
@@ -366,7 +414,8 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
   .chip{padding:5px 9px}
 }
 @media (max-width:400px){
-  .brand h1{font-size:13px}
+  /* 320/360 的小屏上，把品牌让出来，六个导航项才都能看见（不用横滑找「设置」） */
+  .brand{display:none}
   .nv button{padding:8px 10px;font-size:12.5px}
 }
 </style>
@@ -394,15 +443,16 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
     <div id="stabs"></div>
     <!-- 上课 -->
     <section class="view on" id="v-lesson">
-      <div class="bar">
-        <span style="font-size:12px;color:var(--tx2)">导师</span>
+      <div class="bar" id="lbar1">
+        <button class="sm monly" id="mctrl" aria-expanded="false" aria-controls="lbar1">导师 · 模式 ▾</button>
+        <span class="mlabel" style="font-size:12px;color:var(--tx2)">导师</span>
         <span id="pbox" style="display:flex;gap:6px;flex-wrap:wrap"></span>
         <button class="sm" id="rgo2" title="不知道请谁？按要学的内容推一位"
           style="margin-left:8px;background:var(--blue-bg);border-color:var(--blue-line);color:#0C447C">推荐导师</button>
-        <span style="width:1px;height:18px;background:var(--line2);margin:0 2px"></span>
-        <span style="font-size:12px;color:var(--tx2)" title="人格决定怎么说话，模式决定这一轮干什么">模式</span>
+        <span class="msep" style="width:1px;height:18px;background:var(--line2);margin:0 2px"></span>
+        <span class="mlabel" style="font-size:12px;color:var(--tx2)" title="人格决定怎么说话，模式决定这一轮干什么">模式</span>
         <span id="mbox" style="display:flex;gap:6px;flex-wrap:wrap"></span>
-        <span style="width:1px;height:18px;background:var(--line2);margin:0 2px"></span>
+        <span class="msep" style="width:1px;height:18px;background:var(--line2);margin:0 2px"></span>
         <select id="course" class="sm2" style="display:none"></select>
         <select id="pace" class="sm2" title="教学节奏：导师一次推进多少">
           <option value="slow">节奏 · 慢</option>
@@ -415,7 +465,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
         <span class="tag" id="kxst" title="数学公式渲染状态">公式加载中…</span>
         <button class="sm" id="tts" title="导师语音朗读开关（用系统中文音色，不耗 token）">🔇 朗读</button>
       </div>
-      <div class="bar" style="background:#faf9f6">
+      <div class="bar" id="lbar2" style="background:#faf9f6">
         <button class="sm pri" id="start">开始今天的一课</button>
         <button class="sm" id="gen">把本轮变闪卡</button>
         <button class="sm" id="exp2">导出笔记</button>
@@ -430,7 +480,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
           <button class="sm" id="symtoggle">Ω 特殊符号</button>
           <span id="symtabs" class="symrow" style="gap:5px"></span>
           <span class="sp" style="flex:1"></span>
-          <span style="font-size:11px;color:var(--tx3)">Unicode 符号可直接混排；公式模板自动带 $ $　·　选中文字 Ctrl+M 变行内公式</span>
+          <span class="symhint" style="font-size:11px;color:var(--tx3)">Unicode 符号可直接混排；公式模板自动带 $ $　·　选中文字 Ctrl+M 变行内公式</span>
         </div>
         <div id="symgrids"></div>
       </div></div>
@@ -451,6 +501,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
     <!-- 教材 -->
     <section class="view" id="v-book">
       <div class="bar">
+        <button class="sm monly" id="btoc" title="显示 / 收起教材目录">目录</button>
         <input id="bq" placeholder="搜标题…" style="width:220px">
         <span class="sp"></span>
         <span class="tag" id="bstat">未载入</span>
@@ -462,8 +513,8 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
         <input type="file" id="file" accept=".md,.markdown,.txt,.pdf,.epub" multiple style="display:none">
       </div>
       <div class="bar" style="background:#faf9f6;font-size:11.5px;color:var(--tx3)">
-        支持 <b>md / txt</b>（最佳）、<b>PDF</b>、<b>EPUB</b>。
-        PDF 取的是文本层：<b>公式和上下标基本会串位</b>，理工教材建议先用 MinerU 转成 Markdown 再导入。
+        <span class="bookhint">支持 <b>md / txt</b>（最佳）、<b>PDF</b>、<b>EPUB</b>。
+        PDF 取的是文本层：<b>公式和上下标基本会串位</b>，理工教材建议先用 MinerU 转成 Markdown 再导入。</span>
         <span class="sp"></span>
         <!-- 勾选是按节存的，不写清楚「现在勾给哪一节」，人会以为改的是整门课 -->
         <span class="tag" id="bsess" title="每一节各记各的：在这里勾选只改当前这一节">勾选记在当前这一节</span>
@@ -477,6 +528,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
     <!-- 网课 -->
     <section class="view" id="v-vid">
       <div class="bar">
+        <button class="sm monly" id="vtoc" title="显示 / 收起网课目录">目录</button>
         <select id="vset" class="sm2" style="max-width:230px"></select>
         <button class="sm pri" id="vimp">导入网课包</button>
         <input type="file" id="vfile" accept=".json,.md,.markdown,.txt" style="display:none">
@@ -485,7 +537,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
         <button class="sm" id="vdel">删除本合集</button>
         <button class="sm" id="vanalyze" title="拿整个合集的标题与各讲摘要，对照教材目录做覆盖度分析">分析整个合集</button>
       </div>
-      <div class="bar" style="background:#faf9f6;font-size:11.5px;color:var(--tx3)">
+      <div class="bar vidhint" style="background:#faf9f6;font-size:11.5px;color:var(--tx3)">
         已内置翁恺 C 语言（132 讲）和两套江协 STM32，打开就有。也可以自己导入：<code>{"title":"合集名","items":[{"t":"讲标题","u":"链接","dur":"时长","doc":"[mm:ss] 内容…"}]}</code>（由 B 站 AI 字幕或语音转写离线生成）　·　讲义里的 <b>[mm:ss]</b> 可点，会打开视频跳到对应时刻
       </div>
       <div id="vwrap">
@@ -890,7 +942,7 @@ function saveMs(){LS.s(msKey(),MS)}
 /* ---- 操作习惯（与课程无关，本机一份） ---- */
 let SENDKEY=LS.g('sendkey','ctrl');if(SENDKEY!=='enter')SENDKEY='ctrl';
 let FSZ=String(LS.g('fsz','1'));if(['1','2','3'].indexOf(FSZ)<0)FSZ='1';
-function sendHint(){return SENDKEY==='enter'?'Enter 发送 · Shift+Enter 换行':'Ctrl+Enter 发送'}
+function sendHint(){return window.innerWidth<=720?'点「发送」':(SENDKEY==='enter'?'Enter 发送 · Shift+Enter 换行':'Ctrl+Enter 发送')}
 function phOf(k){return String((MODE[k]||MODE.teach).ph||'').replace(/Ctrl\+Enter 发送/,sendHint())}
 function applyHabit(){
   document.body.classList.toggle('fs2',FSZ==='2');
@@ -967,6 +1019,13 @@ function sessLabel(id){
   const t=s.title||sessAuto(id);
   return '第 '+(i+1)+' 节'+(t?' · '+t:'');
 }
+/* 跨课程问「这是哪一节」：当前 SESS 里找不到时，去那门课自己的 sess 记录里翻。
+   生成闪卡是异步的，回来时人可能已经切走了，提示里得照样说得出原课程的节号 */
+function sessLabelAny(co,id){
+  const arr=LS.g('sess.'+co,[])||[];
+  for(let i=0;i<arr.length;i++)if(arr[i].id===id)return '第 '+(i+1)+' 节'+(arr[i].title?' · '+arr[i].title:'');
+  return '一节';
+}
 function cname(k){
   if(k==='__free')return '自由问答';
   const p=packByKey(k);if(p)return p.name;   /* 内置包课程直接读包名，加减包不用再改这里 */
@@ -993,6 +1052,8 @@ function switchCourse(k){
   rev=null;revBack=false;
   applySessWho();      /* 换了书就换了节，导师也跟着换回这一节自己记的那位 */
   updateCourses();renderChips();renderBook();reloadMsgs();renderCards();
+  /* 换了课程先让人看见新目录，而不是上一本书的正文 */
+  if(narrow()){const bw=$('bwrap');if(bw)bw.classList.remove('toc-off');const vw=$('vwrap');if(vw)vw.classList.remove('toc-off')}
   toast('已切到「'+cname(k)+'」');
   return true;
 }
@@ -1134,10 +1195,16 @@ function streak(){
   return c;
 }
 
+/* 手机端断点判断（jsdom 里 innerWidth 是 1024，测试不受影响） */
+function narrow(){return window.innerWidth<=720}
 function goView(v){
   document.querySelectorAll('.nv button').forEach(function(x){x.classList.toggle('on',x.dataset.v===v)});
   document.querySelectorAll('section.view').forEach(function(s){s.classList.remove('on')});
   $('v-'+v).classList.add('on');
+  /* 手机端 css 用 data-view 决定要不要显示课程/节标签栏；顺便收起导师面板 */
+  document.body.dataset.view=v;
+  const lb=$('lbar1');if(lb)lb.classList.remove('mopen');
+  const mc=$('mctrl');if(mc)mc.setAttribute('aria-expanded','false');
   /* 记住你待在哪一页。设置页不记：那是来配置的地方，刷新后该回到学习现场去。 */
   if(v!=='set')LS.s('view',v);
   if(v==='prog')renderProg();if(v==='card')renderCards();
@@ -1694,7 +1761,9 @@ function renderBook(){
         const tt=document.createElement('span');tt.className='t';tt.innerHTML=titleHtml(c.title);
         d.appendChild(ck);d.appendChild(dt);d.appendChild(tt);
         /* 点开某节时强制展开它所在分册，免得选中的高亮藏在折叠里 */
-        d.onclick=function(e){if(e.target!==ck){curCh=c.id;BOPEN[f]=true;openCh(c);renderBook()}};
+        d.onclick=function(e){if(e.target!==ck){curCh=c.id;BOPEN[f]=true;openCh(c);renderBook();
+          /* 手机上选完章节就把目录收起来，让正文拿满屏；顶栏「目录」能再展开 */
+          if(narrow())$('bwrap').classList.add('toc-off')}};
         g.appendChild(d);
       });
       cw.appendChild(g);
@@ -1859,7 +1928,8 @@ function renderVLec(){
       +(l.u?'<a href="'+esc(l.u)+'" target="_blank" rel="noopener">打开视频</a>':'')
       +(l.doc?'<span>'+Math.round(l.doc.length/1000)+'K 字讲义</span>':'<span style="color:#BA7517">无讲义</span>')+'</div>';
     d.querySelector('.vst').onclick=function(e){e.stopPropagation();const it=vCur().items[i];it.st=((it.st||0)+1)%3;VDB.put(vCur());renderVLec()};
-    d.onclick=function(){VLEC=i;saveVPos();renderVLec();showLec()};
+    d.onclick=function(){VLEC=i;saveVPos();renderVLec();showLec();
+      if(narrow())$('vwrap').classList.add('toc-off')};
     box.appendChild(d);
   });
   /* 一百多讲的合集，刷新后选中项可能在屏幕外 —— 轻轻拉回视野，别让人自己找 */
@@ -2025,6 +2095,13 @@ function renderModes(){
     const pv=$('in');if(pv)pv.placeholder=phOf(MODEK);
   });
   const mcur=$('mcur');if(mcur)mcur.textContent=curMode().n;
+  renderMCtrl();
+}
+/* 手机端工具条摘要：不展开也能一眼看见「现在跟谁、什么模式」 */
+function renderMCtrl(){
+  const b=$('mctrl');if(!b)return;
+  const lb=$('lbar1');
+  b.textContent=getP(who).n+' · '+curMode().n+(lb&&lb.classList.contains('mopen')?' ▴':' ▾');
 }
 function renderMyPs(){
   const b=$('myplist');if(!b)return;
@@ -2532,13 +2609,17 @@ function startVoice(){
 }
 /* 下课小结：一份小结 + 自动把这轮的卡点做成闪卡 */
 async function lessonClose(){
-  if(!MS.length){alert('先聊几句再下课。');return}
+  if(!curMsgs().length){alert('先聊几句再下课。');return}
+  /* 小结 + 出卡要跑一分多钟，这期间切走也算数：先把这一节钉住，
+     免得小结归了原课、闪卡归了新课（分块矩阵那批卡的老毛病） */
+  const myCourse=COURSE,mySess=CURS;
   const b=$('close');if(b)b.disabled=true;
   try{
     await ask('我们今天的课先到这里。请你做一份「下课小结」，分三块：\n1. 【今天学会了】3–5 条要点，每条一句话，用我自己的理解说；\n2. 【还不太扎实】诚实指出我哪些点其实没懂、只是跟着点头了；\n3. 【下次从哪接】一句话说清下次从哪里继续。\n不要展开新讲解，只做小结。');
     await new Promise(function(r){setTimeout(r,400)});
-    const g=$('gen');if(g)g.click();
-    toast('小结写好了。下一节课点「＋ 新一节」——这一节原样留着，随时点回去看');
+    const k=await genCards(myCourse,mySess);
+    toast(k?('小结写好了。下一节课点「＋ 新一节」——这一节原样留着，随时点回去看')
+           :'小结写好了。刚才切到别处了，闪卡没生成；回到这一节点「把本轮变闪卡」就行');
   }catch(e){}finally{if(b)b.disabled=false}
 }
 $('mic').onclick=startVoice;
@@ -2558,11 +2639,15 @@ function cardList(){
 }
 function dueList(){const n=Date.now();return cardList().filter(function(c){return (c.due||0)<=n})}
 function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
-function addCards(qas){
+function addCards(qas,ck,sk){
   const n=Date.now();let k=0;
-  /* 记住是在哪一节里加的卡：以后能按节分开看，也能分清「哪次课攒下来的」 */
-  qas.forEach(function(p){if(!p.q)return;CD.push({id:newId(),q:p.q,a:p.a||'',box:0,due:n,rep:0,c:COURSE,s:CURS});k++});
-  LS.s('cards',CD);renderCards();return k;
+  /* 卡片记「哪门课、哪一节」：默认是此刻所在的，但异步生成回来的要显式指定，
+     否则切课/切节之后卡片会记到别人头上 */
+  const co=ck||COURSE, se=sk||CURS;
+  qas.forEach(function(p){if(!p.q)return;CD.push({id:newId(),q:p.q,a:p.a||'',box:0,due:n,rep:0,c:co,s:se});k++});
+  LS.s('cards',CD);
+  if(co===COURSE)renderCards();   /* 存到别的课程时别把当前列表按别的节重画 */
+  return k;
 }
 function parseCards(t){
   const out=[];String(t).split(/^---+$/m).forEach(function(b){
@@ -2767,7 +2852,9 @@ const SYMS=[
    ['无穷区间','$[a,+\\infty)$'],['属于','$x\\in[a,b]$'],['映射','$f:A\\to B$']
  ]}
 ];
-let SYMA=LS.g('syma',1), SYMT=LS.g('symt','base');
+/* 手机上默认收起符号键盘：它一展开就是一百多像素，屏幕本来就窄。
+   桌面端保持原来的默认展开；用户在任一端手动改过就按存的来。 */
+let SYMA=LS.g('syma',(window.innerWidth<=720?0:1)), SYMT=LS.g('symt','base');
 /* 光标落在哪几段 $...$ 里（配对方式与 md() 完全一致，所见即所得）。
    md() 提取公式用的是非贪婪配对，这里必须用同一套，否则会出现
    「看着像在公式里、其实不在」这种错判。 */
@@ -2822,6 +2909,13 @@ function renderSym(){
   gw.appendChild(box);
 }
 $('symtoggle').onclick=function(){SYMA=SYMA?0:1;LS.s('syma',SYMA);renderSym();applyHabit()};
+/* 手机端：点摘要展开/收起导师与模式（桌面端这个按钮 display:none，走不到这里） */
+$('mctrl').onclick=function(){
+  const lb=$('lbar1');if(!lb)return;
+  const open=lb.classList.toggle('mopen');
+  this.setAttribute('aria-expanded',open?'true':'false');
+  renderMCtrl();
+};
 
 /* ---------- 拍题上传 ----------
    学生最常干的事是「拍一张题给老师看」，而不是把题一个字一个字敲出来。
@@ -2937,10 +3031,32 @@ $('start').onclick=function(){
   document.querySelector('[data-v="lesson"]').click();
   ask(head);
 };
-$('gen').onclick=async function(){
-  if(!MS.length){alert('先聊几句。');return}
+/* 变闪卡：发起时就把「归属」钉死（哪门课、哪一节）。
+   生成要几十秒，这期间切课程/切节都发生过 —— 分块矩阵那 9 张卡就是这么进了
+   高数第 4 节：回答被 ask() 正确写回了线代，卡片却按回来后所在的课/节记账。 */
+async function genCards(myCourse,mySess){
+  myCourse=myCourse||COURSE; mySess=mySess||CURS;
+  /* 已经不在那一节了：不发请求。否则拿别的节的对话去问，生成出来的卡也是错的 */
+  if(COURSE!==myCourse||CURS!==mySess){
+    toast('已经切到别处了，这一节的闪卡先不生成');
+    return 0;
+  }
   const r=await ask('请基于我们刚才讨论的内容，生成 6–10 张复习闪卡，只覆盖真正卡住过我的点。严格按下面格式，每张之间用单独一行的 --- 分隔，不要任何多余说明：\nQ: 一句话问题\nA: 简洁答案（不超过 80 字）',{card:true,temp:0.4});
-  if(r){const k=addCards(parseCards(r));toast(k?('已新增 '+k+' 张闪卡'):'没能解析出闪卡，可手动添加');if(k)document.querySelector('[data-v="card"]').click()}
+  if(!r)return 0;
+  const k=addCards(parseCards(r),myCourse,mySess);
+  if(!k){toast('没能解析出闪卡，可手动添加');return 0}
+  if(COURSE===myCourse&&CURS===mySess){
+    document.querySelector('[data-v="card"]').click();
+    toast('已新增 '+k+' 张闪卡');
+  }else{
+    /* 已经切走了：不要把人拽到别的课程的闪卡页，只老实说存哪儿了 */
+    toast('已存到「'+cname(myCourse)+' · '+sessLabelAny(myCourse,mySess)+'」'+k+' 张，切回去就能看到');
+  }
+  return k;
+}
+$('gen').onclick=function(){
+  if(!curMsgs().length){alert('先聊几句。');return}
+  genCards(COURSE,CURS);
 };
 $('exp2').onclick=function(){
   if(!MS.length){alert('没有内容');return}
@@ -2979,7 +3095,9 @@ $('vfile').onchange=async function(){
   try{vParse(await f.text(),f.name.replace(/\.(json|md|markdown|txt)$/i,''))}catch(e){toast('读取失败：'+e.message)}
   $('vfile').value='';
 };
-$('vset').onchange=function(){VSET=$('vset').value;VLEC=0;saveVPos();renderVLec();showLec()};
+$('vset').onchange=function(){VSET=$('vset').value;VLEC=0;saveVPos();renderVLec();showLec();
+  if(narrow())$('vwrap').classList.remove('toc-off')};
+$('vtoc').onclick=function(){const w=$('vwrap');if(w)w.classList.toggle('toc-off')};
 $('vdel').onclick=async function(){
   const s=vCur();if(!s)return;
   if(s.builtin){toast('这是内置合集，随站点自动载入；想少看点就在上面换一个合集');return}
@@ -3004,7 +3122,8 @@ $('reload').onclick=function(){autoLoad(this)};
 $('ldg').onclick=function(){autoLoad(this,packByKey(LOCAL_KEY))};
 $('ldl').onclick=function(){autoLoad(this,packByKey(LOCAL_KEY2))};
 $('ldc').onclick=function(){autoLoad(this,packByKey(LOCAL_KEY3))};
-$('bq').oninput=renderBook;
+$('bq').oninput=function(){if(narrow())$('bwrap').classList.remove('toc-off');renderBook()};
+$('btoc').onclick=function(){const w=$('bwrap');if(w)w.classList.toggle('toc-off')};
 $('expp').onclick=function(){
   dl('高数学习数据_'+today()+'.json',JSON.stringify({progress:PR,cards:CD,stats:ST,messages:MS},null,1));
 };
@@ -3125,7 +3244,7 @@ if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e
   const tkLine=LITE
     ?'- **教材**：演示版自带一份示例讲义（极限与导数入门），进「教材」勾一节就能开课；想用完整教材点「导入教材」上传自己的 md / pdf / epub'
     :'- **教材**：进「教材」勾选正在学的那一节；站点没带教材正文时会自动放一份示例讲义兜底，也可以用「导入教材」换成自己的 md / txt / pdf / epub';
-  addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n'+tkLine+'\n- **导师**：上面一行人格决定“怎么说话”，旁边一行**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
+  addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n'+tkLine+'\n- **导师**：顶部「导师」决定“怎么说话”，**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
 (async function(){
   let err=null;
   /* 教材库打不开（存储被禁 / 库坏了 / 被别的标签页占着）不能连累整页：
