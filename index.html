@@ -113,6 +113,14 @@ button.sm{padding:4px 9px;font-size:12px}
 .pill.on{background:var(--blue-bg);border-color:#378ADD;color:#0C447C}
 .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:var(--blue-bg);border:1px solid var(--blue-line);border-radius:6px;font-size:11.5px;color:#0C447C}
 .chip b{font-weight:400;cursor:pointer;color:var(--tx3)}
+/* 出处卡片：可核对的引用锚。不抢正文视觉，点一下才去教材目录 */
+.cite{display:inline-flex;align-items:center;gap:4px;margin:0 3px;padding:1px 7px 1px 4px;
+  border:1px solid var(--blue-line);background:var(--blue-bg);color:#0C447C;
+  border-radius:5px;font-size:11px;line-height:1.5;vertical-align:baseline;cursor:pointer;max-width:100%}
+.cite .ci{background:#378ADD;color:#fff;border-radius:3px;padding:0 4px;font-size:10px;flex:none}
+.cite:hover{border-color:#378ADD}
+.cite.off{background:#f1efe8;border-color:var(--line2);color:var(--tx3);cursor:help}
+.cite.off .ci{background:#9a9a93}
 .tag{background:#f1efe8;border-radius:5px;padding:3px 8px;font-size:11.5px;color:var(--tx2)}
 .tag.ok{background:var(--green-bg);color:var(--green)}
 .tag.bad{background:#FCE8E6;color:#A32D2D;cursor:help}
@@ -153,6 +161,12 @@ button.sm{padding:4px 9px;font-size:12px}
 .msg .body .noglyph{border-bottom:1px dotted #BA7517;cursor:help}
 #inbar{border-top:1px solid var(--line);background:var(--panel);padding:11px 24px;flex-shrink:0}
 #inbar .wrap{display:block}
+/* 节奏命令条：横向可滚、不换行 —— 窄屏下别把输入栏顶出视口 */
+.pacebar{display:flex;align-items:center;gap:5px;overflow-x:auto;white-space:nowrap;
+  padding:0 0 7px;scrollbar-width:thin}
+.pacebar .plb{font-size:11px;color:var(--tx3);flex:none;margin-right:2px}
+.pacebar .sm{flex:none;font-size:11px;padding:3px 9px;border-radius:20px}
+.pacebar .phint{font-size:10.5px;color:var(--tx3);flex:none;margin-left:4px}
 .inrow{display:flex;gap:8px;align-items:flex-end}
 /* 拍题：待发送的那张图先摆出来看一眼，拍糊了可以直接撤掉重拍 */
 #photo{height:44px;font-size:16px;padding:0 12px;flex-shrink:0}
@@ -241,7 +255,12 @@ input.ck{width:auto;flex-shrink:0}
 .crow{border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin-bottom:7px;background:#fff;font-size:13px}
 .crow .q{font-weight:500;margin-bottom:3px}
 .crow .a{color:var(--tx2);font-size:12.5px}
-.crow .m{font-size:11px;color:var(--tx3);margin-top:5px;display:flex;gap:10px}
+.crow .m{font-size:11px;color:var(--tx3);margin-top:5px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.wflag,.wmini{display:inline-block;background:#FCE8E6;color:#A32D2D;border:1px solid #F0C7C3;
+  border-radius:5px;font-size:11px;padding:2px 7px}
+.wflag{margin:0 auto 10px;text-align:center}
+.wmini{padding:1px 6px;font-size:10.5px}
+.crow.w{border-left:3px solid #D9645B}
 /* 列表里的公式跟随正文字号，独立公式不要撑出大块空白 */
 .crow .katex{font-size:.97em}
 .crow .katex-display{margin:2px 0}
@@ -352,6 +371,11 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
   #msgs,#cards,#prog,#set{padding:14px 12px;-webkit-overflow-scrolling:touch}
   #msgs,#reader,#vdoc,#cards,#prog,#set{overscroll-behavior:contain}
   #inbar{padding:9px 12px calc(9px + env(safe-area-inset-bottom))}
+  /* 节奏命令条：手机上只占一行、横向滑动，别把输入区顶出视口 */
+  .pacebar{padding-bottom:6px;scrollbar-width:none}
+  .pacebar::-webkit-scrollbar{display:none}
+  .pacebar .phint{display:none}
+  .pacebar .sm{min-height:30px}
   /* 课堂工具条：手机上默认只留一行「柯西 · 讲解」，点开才展开全部导师/模式。
      原来两排 pill 要占 360px 高，桌子还没开始，屏幕已经没了大半。 */
   #lbar1,#lbar2{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
@@ -486,6 +510,20 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
       </div></div>
       <div id="inbar"><div class="wrap">
         <div id="pendimg" class="pendimg" style="display:none"></div>
+        <!-- 节奏命令：把「三个出口」变成看得见、点得到的东西。
+             光写进 system prompt，学生根本不知道自己可以说「直接讲」。 -->
+        <div id="pacebar" class="pacebar"><span class="plb">节奏</span>
+          <button type="button" class="sm" data-cmd="直接讲，这一轮先把结论讲清楚">直接讲</button>
+          <button type="button" class="sm" data-cmd="只讲结论">只讲结论</button>
+          <button type="button" class="sm" data-cmd="先做题">先做题</button>
+          <button type="button" class="sm" data-cmd="一步一步来，慢一点">一步一步来</button>
+          <button type="button" class="sm" data-cmd="先看整体图，这节在整章里是什么位置">先看整体</button>
+          <button type="button" class="sm" data-cmd="快点过">快点过</button>
+          <button type="button" class="sm" data-cmd="不要剧透后面的内容">别剧透后面</button>
+          <button type="button" class="sm" data-cmd="我累了，这一轮别追问了，讲清楚就好">今天有点累</button>
+          <button type="button" class="sm" data-act="settle">今天结束 · 结算</button>
+          <span class="phint">只在当前这一轮生效，下一轮恢复追问</span>
+        </div>
         <div class="inrow">
           <textarea id="in" placeholder="说点什么。Ctrl+Enter 发送"></textarea>
           <!-- 不带 capture：手机上系统会给出「拍照 / 从相册选」两个入口，桌面端就是选文件 -->
@@ -505,6 +543,8 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
         <input id="bq" placeholder="搜标题…" style="width:220px">
         <span class="sp"></span>
         <span class="tag" id="bstat">未载入</span>
+        <button class="sm" id="ldfree" title="本站自编、可自由分发的两册讲义；体验版也能用">免费讲义</button>
+        <button class="sm" id="dlfree" title="把两册自制讲义打包成一份 md 下载，可随意复制、修改、分发">下载讲义</button>
         <button class="sm" id="reload">载入全部内置教材</button>
         <button class="sm" id="ldg">仅高数</button>
         <button class="sm" id="ldl">仅线代</button>
@@ -514,7 +554,8 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
       </div>
       <div class="bar" style="background:#faf9f6;font-size:11.5px;color:var(--tx3)">
         <span class="bookhint">支持 <b>md / txt</b>（最佳）、<b>PDF</b>、<b>EPUB</b>。
-        PDF 取的是文本层：<b>公式和上下标基本会串位</b>，理工教材建议先用 MinerU 转成 Markdown 再导入。</span>
+        PDF 取的是文本层：<b>公式和上下标基本会串位</b>，理工教材建议先用 MinerU 转成 Markdown 再导入。<br>
+        <b>「免费讲义」是本站自己写的</b>（非出版物摘录，MIT），随仓库分发，可自由复制、修改、转给别人；真教材受版权保护，只在本地、不随公开仓库走。</span>
         <span class="sp"></span>
         <!-- 勾选是按节存的，不写清楚「现在勾给哪一节」，人会以为改的是整门课 -->
         <span class="tag" id="bsess" title="每一节各记各的：在这里勾选只改当前这一节">勾选记在当前这一节</span>
@@ -551,12 +592,22 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
       <div class="bar">
         <span class="tag" id="due">待复习 0</span>
         <select id="cse" class="sm2" title="只看某一节学到的卡"></select>
+        <select id="wfilter" class="sm2" title="错题本：只看做错过的，或只看普通闪卡">
+          <option value="all">全部卡</option>
+          <option value="wrong">只看错题（错题本）</option>
+          <option value="plain">只看普通闪卡</option>
+        </select>
         <span class="sp"></span>
         <button class="sm pri" id="review">开始复习</button>
+        <button class="sm" id="revieww" title="只考做错过的那些，隔天再考那一批">只复习错题</button>
         <button class="sm" id="newc">手动加卡</button>
+        <button class="sm" id="neww">记一条错题</button>
         <button class="sm" id="imp">导入</button>
         <input type="file" id="cfile" accept=".md,.txt" style="display:none">
         <button class="sm" id="expc">导出</button>
+      </div>
+      <div class="bar" style="background:#faf9f6;font-size:11.5px;color:var(--tx3)">
+        批改模式里导师标出的错点会<b>自动进错题本</b>，隔天再考；复习时点「忘了」也会就地转成错题。连对三次就从错题本毕业，不再占复习队列。
       </div>
       <div id="cards"><div class="cbox" id="car"></div><div class="clist" id="clist" style="max-width:560px;margin:24px auto 0"></div></div>
     </section>
@@ -660,7 +711,11 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
           <div class="help" style="margin-top:10px">
             中文输入法打字时按 Enter 是在选字，不会被当成发送——这点已经处理好了，不用担心打一半被送出去。<br><br>
             <b>想改自己说过的话？</b>点你那条消息右上角的「编辑」，改完点「重发」——它之后的内容会一起清掉，导师会拿改过的话重新回答一遍。要是只错了个符号，这比重新问一遍省事得多。<br><br>
-            <b>动作描写</b>：导师写成 <code>*推了推眼镜*</code> 的句子是旁白，会显示成浅色小字，和它要讲的话分开。你自己也能这么写——旁白不会被朗读出来。想改在哪几个角色身上出现，就在上面这个开关里调。
+            <b>动作描写</b>：导师写成 <code>*推了推眼镜*</code> 的句子是旁白，会显示成浅色小字，和它要讲的话分开。你自己也能这么写——旁白不会被朗读出来。想改在哪几个角色身上出现，就在上面这个开关里调。<br><br>
+            <b>三个出口（严不是目的，能继续学才是）</b>：输入栏上方那排「节奏」按钮是给硬规则留的出口。<br>
+            ① <b>累了／赶时间</b>：点「直接讲」「只讲结论」「快点过」，这一轮导师就照办，下一轮自动恢复追问；<br>
+            ② <b>想追问框架边界</b>：直接打断问，导师会先承认问题成立、再点回你忽略的前提、最后标注「这属于后面内容，本节先按当前框架用」——「一次只问一个问题」管的是导师，不是你的提问权；<br>
+            ③ <b>什么时候下课由你说</b>：只有你点「今天结束 · 结算」或「下课小结」，才写小结并归档。中途休息、闲聊、跑题都算课间，导师不会单方面道别、预告明天。
           </div>
         </div>
         <div class="card2">
@@ -815,11 +870,43 @@ const ACTS={
   mid:"【动作与神态 · 自然】你可以在开口的同时写一小句动作或神态旁白，用一对单星号包住，例如：*推了推眼镜*、*停顿了一下，在纸上画出一条曲线*。规则：\n- 每轮 0–2 处，只在真的有助于表达时才用；宁少勿多，不要每句都配动作。\n- 旁白要短，一般不超过 12 字，用第三人称写成旁白，不要写成像对白那样带引号。\n- 必须符合你的人格设定与当前场景；不要借旁白编造与设定冲突的身份、道具或环境。\n- 单星号只留给旁白；要强调文字时一律用双星号 **这样**，不要用 _斜体_。",
   rich:"【动作与神态 · 丰富】在说话的过程中多写一些动作、神态与小场景，用一对单星号包住，例如：*推了推眼镜，把草稿纸转过来*、*指尖在桌面上敲了两下，忽然停住*。规则：\n- 每轮 2–4 处，可以带动作与环境细节，但仍以对白和讲解为主，不要让旁白盖过内容。\n- 每条旁白一般不超过 20 字，用第三人称写成旁白，不要写成像对白那样带引号。\n- 必须符合你的人格设定与当前场景；不要借旁白编造与设定冲突的身份、道具或环境。\n- 单星号只留给旁白；要强调文字时一律用双星号 **这样**，不要用 _斜体_。"
 };
+/* 出处与页码：让「可核对」变成系统级防线，而不是靠用户自己判断模型有没有编。
+   两条来自同一条判据 —— 给不出确切位置就老实说给不出，绝不伪造精确页码/图号/题号。
+   渲染层配套 citeHtml()：导师写的 〔出处:…〕 会变成可点的引用卡片，点一下跳到教材目录搜那一节。 */
+const CITE='【出处与页码 · 绝不伪造】'
+  +'\n- 凡引用教材里的定义、定理、公式或例题，紧跟一个出处标记 〔出处:分册名 · 章节标题〕；'
+  +'分册名和章节标题必须来自【教材原文摘录】里的 ### 行，没有原文可引时写 〔出处:本轮未带教材〕。'
+  +'\n- 引用标记里的章节标题要与本轮勾选的章节一致；一个结论跨了几节，可以写多个标记。'
+  +'\n- 绝不编造精确页码、图号、习题号、定理编号。有把握才给具体位置；'
+  +'没把握就写「本章前半部分」「第 N 节附近」这类模糊定位，或干脆不写位置。'
+  +'宁可少给一个数字，也不要给一个看起来很准、其实是你猜的数字。'
+  +'\n- 说不清出处时明说「这一条我按通用知识讲，教材上没找到对应位置」，不要拿一个假出处搪塞。'
+  +'\n- 教材原文与你的推导冲突时，以教材为准并当场指出冲突，别悄悄按自己的写。'
+  +'\n- 出处标记只放在句末，不要塞进公式里，也不要写成脚注或编号列表。';
+/* 三个出口：硬规则必须给「不想被追问 / 想越界 / 不想结束」各留一条路。
+   前两条来自 5.6.0 减压阀与四节课实录的越界阀，第三条来自第二位复刻者的
+   「不说结算永不下课」。三者管的是不同维度：讲不讲 / 展开不展开 / 结不结束。 */
+const EXIT='【节奏权归学习者 · 三个出口】'
+  +'\n- 这一段的优先级高于上面所有教学规则与本轮模式：我给出的节奏命令，先照办。'
+  +'节奏命令只对发出它的那一轮有效，下一轮自动恢复默认方式；'
+  +'即使对话记录里还留着那句话，也不要把它当成长期设定。'
+  +'\n1. 减压阀（讲不讲）：我明确说「直接讲 / 只讲结论 / 快点过 / 一步一步来 / 先做题 / '
+  +'先看整体图 / 不要剧透后面 / 我累了」时，这一轮照我说的做，讲清楚就停，下一轮恢复追问。'
+  +'不要因为我用了命令就继续追问，也不要事后责备我。'
+  +'\n2. 越界阀（展开不展开）：我打断去追问框架的适用边界、举反例、或拿后面的知识质疑时，'
+  +'按三步接住：先承认问题成立（不成立就说清为什么），再点回我忽略的那个前提，'
+  +'最后标注「这属于后续内容，本节先按当前框架用」。不硬掰、不无限展开、不把我的提问当成不配合；'
+  +'「一次只问一个问题」约束的是你，不是我的提问权。'
+  +'\n3. 结算边界（结不结束）：除非我明确说「今天结束 / 下课 / 结算」，否则不自动写总结、'
+  +'道别、晚安、预告明天或触发任何收尾。中途休息、闲聊、跑题、回顾旧内容都算课间，'
+  +'课堂继续，不要单方面宣布下课。只有我明确结算了，才写一份简短小结。'
+  +'\n4. 我连续做错或明显挫败时，先停下硬核推导，用生活化比喻或更简单的思路重新切入；'
+  +'状态好时再乘胜追击。严不是目的，能让我继续学下去才是。';
 /* 本轮模式：与人格正交——人格决定「怎么说话」，模式决定「这一轮干什么」 */
 const MODE={
   teach:{n:"讲解",ph:"说点什么。Ctrl+Enter 发送",p:"【本轮模式 · 讲解】按你的一贯方式讲清楚这个概念：先说它成立的条件和物理含义，再谈推导（只在影响“什么时候能用”时才讲），最后给一个能套用的判据或步骤。讲完留一个小问题确认我是否跟上。"},
   drill:{n:"陪练出题",ph:"先自己答，把答案发过来——导师不会先讲。Ctrl+Enter 发送",p:"【本轮模式 · 陪练出题】本轮你只出题，不讲解、不给答案、不给提示。规则：\n- 出一道 3 分钟内能动笔的题，难度略高于我刚才的水平，或针对我刚暴露的薄弱点出变式\n- 我回答之前，不解释思路、不提示方法、不评价，哪怕我求你说\n- 我答完后：先判断对错，再指出我卡在哪一步；答对就立刻出一道更难一点的变式\n- 同一层连续答不上三轮，才允许降低难度并简要讲解\n- 只有我明确说“讲一下 / 我不会”时，才切回讲解"},
-  grade:{n:"批改我的解答",ph:"贴上你的解题过程（可多行），导师按阅卷标准批改。Ctrl+Enter 发送",p:"【本轮模式 · 批改我的解答】我贴的是自己的解题过程，你按考试阅卷标准批改，不要重新讲一遍课。规则：\n- 先给结论：对还是错，按百分制给个大致分数\n- 逐行挑硬伤并标类型：【漏步骤】【符号错】【等号滥用】【量纲错】【定义域条件】【抄写错】\n- 每处只说错在哪、为什么错，不给完整正确解；只有我问“怎么写才对”时才给标准写法\n- 最后列一份扣分清单，并挑最严重的一处让我重写那一步\n- 我还没贴解答时，先要我把过程发过来，不要替我做题"},
+  grade:{n:"批改我的解答",ph:"贴上你的解题过程（可多行），导师按阅卷标准批改。Ctrl+Enter 发送",p:"【本轮模式 · 批改我的解答】我贴的是自己的解题过程，你按考试阅卷标准批改，不要重新讲一遍课。规则：\n- 先给结论：对还是错，按百分制给个大致分数\n- 逐行挑硬伤并标类型：【漏步骤】【符号错】【等号滥用】【量纲错】【定义域条件】【抄写错】\n- 每处只说错在哪、为什么错，不给完整正确解；只有我问“怎么写才对”时才给标准写法\n- 最后列一份扣分清单，并挑最严重的一处让我重写那一步\n- 我还没贴解答时，先要我把过程发过来，不要替我做题\n- 回复末尾必须附【错点清单】，每处单独一行、严格按「- 类型：… | 错点：… | 正确做法：…」写，确实没有错处就写「- 无」。这段会被自动收进错题本、隔天再考，只列真正的硬伤，不要把讲解正文写进去。"},
   exam:{n:"考试视角",ph:"问这一节怎么考、怎么拿步骤分。Ctrl+Enter 发送",p:"【本轮模式 · 考试视角】从期末试卷的角度审视当前内容。规则：\n- 说清这一节通常出什么题型、占几分、标准答案的关键得分点\n- 列出常见失分点，特别是容易栽的小地方（正负号、定义域、单位）\n- 给解题顺序建议：先写哪一步能保底拿步骤分，时间怎么分配\n- 最后给一道贴近真实难度的模拟题，我答完再按卷面标准批改"},
   eng:{n:"工程接口",ph:"问这个数学概念在专业课里怎么用。Ctrl+Enter 发送",p:"【本轮模式 · 工程接口】把当前概念接到工科专业课上。规则：\n- 说清它在哪门专业课出现（电路、理论力学、材料力学、信号与系统、自动控制等），对应什么物理量或工程问题\n- 给一个能算出数的工程小例子，带单位、带数量级，做完必须做量纲检查\n- 讲清工程上常用的简化假设：哪些数学条件工程里自然满足、可以不用管\n- 提醒符号约定的坑（工程习惯往往和数学教材不一样）"}
 };
@@ -929,8 +1016,12 @@ if(LITE)PACKS.length=1;
    为什么不塞进 PACKS：PACKS 是「这个站点部署时真带了的教材」——主站部署目录里有 book/。
    示例只该在「一份内置教材都取不到」时兜底：clone 下来的人、GitHub Pages 体验版。
    放进 PACKS 的话，主站教材页会永远多出一门用不上的「示例课」。 */
-const SAMPLE_KEY='__sample', SAMPLE_NAME='示例讲义 · 极限与导数入门';
-const SAMPLE={key:SAMPLE_KEY,name:SAMPLE_NAME,bk:'自制示例讲义（非出版物）',dir:'book/示例/',files:['极限与导数入门.md'],sample:true};
+/* 自制免费讲义：本站自己写的，不是任何出版教材的摘录或改写，随仓库分发、MIT 许可。
+   这是「内容供给层」的第一块砖 —— 真教材受版权保护不能公开，那至少要有
+   一套开箱就能学、也允许别人随意拿走的内容。别把真教材搬进 book/示例/。 */
+const SAMPLE_KEY='__sample', SAMPLE_NAME='自制免费讲义（两册）';
+const SAMPLE={key:SAMPLE_KEY,name:SAMPLE_NAME,bk:'本站自编讲义（非出版物，MIT 可自由分发）',
+  dir:'book/示例/',files:['极限与导数入门.md','导数与微分_精讲讲义.md'],sample:true};
 /* 课程归属 / 分组判定要连示例一起看：只认 PACKS 的话，示例课会被当成
    「一本导入的单文件教材」单独列出来，名字也不对。 */
 function allPacks(){return PACKS.concat([SAMPLE])}
@@ -1358,7 +1449,12 @@ document.addEventListener('copy',function(e){
   }catch(err){/* 复制本身不能因为公式处理而失败 */}
 });
 function md(src){
-  let s=normGlyph(String(src));const st=[];
+  let s=normGlyph(String(src));const st=[],ct=[];
+  /* 出处卡片：跟公式一样先抽成占位符，绕开 marked/DOMPurify，最后还原成可点的 chip。
+     导师按 CITE 硬规则写 〔出处:分册 · 章节〕，学生点一下就能去教材目录核对那一节。 */
+  s=s.replace(/〔\s*出处\s*[:：]\s*([^〕]{1,160})〕/g,function(m,p){
+    ct.push(p.trim());return '%%C'+(ct.length-1)+'%%';
+  });
   /* 模型常用 \(...\) / \[...\]，统一成 $ 形式 */
   s=s.replace(/\\\[([\s\S]+?)\\\]/g,'$$$$$1$$$$').replace(/\\\(([\s\S]+?)\\\)/g,'$$$1$$');
   s=healNestedTex(s);      /* 面板反复插入留下的 $ 套 $ 先压平，再配对 */
@@ -1396,9 +1492,30 @@ function md(src){
       })+'<';
     });
   }
-  return h.replace(/%%M(\d+)%%/g,function(m,i){return st[(+i)-1]!==undefined?st[(+i)-1]:''});
+  const h2=h.replace(/%%M(\d+)%%/g,function(m,i){return st[(+i)-1]!==undefined?st[(+i)-1]:''});
+  return h2.replace(/%%C(\d+)%%/g,function(m,i){
+    const t=ct[+i];if(t===undefined)return '';
+    const off=/未带教材|教材外|无出处/.test(t);
+    return '<span class="cite'+(off?' off':'')+'" data-cite="'+esc(t)+'"'
+      +(off?' title="导师标注：这一条没有教材原文可引"':' title="点一下，到教材目录核对这一节"')+'>'
+      +'<span class="ci">出处</span>'+esc(t)+'</span>';
+  });
 }
 function est(t){const z=String(t).match(/[\u4e00-\u9fa5]/g)||[];return Math.ceil(z.length+(String(t).length-z.length)/3.2)}
+/* 出处卡片：点一下把教材目录筛到那一节，能精确对上就顺手把原文摊开。
+   用委托而不是给每个 chip 绑事件 —— 流式回答每次都重画整条消息，绑上去会立刻丢。 */
+document.addEventListener('click',function(e){
+  const c=e.target&&e.target.closest?e.target.closest('.cite'):null;
+  if(!c||c.classList.contains('off'))return;
+  const t=c.getAttribute('data-cite')||'';
+  const seg=t.split(/\s*[·|]\s*/), sec=(seg[seg.length-1]||'').trim();
+  if(!sec)return;
+  const q=$('bq');if(q)q.value=sec;
+  goView('book');
+  const hit=CH.filter(function(x){return x.title.indexOf(sec)>=0||sec.indexOf(x.title)>=0})[0];
+  if(hit&&typeof openCh==='function'){openCh(hit);$('reader').scrollTop=0}
+  else toast('已在教材目录里筛「'+sec+'」；没有同名章节时按分册名自己核一下');
+});
 function dl(n,t){const b=new Blob([t],{type:'text/markdown;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;a.click()}
 
 /* ---------- 教材 ---------- */
@@ -1544,11 +1661,15 @@ async function autoLoad(btn,pk){
      让人先看见「课程 → 分册 → 章节」长什么样。 */
   let sample=!!(packs.length===1&&packs[0].sample&&n);
   if(!n&&!dbfail&&!pk&&miss){
-    if(btn)btn.textContent='载入示例讲义…';
-    try{
-      const r=await fetch(SAMPLE.dir+encodeURIComponent(SAMPLE.files[0]),{cache:'no-store'});
-      if(r.ok){await addFile(SAMPLE.files[0],await r.text());n++;sample=true}
-    }catch(e){}
+    if(btn)btn.textContent='载入免费讲义…';
+    /* 两册都放进来：只给第一册的话，clone / 体验版点开只有一讲可学，
+       「内容供给」就还是空的。逐册 fetch，一册失败不影响另一册。 */
+    for(const f of SAMPLE.files){
+      try{
+        const r=await fetch(SAMPLE.dir+encodeURIComponent(f),{cache:'no-store'});
+        if(r.ok){await addFile(f,await r.text());n++;sample=true}
+      }catch(e){}
+    }
   }
   if(btn){btn.disabled=false;btn.textContent=label}
   if(n){
@@ -1561,8 +1682,12 @@ async function autoLoad(btn,pk){
       if(drop){CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)})}
     }
     renderBook();   /* 载完先自己重画一次。别指望 switchCourse —— 当前课程刚好就是最后一个包时它会提前 return，列表会一直是空的 */
+    /* pk 非空＝用户主动点了「免费讲义」，这时站点可能本来就带真教材，
+       不能再谎称「仓库不带教材正文」。只有自动兜底那条路才说这句。 */
     toast(sample
-      ? '仓库不带教材正文，已放一份示例讲义；想换成自己的点「导入教材」'
+      ? (pk
+          ? '已载入 '+n+' 册自制免费讲义，进「教材」勾一节就能开课'
+          : '仓库不带教材正文，已放两册自制免费讲义；想换成自己的点「导入教材」')
       : '已载入 '+n+' 个分册'+(packs.length>1?'（全部内置教材）':''));
     /* 从课程标签栏点「载入」时，自动切到刚载入的那门课 */
     if(!sample&&btn&&!switchCourse(packs[packs.length-1].key))toast('到「教材」页勾选正在学的那一节');
@@ -1744,7 +1869,13 @@ function renderBook(){
     cw.appendChild(ch3);
     if(copen)grp.files.forEach(function(f){
       const g=document.createElement('div');
-      const bopen=q?true:(BOPEN[f]!==undefined?BOPEN[f]:(bookIsReading(f)||grp.files.length===1));
+      /* 默认展开正在读的那本；一门课只有一本就全展开。
+         自制免费讲义是唯一「点开教材页就该看见内容」的课：两册都折叠会让人以为没载入，
+         所以只给这一门课默认开第一册。真教材多分册时保持老规矩全折叠，
+         别为了修示例把 9 册高数的目录又铺成一长条（tests/test_book.js 守）。 */
+      const bopen=q?true:(BOPEN[f]!==undefined?BOPEN[f]
+        :(bookIsReading(f)||grp.files.length===1
+          ||(grp.k===SAMPLE_KEY&&grp.files.indexOf(f)===0)));
       g.className='grp'+(bopen?' open':' closed');
       const done=files[f].filter(function(c){return PR[c.id]===2}).length;
       const h=document.createElement('h3');
@@ -2434,15 +2565,20 @@ function sysMsg(){
     +'\n- 一旦发现前面哪句说错了：第一句先明确「是我刚才说错了，不是你做错了」，再说正确说法，'
     +'并讲清按错方向做过的那几步作废、从哪一步重来。不要只用「一处更正」轻轻带过——'
     +'我可能已经顺着错的方向想了很久，你不点破，我会以为是我自己理解错了。'
+    +'\n\n'+CITE
     +'\n\n【教材依据】这门课当前使用：'+getBkn()+'。涉及定理表述、符号约定、例题编号时以该教材为准。'
     +(COURSE&&COURSE!=='__free'?'\n本轮所属教材文件：'+COURSE:'')
-    /* 模式放最后：它决定本轮行为，要求高于人格的默认习惯 */
+    /* 模式放在所有风格/纪律段之后：它决定本轮行为，要求高于人格的默认习惯 */
     +'\n\n'+curMode().p
     +(MODEK!=='teach'?'\n\n（注意：以上模式要求与人格的一贯风格冲突时，以模式要求为准。）'
       /* 苏格拉底真核：揭露矛盾（elenchus）。只在讲解模式启用——陪练/批改本身就是纠错闭环，不需要 */
       :'\n\n【揭露矛盾】当你发现学生这次说的与他前面说过的、或与已知事实/定义冲突时，不要直接纠正：'
       +'把两个说法原样并排引用出来，问他「这两个能同时成立吗？如果不能，哪个得改？」'
-      +'等他自己找出矛盾并解释为什么，再追问根源。只有他确实找不到时才点破，点破后要求他复述一遍错在哪。');
+      +'等他自己找出矛盾并解释为什么，再追问根源。只有他确实找不到时才点破，点破后要求他复述一遍错在哪。')
+    /* 出口放最末：和本站「放最后＝优先级最高」的约定一致。
+       它是学习者当场发出的指令，理应压过人格、纪律与本轮模式；
+       放在模式之前会自相矛盾（嘴上说最高，位置却更低）。 */
+    +'\n\n'+EXIT;
 }
 async function ask(text,opt){
   opt=opt||{};
@@ -2462,7 +2598,7 @@ async function ask(text,opt){
   const el=addMsg('assistant','<span style="color:#888780">…</span>',bi+1);
   /* 记下这条对话属于哪门课：流式回答进行中用户可能切走，回答必须写回**原课程**。
      切课会把全局 MS 换成另一门课的数组，若结束时不加判断地 MS.push，回答会串课。 */
-  const myCourse=COURSE, myMs=MS, mySess=CURS;
+  const myCourse=COURSE, myMs=MS, mySess=CURS, myMode=MODEK;
   MS.push({r:'user',c:text,s:CURS,img:opt.img||''});saveMs();
   renderSTabs();
   $('stop').disabled=false;ctrl=new AbortController();
@@ -2498,6 +2634,15 @@ async function ask(text,opt){
       toast('「'+cname(myCourse)+'」的回答已完成，切回去就能看到');
     }
     bump('m');updTok();
+    /* 批改完自动收错点：只认发起时的模式与课/节，切走了也不记错地方。
+       opt.card / opt.silent 是内部调用（生成闪卡、下课小结），不触发。 */
+    if(!opt.card&&!opt.silent&&myMode==='grade'){
+      const ws=parseWrong(full);
+      if(ws.length){
+        const k=addWrongs(ws,myCourse,mySess,'grade');
+        toast(k?('已收 '+k+' 条错点进错题本，隔天再考'):'错点已在错题本里，复习时间重置了');
+      }
+    }
     el.parentNode.__txt=full;
     if(TTS&&!opt.card&&COURSE===myCourse&&CURS===mySess)speak(full);
     if(opt.card)return full;
@@ -2628,16 +2773,34 @@ $('ttsauto').onchange=function(){TTS=$('ttsauto').value==='1'?1:0;LS.s('tts',TTS
 $('ttsrate').onchange=function(){TTSRATE=parseFloat($('ttsrate').value)||1;LS.s('ttsrate',TTSRATE)};
 $('close').onclick=lessonClose;
 
-/* ---------- 闪卡 ---------- */
+/* ---------- 闪卡 / 错题本 ----------
+   错题不另起一套调度器：它就是 CD 里带 w:1 的一张卡，共用 6 档 Leitner、
+   共用「按课/节隔离」、共用备份（gx.cards 在导出范围内）。
+   这样「错 → 进队列 → 隔天再考 → 连对三次毕业」是天然闭环，不用同步两份状态。 */
 const IV=[5,60*12,60*24,60*24*2,60*24*4,60*24*8];
-/* 闪卡按教材隔离：c 字段记来源课程；旧卡无 c 视为通用，各课程都可见 */
-function cardList(){
+/* 错题的间隔另给一套：首次到期就是隔天，答错也回隔天，别让刚做错的题 5 分钟又弹回来 */
+const IVW=[60*24,60*24*2,60*24*4,60*24*8,60*24*16,60*24*32];
+const WTYPES=['漏步骤','符号错','等号滥用','量纲错','定义域条件','抄写错','概念不清','复习时想不起来'];
+let WF=LS.g('wfilter','all');if(['all','wrong','plain'].indexOf(WF)<0)WF='all';
+let REV_W=false;   /* 这一轮复习是否只考错题 */
+/* 课/节范围：与「显示筛选」无关，复习队列必须走这一层，
+   否则把列表切成「只看错题」时，普通卡会悄悄从复习里消失。 */
+function scopeCards(){
   return CD.filter(function(c){
     if(c.c&&c.c!==COURSE)return false;
-    return CARD_S==='all'||sid(c)===CARD_S;   /* 升级前的旧卡没有节，算第一节 */
+    return CARD_S==='all'||sid(c)===CARD_S;
   });
 }
-function dueList(){const n=Date.now();return cardList().filter(function(c){return (c.due||0)<=n})}
+/* 闪卡按教材隔离：c 字段记来源课程；旧卡无 c 视为通用，各课程都可见 */
+function cardList(){
+  return scopeCards().filter(function(c){
+    if(WF==='wrong'&&!c.w)return false;
+    if(WF==='plain'&&c.w)return false;
+    return true;   /* 升级前的旧卡没有节，算第一节 */
+  });
+}
+function dueList(){const n=Date.now();return scopeCards().filter(function(c){return (c.due||0)<=n})}
+function revQueue(){const d=dueList();return REV_W?d.filter(function(c){return c.w}):d}
 function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function addCards(qas,ck,sk){
   const n=Date.now();let k=0;
@@ -2656,6 +2819,62 @@ function parseCards(t){
   });
   if(!out.length){String(t).split(/\n(?=##?\s*问)/).forEach(function(b){})}
   return out;
+}
+/* 批改模式回复末尾的【错点清单】→ 错题卡。
+   格式宽松：一行一条，「类型：… | 错点：… | 正确做法：…」，缺字段也收，
+   只认清单区、不认讲解正文 —— 否则导师举的每一个反例都会变成一道错题。 */
+function parseWrong(t){
+  const s=String(t||''),i=s.indexOf('【错点清单】');
+  if(i<0)return [];
+  const out=[];
+  s.slice(i+6).split(/\n/).forEach(function(l){
+    l=l.trim();if(!l)return;
+    if(/^[-*]?\s*无[。.]?\s*$/.test(l))return;
+    if(/^#{1,3}\s/.test(l)||/^```/.test(l))return;
+    const parts=l.replace(/^[-*]\s*/,'').split(/\s*[|｜]\s*/);
+    let typ='',q='',a='';
+    parts.forEach(function(p){
+      const m=/^\s*(类型|错点|正确做法|改正|答案)\s*[:：]\s*([\s\S]*)$/.exec(p);
+      if(!m)return;
+      const k=m[1],v=m[2].trim();
+      if(k==='类型')typ=v;else if(k==='错点')q=v;else a=v;
+    });
+    if(!q&&parts.length>=2)q=parts[1].replace(/^\s*错点\s*[:：]\s*/,'').trim();
+    if(!q)return;
+    if(!/^【.*】$/.test(typ))typ=typ.replace(/[【】]/g,'')||'概念不清';
+    out.push({q:q,a:a||'（当时没写正确做法，自己补一句）',t:typ});
+  });
+  return out;
+}
+/* 错题入库：同一课、同一节、同一错点只留一条，重复批改不会越攒越多 */
+function addWrongs(items,ck,sk,from){
+  const co=ck||COURSE,se=sk||CURS,n=Date.now();let k=0,grad=0;
+  items.forEach(function(p){
+    if(!p||!p.q)return;
+    const key=String(p.q).replace(/\s+/g,'').slice(0,60);
+    const old=CD.filter(function(c){return c.w&&c.c===co&&c.s===se
+      &&String(c.q).replace(/\s+/g,'').slice(0,60)===key})[0];
+    if(old){
+      /* 又错了一次：档位归零、重新隔天再考，别因为之前连对过就放过去 */
+      old.box=0;old.due=n+IVW[0]*60000;old.rep=(old.rep||0)+1;
+      if(p.a&&p.a.indexOf('当时没写')<0)old.a=p.a;
+      if(p.t)old.t=p.t;
+      old.at=n;k++;return;
+    }
+    CD.push({id:newId(),q:p.q,a:p.a||'',t:p.t||'概念不清',w:1,box:0,
+      due:n+IVW[0]*60000,rep:0,c:co,s:se,from:from||'grade',at:n});
+    k++;
+  });
+  if(k){LS.s('cards',CD);if(co===COURSE)renderCards()}
+  return k;
+}
+/* 一道普通卡「忘了」→ 就地升成错题，进入隔天再考的闭环 */
+function markWrong(c){
+  if(!c||c.w)return 0;
+  c.w=1;c.t='复习时想不起来';c.from='forget';c.at=Date.now();
+  c.box=0;c.rep=(c.rep||0)+1;
+  LS.s('cards',CD);
+  return 1;
 }
 function learnImport(t){
   const out=[];const blocks=String(t).split(/\n\s*---+\s*\n/);
@@ -2677,16 +2896,21 @@ function renderCsel(){
   }).join('');
   sel.value=CARD_S;
 }
+function renderWsel(){const s=$('wfilter');if(s)s.value=WF}
 function renderCards(){
-  const d=dueList(),CL=cardList();
-  renderCsel();
-  $('due').textContent='待复习 '+d.length+' / 共 '+CL.length+' · '+cname(COURSE)
+  const d=dueList(),CL=cardList(),all=scopeCards();
+  const wc=all.filter(function(c){return c.w}).length;
+  const wd=d.filter(function(c){return c.w}).length;
+  renderCsel();renderWsel();
+  $('due').textContent='待复习 '+d.length+' / 共 '+CL.length
+    +(wc?' · 错题 '+wc+'（到期 '+wd+'）':'')+' · '+cname(COURSE)
     +(CARD_S==='all'?'':' · '+sessLabel(CARD_S));
   const box=$('car');
   if(rev){
     const c=CD.filter(function(x){return x.id===rev})[0];
     if(!c){rev=null;revBack=false;return renderCards()}
-    box.innerHTML='<div class="face" style="position:relative"><span class="lbl">问题</span><div>'+md(c.q)+'</div></div>'
+    box.innerHTML=(c.w?'<div class="wflag">错题 · '+esc(c.t||'概念不清')+'　（隔天再考，连对三次毕业）</div>':'')
+      +'<div class="face" style="position:relative"><span class="lbl">问题</span><div>'+md(c.q)+'</div></div>'
       +(revBack?'<div class="face a" style="position:relative;margin-top:10px"><span class="lbl">答案</span><div>'+md(c.a)+'</div></div>':'')
       +'<div class="cacts">'+(revBack
         ?'<button class="sm" id="cf">忘了</button><button class="sm pri" id="ck2">记得</button>'
@@ -2699,9 +2923,10 @@ function renderCards(){
   }
   const lst=$('clist');lst.innerHTML='';
   CL.slice().sort(function(a,b){return (a.due||0)-(b.due||0)}).forEach(function(c){
-    const r=document.createElement('div');r.className='crow';
+    const r=document.createElement('div');r.className='crow'+(c.w?' w':'');
     r.innerHTML='<div class="q">'+titleHtml(clipTex(c.q,90))+'</div><div class="a">'+titleHtml(clipTex(c.a,110))+'</div>'
-      +'<div class="m"><span>第 '+(c.box+1)+' 格</span><span>'+(new Date(c.due||0).toLocaleDateString())+' 到期</span>'
+      +'<div class="m">'+(c.w?'<span class="wmini">错题 · '+esc(c.t||'概念不清')+'</span>':'')
+      +'<span>第 '+(c.box+1)+' 格</span><span>'+(new Date(c.due||0).toLocaleDateString())+' 到期</span>'
       +(c.c?'':'<span title="这门课之前创建的卡，所有课程共用">通用</span>')
       +'<span style="cursor:pointer;color:#A32D2D" data-x="'+c.id+'">删除</span></div>';
     r.querySelector('[data-x]').onclick=function(){CD=CD.filter(function(x){return x.id!==c.id});LS.s('cards',CD);renderCards()};
@@ -2711,13 +2936,26 @@ function renderCards(){
 }
 let revBack=false;
 function grade(ok){
-  const c=cardList().filter(function(x){return x.id===rev})[0];if(!c)return;
-  c.box=ok?Math.min(5,(c.box||0)+1):0;
-  c.rep=(c.rep||0)+1;
-  const mins=IV[c.box];
-  c.due=Date.now()+mins*60000;
+  /* 从 CD 找，不从 cardList 找：切到「只看错题」筛选时，正在复习的普通卡
+     会被筛掉，直接 return 就卡死在这一张上了。复习队列的对象必须按 id 取。 */
+  const c=CD.filter(function(x){return x.id===rev})[0];if(!c)return;
+  if(!ok){
+    /* 忘了：普通卡就地升成错题；已经是错题就打回第 1 档、隔天再来。 */
+    if(!c.w)markWrong(c);
+    c.box=0;c.due=Date.now()+(c.w?IVW[0]:IV[0])*60000;
+    c.rep=(c.rep||0)+1;
+    toast(c.w?'这条错点明天再考一次':'已记进错题本，隔天再考');
+  }else{
+    c.box=Math.min(5,(c.box||0)+1);
+    c.rep=(c.rep||0)+1;
+    /* 连对三次就毕业：错题本不是终身档案，掌握了就该退出复习队列 */
+    if(c.w&&c.box>=3){c.w=0;c.grad=1;c.t='';toast('这条错点连对三次，从错题本毕业了')}
+    c.due=Date.now()+(c.w?IVW[c.box]:IV[c.box])*60000;
+  }
   LS.s('cards',CD);bump('c');revBack=false;
-  const d=dueList();rev=d.length?d[0].id:null;renderCards();
+  const d=revQueue();rev=d.length?d[0].id:null;
+  if(!rev&&REV_W){REV_W=false;toast('这一批错题都过了一遍')}
+  renderCards();
 }
 
 /* ---------- 进度 ---------- */
@@ -2986,6 +3224,26 @@ $('send').onclick=function(){
   $('in').value='';
   ask(t,{img:img});
 };
+/* 节奏命令条：三个出口要「看得见、点得到」，不能只写在 system prompt 里。
+   输入框空着就直接发（少一步）；已经写了半句话就插到开头、保留草稿，别把人写的东西冲掉。 */
+(function(){
+  const bar=$('pacebar');if(!bar)return;
+  bar.querySelectorAll('[data-cmd]').forEach(function(b){
+    b.onclick=function(){
+      const cmd=b.getAttribute('data-cmd')||'',ta=$('in');if(!ta||!cmd)return;
+      if(ta.value.trim()){
+        const old=ta.value;ta.value=cmd+'\n'+old;ta.focus();
+        ta.setSelectionRange(cmd.length,cmd.length);
+        toast('节奏命令已放在开头，点「发送」就行');
+      }else{ta.value=cmd;$('send').click()}
+    };
+  });
+  const st=bar.querySelector('[data-act="settle"]');
+  if(st)st.onclick=function(){
+    if(!curMsgs().length){toast('这一节还没开始，不用结算');return}
+    lessonClose();       /* 结算判定权归用户：只有点了这里才写小结、才归档 */
+  };
+})();
 $('in').addEventListener('keydown',function(e){
   /* 中文输入法选字时的 Enter 不是发送意图 */
   if(e.isComposing||e.keyCode===229)return;
@@ -3079,9 +3337,26 @@ $('newc').onclick=function(){
   const q=prompt('正面（问题）'),a=q===null?null:prompt('背面（答案）');
   if(q){addCards([{q:q,a:a||''}]);toast('已添加')}
 };
+/* 手动记一条错题：不问类型也能存，缺的字段给个兜底值 */
+$('neww').onclick=function(){
+  const q=prompt('错在哪一步 / 哪道题？（一句话）');if(!q||!q.trim())return;
+  const t=prompt('错因类型，可留空（如：符号错、定义域条件、概念不清）')||'概念不清';
+  const a=prompt('正确做法是什么？（隔天再考时当答案）')||'';
+  const k=addWrongs([{q:q.trim(),a:a,t:t.trim()}],COURSE,CURS,'manual');
+  toast(k?('已记进错题本，隔天再考（共 '+scopeCards().filter(function(c){return c.w}).length+' 条）'):'这条错点已经记过了');
+};
+$('wfilter').onchange=function(){WF=this.value;LS.s('wfilter',WF);renderCards()};
 $('cse').onchange=function(){CARD_S=this.value;LS.s(cselKey(),CARD_S);renderCards()};
-$('review').onclick=function(){const d=dueList();if(!d.length){toast('今天没有到期的卡');return}rev=d[0].id;revBack=false;renderCards()};
-$('expc').onclick=function(){dl('闪卡_'+cname(COURSE)+'_'+today()+'.md',cardList().map(function(c){return '问题：'+c.q+'\n答案：'+c.a+'\n'}).join('\n---\n\n'))};
+$('review').onclick=function(){
+  REV_W=false;const d=revQueue();if(!d.length){toast('今天没有到期的卡');return}
+  rev=d[0].id;revBack=false;renderCards()};
+$('revieww').onclick=function(){
+  const d=dueList().filter(function(c){return c.w});
+  if(!d.length){toast('没有到期的错题');return}
+  REV_W=true;rev=d[0].id;revBack=false;renderCards();
+  toast('这一轮只考错题，共 '+d.length+' 条')};
+$('expc').onclick=function(){dl('闪卡_'+cname(COURSE)+'_'+today()+'.md',cardList().map(function(c){
+  return (c.w?'【错题 · '+(c.t||'概念不清')+'】\n':'')+'问题：'+c.q+'\n答案：'+c.a+'\n'}).join('\n---\n\n'))};
 $('imp').onclick=function(){$('cfile').click()};
 $('cfile').onchange=async function(e){
   const f=e.target.files[0];if(!f)return;
@@ -3119,6 +3394,26 @@ $('file').onchange=async function(e){
   e.target.value='';
 };
 $('reload').onclick=function(){autoLoad(this)};
+/* 免费讲义：点「载入」放进本地教材库，点「下载」拿一份 md 走人。
+   两条都在体验版可见 —— 那是体验版唯一能公开分发的内容，不该被 applyLite 收起。 */
+$('ldfree').onclick=async function(){
+  const n=await autoLoad(this,SAMPLE);
+  /* 载完直接切到这门课：书在库里、课程标签却还停在高数，看起来像没反应。
+     switchCourse 会先保存当前课的记录，不会把正在学的对话冲掉。 */
+  if(n)switchCourse(SAMPLE.key);
+};
+$('dlfree').onclick=async function(){
+  const b=this,old=b.textContent;b.disabled=true;b.textContent='打包中…';
+  const parts=[];
+  for(const f of SAMPLE.files){
+    try{const r=await fetch(SAMPLE.dir+encodeURIComponent(f),{cache:'no-store'});
+      if(r.ok)parts.push(await r.text())}catch(e){}
+  }
+  b.disabled=false;b.textContent=old;
+  if(!parts.length){toast('讲义文件没取到（离线或站点未带示例目录）');return}
+  dl('自制免费讲义_两册.md','# 自制免费讲义（两册）\n\n> 本站自编，非出版物摘录，MIT 许可，可自由复制、修改、分发。\n\n---\n\n'+parts.join('\n\n---\n\n'));
+  toast('已下载 '+parts.length+' 册，可以直接转给同学');
+};
 $('ldg').onclick=function(){autoLoad(this,packByKey(LOCAL_KEY))};
 $('ldl').onclick=function(){autoLoad(this,packByKey(LOCAL_KEY2))};
 $('ldc').onclick=function(){autoLoad(this,packByKey(LOCAL_KEY3))};
@@ -3226,8 +3521,9 @@ window.addEventListener('unhandledrejection',function(e){
 function applyLite(){
   if(!LITE)return;
   /* 体验版没有真教材正文：book/ 在 .gitignore 里（教材受版权保护，不进公开仓库），
-     GitHub Pages 上那些 md 全是 404。界面给的是随仓库附带的示例讲义（SAMPLE），
-     所以这排「载入真教材」的按钮没有意义，收起后只留「导入教材」。 */
+     GitHub Pages 上那些 md 全是 404。界面给的是随仓库附带的自制免费讲义（SAMPLE），
+     所以这排「载入真教材」的按钮没有意义，收起；只留「导入教材」与「免费讲义 / 下载讲义」，
+     后两个在体验版正是能公开分发的内容入口，绝不能一起收掉。 */
   ['reload','ldg','ldl','ldc'].forEach(function(id){const b=$(id);if(b)b.style.display='none'});
   const nv=document.querySelector('[data-v="vid"]');if(nv)nv.style.display='none';
 }
@@ -3242,7 +3538,7 @@ if(MS.length)settleBottom();   /* 有记录：刷新后直接落回最后一次�
 if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e);
   /* 体验版不带教材正文，开场白不能让人去点一个不存在的按钮 */
   const tkLine=LITE
-    ?'- **教材**：演示版自带一份示例讲义（极限与导数入门），进「教材」勾一节就能开课；想用完整教材点「导入教材」上传自己的 md / pdf / epub'
+    ?'- **教材**：演示版自带两册自制免费讲义（极限与导数入门、导数与微分精讲），进「教材」点「免费讲义」载入、勾一节就能开课；这两册可自由下载转给同学，想用完整教材就点「导入教材」上传自己的 md / pdf / epub'
     :'- **教材**：进「教材」勾选正在学的那一节；站点没带教材正文时会自动放一份示例讲义兜底，也可以用「导入教材」换成自己的 md / txt / pdf / epub';
   addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n'+tkLine+'\n- **导师**：顶部「导师」决定“怎么说话”，**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
 (async function(){
