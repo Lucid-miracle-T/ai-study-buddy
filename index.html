@@ -92,7 +92,7 @@ body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;backgroun
    窄窄一条竖排文字溢出屏幕。 */
 #foot{margin-top:auto;padding:10px;font-size:11px;color:var(--tx3);line-height:1.6;border-top:1px solid var(--line)}
 /* main */
-#stage{flex:1;display:flex;flex-direction:column;min-width:0}
+#stage{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
 section.view{display:none;flex:1;min-height:0}
 section.view.on{display:flex;flex-direction:column}
 .bar{display:flex;align-items:center;gap:8px;padding:9px 16px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap;flex-shrink:0}
@@ -289,7 +289,10 @@ select.sm2{width:auto;padding:3px 7px;font-size:12px}
 .crs .cur{background:var(--blue-bg);color:var(--blue);border-radius:5px;padding:2px 6px;font-size:11px;font-weight:400;margin-left:5px}
 .crs .bts{display:flex;gap:6px;flex-shrink:0;align-items:center}
 button.dgr{color:#A32D2D;border-color:#F09595}
-@media (max-width:720px){.crs{flex-wrap:wrap}.crs .bts{width:100%;justify-content:flex-end}}
+/* 手机上 #foot 必须藏掉：导航条是横的，这块统计会被当成第三项挤到最右边，
+   变成一条 78px 宽的竖排乱码。这条规则紧贴在这里，别挪到下面那个大媒体查询去 ——
+   test_foot.js 是从本文件第一个 @media(max-width:720px) 起截取窗口来验它的。 */
+@media (max-width:720px){.crs{flex-wrap:wrap}.crs .bts{width:100%;justify-content:flex-end}#foot{display:none}}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
 details{margin-top:10px}
 summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
@@ -342,6 +345,175 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
        font-size:12.5px;color:var(--tx);cursor:pointer;font-family:inherit}
 #smenu button:hover{background:#f1efe8}
 #smenu button[data-a="del"]{color:#A32D2D}
+/* ===== 破卷式外壳：图标网格导航 / 开课向导 / 一行状态条 =====
+   目标是把「一眼能看到 20 多个按钮」压成「一屏选完 + 一个主按钮」。
+   功能一个不删：两排原工具栏只是默认收起，点「⋯」原样展开；
+   向导里的每张卡都是遥控器，点它＝点原来那颗药丸，不另起一套状态。 */
+:root{ --surface:#ffffff; --surface2:#faf9f6; --hover:#f1efe8; --codebg:#f7f7f5; }
+/* ---- 侧栏：从六个大文字按钮收成三标签图标网格 ---- */
+#nav{width:200px}
+.brand{padding:14px 14px 10px}
+.brand h1{font-size:14px}
+#nvcourse{margin:10px 10px 4px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;
+  background:var(--surface2);cursor:pointer;flex-shrink:0}
+#nvcourse:hover{border-color:var(--blue-line)}
+#nvcourse .nh{font-size:12px;font-weight:500;color:var(--tx);display:flex;align-items:center;gap:6px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#nvcourse .nh .cnt{margin-left:auto;background:var(--blue-bg);color:var(--blue);
+  border-radius:9px;padding:0 6px;font-size:10.5px;font-weight:400;flex:none}
+#nvcourse .ns{font-size:10.5px;color:var(--tx3);margin-top:5px;line-height:1.5;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nv{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:8px 10px 4px}
+.nv button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  width:100%;margin:0;padding:9px 2px;text-align:center;border:none;background:none;
+  border-radius:9px;font-size:11px;color:var(--tx2);line-height:1.2}
+.nv button::before{content:attr(data-ic);font-size:19px;line-height:1.15;font-family:inherit}
+.nv button:hover{background:var(--hover)}
+.nv button.on{background:var(--blue-bg);color:var(--blue);font-weight:500}
+/* 三标签：学习 / 课余 / 生态，每组只露 1–3 个图标 */
+body[data-navgrp="study"] .nv button[data-g="life"],
+body[data-navgrp="study"] .nv button[data-g="eco"],
+body[data-navgrp="life"]  .nv button[data-g="study"],
+body[data-navgrp="life"]  .nv button[data-g="eco"],
+body[data-navgrp="eco"]   .nv button[data-g="study"],
+body[data-navgrp="eco"]   .nv button[data-g="life"]{display:none}
+#gtabs{display:flex;border-top:1px solid var(--line);padding:2px 8px;flex-shrink:0}
+#gtabs button{flex:1;border:none;background:none;border-radius:0;padding:8px 0 9px;
+  font-size:11.5px;color:var(--tx3);cursor:pointer;font-family:inherit;position:relative}
+#gtabs button:hover{background:none;color:var(--tx2)}
+#gtabs button.on{color:var(--blue);font-weight:500}
+#gtabs button.on::after{content:'';position:absolute;left:26%;right:26%;bottom:3px;
+  height:2px;background:var(--blue);border-radius:2px}
+/* ---- 开课向导：一屏选完，一个主按钮 ---- */
+#launch{position:absolute;inset:0;z-index:45;background:var(--panel);
+  display:flex;flex-direction:column;overflow:auto}
+#launch[hidden]{display:none}
+.lh-top{display:flex;align-items:center;gap:8px;padding:12px 30px;
+  border-bottom:1px solid var(--line);flex-shrink:0}
+.lh-top .sp{flex:1}
+.lh-top button{white-space:nowrap;flex-shrink:0}
+.lh-crumb{font-size:12px;color:var(--tx3);flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lh-crumb b{color:var(--tx2);font-weight:500}
+.lh-scroll{flex:1;overflow-y:auto;padding:30px 40px 24px}
+.lh-inner{max-width:940px;margin:0 auto}
+.lh-title{display:flex;align-items:baseline;gap:14px;margin-bottom:24px}
+.lh-title h1{font-size:26px;font-weight:600;letter-spacing:.4px;line-height:1.3}
+.lh-courses{display:flex;gap:7px;flex-wrap:wrap;margin:-12px 0 24px;padding:12px;
+  border:1px solid var(--line);border-radius:10px;background:var(--surface2)}
+.lh-courses[hidden]{display:none}
+.lh-sec{font-size:13px;color:var(--tx2);margin:0 0 12px;font-weight:500}
+.lh-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:30px}
+.lh-card{border:1.5px solid var(--line);border-radius:14px;background:var(--surface2);
+  padding:18px 16px 14px;cursor:pointer;text-align:center;position:relative}
+.lh-card:hover{border-color:var(--blue-line)}
+.lh-card.on{border-color:var(--blue);background:var(--blue-bg)}
+.lh-av{width:74px;height:74px;border-radius:19px;margin:0 auto 14px;display:flex;
+  align-items:center;justify-content:center;font-size:34px;font-weight:600;color:#fff}
+.lh-nm{font-size:15px;font-weight:600;color:var(--tx)}
+.lh-ds{font-size:11.5px;color:var(--tx3);margin-top:5px;line-height:1.5;min-height:32px}
+.lh-ck{position:absolute;top:12px;right:12px;width:19px;height:19px;border-radius:50%;
+  border:1.5px solid var(--line2);font-size:12px;line-height:17px;color:transparent}
+.lh-card.on .lh-ck{background:var(--blue);border-color:var(--blue);color:#fff}
+.lh-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+.lh-opt{border:1.5px solid var(--line);border-radius:12px;background:var(--surface2);
+  padding:14px 15px;cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+.lh-opt:hover{border-color:var(--blue-line)}
+.lh-opt.on{border-color:var(--blue);background:var(--blue-bg)}
+.lh-radio{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--line2);
+  flex:none;margin-top:2px;position:relative}
+.lh-opt.on .lh-radio{border-color:var(--blue)}
+.lh-opt.on .lh-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--blue)}
+.lh-opt b{font-size:13.5px;color:var(--tx);font-weight:600}
+.lh-opt p{font-size:11.5px;color:var(--tx3);line-height:1.6;margin-top:4px}
+.lh-modes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px}
+.lh-modes button{border-radius:20px;padding:7px 15px}
+.lh-modes button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.lh-ctx{font-size:12.5px;color:var(--tx2);border-top:1px solid var(--line);
+  padding-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.lh-ctx b{color:var(--tx);font-weight:500}
+.lh-foot{display:flex;align-items:center;gap:14px;padding:14px 40px 20px;
+  border-top:1px solid var(--line);flex-shrink:0}
+.lh-note{font-size:11.5px;color:var(--tx3);line-height:1.7;flex:1}
+.lh-go{background:var(--tx);color:var(--panel);border:none;border-radius:26px;
+  padding:13px 34px;font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap;
+  font-family:inherit;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.lh-go:hover{background:var(--tx);opacity:.88}
+/* ---- 两排工具栏默认收成一行；点「⋯」原样展开 ---- */
+#lsum{display:none;font-size:12px;color:var(--tx2);white-space:nowrap}
+body.compact #lsum{display:inline-flex}
+body.compact:not(.expand) #lbar1>.mlabel,
+body.compact:not(.expand) #lbar1>.msep,
+body.compact:not(.expand) #lbar1>#rgo2,
+body.compact:not(.expand) #lbar1>#pace,
+body.compact:not(.expand) #lbar1>#tok,
+body.compact:not(.expand) #lbar1>#kxst,
+body.compact:not(.expand) #lbar1>#tts,
+body.compact:not(.expand) #lbar2>#gen,
+body.compact:not(.expand) #lbar2>#exp2,
+body.compact:not(.expand) #lbar2>#clr{display:none}
+/* #pbox / #mbox / #ctxchips 在 HTML 里带内联 style="display:flex"，
+   普通 CSS 干不过内联样式，这三行必须 !important（手机断点那条也是这么写的）。
+   加 .expand 时规则不生效，内联的 flex 自动恢复，原工具栏原样回来。 */
+body.compact:not(.expand) #lbar1>#pbox,
+body.compact:not(.expand) #lbar1>#mbox,
+body.compact:not(.expand) #lbar1>#ctxchips{display:none!important}
+body.compact:not(.expand):not(.paceopen) #pacebar>button:not(#pctoggle),
+body.compact:not(.expand):not(.paceopen) #pacebar>.phint{display:none}
+/* 符号面板默认只留一颗「Ω」：原来一上来就摊开 30 多个符号按钮。
+   点「Ω」单独展开，或点「⋯ 更多」连同原工具栏一起展开。 */
+body.compact:not(.expand):not(.symopen) #symtabs,
+body.compact:not(.expand):not(.symopen) #symgrids,
+body.compact:not(.expand):not(.symopen) .symhint{display:none!important}
+.pacebar .plb{border:1px solid var(--line2);background:var(--surface);border-radius:20px;
+  padding:3px 10px;cursor:pointer;color:var(--tx2)}
+.pacebar .plb:hover{background:var(--hover)}
+/* ---- 深色皮肤（默认）：只覆盖颜色，浅色主题一行不动 ---- */
+body.dark{
+  --bg:#141417; --panel:#1c1c20; --line:#2e2e35; --line2:#3d3d46;
+  --tx:#eeeef1; --tx2:#adadb6; --tx3:#82828d;
+  --blue:#82b1ff; --blue-bg:#1c2c42; --blue-line:#3b5f92;
+  --green:#a3d97a; --green-bg:#1e2b18; --amber:#e8b668; --amber-bg:#2c2418;
+  --red:#f0928c; --red-bg:#33201f;
+  --surface:#222227; --surface2:#19191d; --hover:#2a2a31; --codebg:#17171a;
+  color-scheme:dark}
+body.dark input,body.dark select,body.dark textarea,body.dark button,
+body.dark .pill,body.dark .symbtn,body.dark .ctab,body.dark .stab,
+body.dark .vst,body.dark .face,body.dark .crow,body.dark .ptab,body.dark .statc,
+body.dark .card2,body.dark .crs,body.dark .rcitem,body.dark .rcplant,
+body.dark #smenu,body.dark #stabs,body.dark .body,body.dark .msg.editing .body,
+body.dark .pendimg img,body.dark .pendimg button,body.dark .qimg img,
+body.dark .help code,body.dark .edta{
+  background:var(--surface);color:var(--tx);border-color:var(--line2)}
+body.dark button:hover{background:var(--hover)}
+body.dark .bar[style],body.dark #lbar2,body.dark #vbar2,body.dark #symbar,
+body.dark .help,body.dark .rcbox.rcb1,body.dark .ptab th,body.dark .grp>h3,
+body.dark .cgrp>h3,body.dark .vlec:hover,body.dark .item:hover,body.dark #reader .meta{
+  background:var(--surface2)}
+body.dark .bar[style]{background:var(--surface2)!important}
+body.dark .body pre{background:var(--codebg)}
+body.dark .body code{background:var(--hover)}
+body.dark .msg.me .body{background:var(--blue-bg);border-color:var(--blue-line)}
+body.dark .vlec.on,body.dark .item.on,body.dark .ctab.on,body.dark .stab.on,
+body.dark .symbtn.on,body.dark .pill.on,body.dark .chip,body.dark .cite,
+body.dark .rcbox,body.dark .rcname,body.dark .rcplant,body.dark .rcitem b,
+body.dark #tts.on{color:var(--blue)}
+body.dark .vlec.on{background:var(--blue-bg)}
+body.dark .ptab td,body.dark .item,body.dark .vlec,body.dark .crow,body.dark .crs{border-color:var(--line)}
+body.dark .warn{background:var(--amber-bg);color:var(--amber);border-color:#8a6a33}
+body.dark .okmsg{background:var(--green-bg);color:var(--green);border-color:#4a7038}
+body.dark .wflag,body.dark .wmini{background:var(--red-bg);color:var(--red);border-color:#7a4440}
+body.dark .help code{background:var(--hover)}
+body.dark .nv button,body.dark #gtabs button{background:none;border-color:transparent;color:var(--tx3)}
+body.dark .nv button:hover{background:var(--hover)}
+body.dark .nv button.on{background:var(--blue-bg);color:var(--blue)}
+body.dark #gtabs button:hover{background:none;color:var(--tx2)}
+body.dark #gtabs button.on{color:var(--blue)}
+body.dark .lh-go{background:var(--tx);color:var(--panel);border-color:transparent}
+body.dark .lh-modes button.on{background:var(--blue);color:#fff}
+body.dark .pacebar .plb{background:var(--surface);color:var(--tx2)}
+/* #rgo2 的内联 style 写死了浅色主题的深蓝字，深色下会变成「蓝底蓝字」看不清 */
+body.dark #rgo2{color:var(--blue)!important}
 /* ===== 手机端适配（≤720px）===== */
 @media (max-width:720px){
   #app{flex-direction:column;height:100dvh}
@@ -352,9 +524,27 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
   .brand{padding:9px 12px;border-bottom:none;border-right:1px solid var(--line);flex-shrink:0}
   .brand h1{font-size:14px}
   .brand p{display:none}
-  .nv{display:flex;padding:6px;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .nv button{width:auto;white-space:nowrap;margin-bottom:0;padding:9px 12px;font-size:13px}
-  #foot{display:none}   /* 手机上导航条是横的，这块统计挤在右边就是一条竖排乱码 */
+  #nvcourse{display:none}
+  .nv{display:flex;padding:5px 4px;gap:3px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .nv button{flex-direction:row;gap:4px;width:auto;white-space:nowrap;margin:0;
+    padding:6px 9px;font-size:12px;border-radius:16px}
+  .nv button::before{font-size:14px}
+  #gtabs{border-top:none;border-left:1px solid var(--line);padding:0 4px;flex-shrink:0}
+  #gtabs button{padding:8px 6px;font-size:11px}
+  #gtabs button.on::after{left:20%;right:20%;bottom:2px}
+  #lsum,#lexpand,#ltheme{display:none!important}
+  #lsetup{font-size:12px;padding:7px 9px;white-space:nowrap}
+  /* 开课向导在手机上：导师两列、节奏单列、主按钮整行 */
+  .lh-top{padding:10px 14px}
+  .lh-scroll{padding:20px 14px}
+  .lh-title h1{font-size:20px}
+  .lh-cards{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:22px}
+  .lh-av{width:58px;height:58px;font-size:27px;border-radius:15px}
+  .lh-opts{grid-template-columns:1fr;gap:8px;margin-bottom:22px}
+  .lh-foot{padding:12px 14px calc(14px + env(safe-area-inset-bottom));flex-wrap:wrap}
+  .lh-note{flex:1 1 100%}
+  .lh-go{width:100%;text-align:center}
+  #foot{display:none}   /* 与上面那条同义，留在这里是为了让手机断点一眼看全 */
   #nav{padding-top:env(safe-area-inset-top)}
   /* 标签栏自己能横滑，滚动条在手机上只会占地方 */
   #ctabs,#stabs{scrollbar-width:none}
@@ -444,31 +634,73 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
 }
 </style>
 </head>
-<body>
+<body class="compact dark" data-navgrp="study">
 <div id="app">
   <nav id="nav">
     <div class="brand">
       <h1>无穷之境</h1>
       <p>高等数学 · 自用学习站</p>
     </div>
-    <div class="nv">
-      <button class="on" data-v="lesson">上课</button>
-      <button data-v="book">教材</button>
-      <button data-v="vid">网课</button>
-      <button data-v="card">闪卡</button>
-      <button data-v="prog">进度</button>
-      <button data-v="set">设置</button>
+    <div id="nvcourse" title="点一下回到课堂；换课程在课堂上的课程标签栏">
+      <div class="nh">📖 <span id="nvcname">高等数学</span><span class="cnt" id="nvcnt">1</span></div>
+      <div class="ns" id="nvsess">第 1 节 · 0 条</div>
     </div>
+    <!-- #foot 是 <nav> 的直接子元素，不在 .nv 里：margin-top:auto 才推得动下面那组图标 -->
     <div class="foot" id="foot"></div>
+    <div class="nv">
+      <button class="on" data-v="lesson" data-g="study" data-ic="◎">上课</button>
+      <button data-v="book" data-g="study" data-ic="▤">教材</button>
+      <button data-v="card" data-g="study" data-ic="◫">闪卡</button>
+      <button data-v="vid" data-g="life" data-ic="▶">网课</button>
+      <button data-v="prog" data-g="life" data-ic="◷">进度</button>
+      <button data-v="set" data-g="eco" data-ic="⚙">设置</button>
+    </div>
+    <div id="gtabs">
+      <button class="on" data-g="study">学习</button>
+      <button data-g="life">课余</button>
+      <button data-g="eco">生态</button>
+    </div>
   </nav>
 
   <div id="stage">
+    <!-- 开课向导：一屏选完导师 / 节奏 / 模式 / 章节，一个主按钮。
+         原来散在两排工具栏里的入口并没删，点「⋯」还能原样展开。 -->
+    <div id="launch" hidden>
+      <div class="lh-top">
+        <span class="lh-crumb">无穷之境　›　<b id="lhCourse">高等数学</b>　›　待选伙伴</span>
+        <span class="sp"></span>
+        <button class="sm" id="lhTheme" title="切换深色 / 浅色">☀ 浅色</button>
+        <button class="sm" id="lhClose" title="回到课堂">✕</button>
+      </div>
+      <div class="lh-scroll"><div class="lh-inner">
+        <div class="lh-title"><h1 id="lhTitle">高等数学（第八版）上册</h1>
+          <button class="sm" id="lhSwap">更换课程</button></div>
+        <div id="lhCourses" class="lh-courses" hidden></div>
+        <div class="lh-sec">选择伙伴</div>
+        <div id="lhWho" class="lh-cards"></div>
+        <div class="lh-sec">教学节奏</div>
+        <div id="lhPace" class="lh-opts"></div>
+        <div class="lh-sec">这一轮做什么</div>
+        <div id="lhMode" class="lh-modes"></div>
+        <div class="lh-ctx">带进课堂的章节：<span id="lhCtx"></span>
+          <button class="sm" id="lhGoBook">去教材勾选</button></div>
+      </div></div>
+      <div class="lh-foot">
+        <span class="lh-note">导师、节奏、模式在这一节里随时可以改；每一节各记各的，换节互不影响。<br>想用原来的完整工具栏，点课堂上的「⋯」。</span>
+        <span id="lhStatus" class="tag"></span>
+        <button class="lh-go" id="lhStart">开始上课 →</button>
+      </div>
+    </div>
     <div id="ctabs"></div>
     <div id="stabs"></div>
     <!-- 上课 -->
     <section class="view on" id="v-lesson">
       <div class="bar" id="lbar1">
         <button class="sm monly" id="mctrl" aria-expanded="false" aria-controls="lbar1">导师 · 模式 ▾</button>
+        <button class="sm" id="lsetup" title="开课设置：导师、节奏、模式、章节都在一屏里选">⚙ 开课设置</button>
+        <span id="lsum"></span>
+        <button class="sm" id="ltheme" title="切换深色 / 浅色">☀</button>
+        <button class="sm" id="lexpand" title="展开 / 收起原来的完整工具栏">⋯ 更多</button>
         <span class="mlabel" style="font-size:12px;color:var(--tx2)">导师</span>
         <span id="pbox" style="display:flex;gap:6px;flex-wrap:wrap"></span>
         <button class="sm" id="rgo2" title="不知道请谁？按要学的内容推一位"
@@ -512,7 +744,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
         <div id="pendimg" class="pendimg" style="display:none"></div>
         <!-- 节奏命令：把「三个出口」变成看得见、点得到的东西。
              光写进 system prompt，学生根本不知道自己可以说「直接讲」。 -->
-        <div id="pacebar" class="pacebar"><span class="plb">节奏</span>
+        <div id="pacebar" class="pacebar"><button type="button" class="plb" id="pctoggle" title="展开 / 收起节奏命令">节奏 ▾</button>
           <button type="button" class="sm" data-cmd="直接讲，这一轮先把结论讲清楚">直接讲</button>
           <button type="button" class="sm" data-cmd="只讲结论">只讲结论</button>
           <button type="button" class="sm" data-cmd="先做题">先做题</button>
@@ -648,6 +880,24 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
             </div>
           </details>
         </div>
+        <div class="card2">
+          <h2>课堂代理（可选）</h2>
+          <div class="hint">两栏都留空，就是原来的用法：自己填 API Key 直连模型。填齐代理地址和邀请码后，导师改由服务器转发，不用自己申请 Key，额度按邀请码分配。</div>
+          <div class="grid2">
+            <div><label>代理地址</label><input id="pxurl" placeholder="https://你的代理域名"></div>
+            <div><label>邀请码</label><input id="pxinv" type="password" placeholder="由发码人给你"></div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:9px;flex-wrap:wrap">
+            <button class="pri" id="pxsave">保存代理设置</button>
+            <button id="pxtest">测试代理</button>
+            <button id="pxquota">查剩余额度</button>
+            <span id="pxtst" style="font-size:12px;color:var(--tx2)"></span>
+          </div>
+          <div class="help" style="margin-top:9px">
+            走代理时统一用 <code>deepseek-flash</code>，上面「接口地址 / 模型名 / API Key」三栏不生效；想换回自己直连，清空代理地址再保存即可。<br>
+            代理地址和邀请码<b>都不会写进导出的备份</b>，换设备要重填一次；进度页也不再按你自己的单价估算花费。
+          </div>
+        </div>
         <div class="card2" id="reccard">
           <h2>该请谁教你</h2>
           <div class="hint">把要学的内容写进来（已按当前章节预填），再点一点你现在的状态，下面会推一位最合适的导师。</div>
@@ -771,7 +1021,7 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
                手机文件选择器会把它显示成灰色、点不动 —— 这是「换设备后恢复不了」的头号原因。 -->
           <input id="impf" type="file" accept=".json,application/json,text/plain,application/octet-stream" style="display:none">
           <div class="help" style="margin-top:10px">
-            导出的是<b>全部对话、闪卡、掌握进度、勾选、习惯设置、导师与接口配置</b>；<b>不含 API Key</b>，也不含教材正文（换设备后重新「载入全部内置教材」即可）。<br><br>
+            导出的是<b>全部对话、闪卡、掌握进度、勾选、习惯设置、导师与接口配置</b>；<b>不含 API Key 与代理邀请码</b>，也不含教材正文（换设备后重新「载入全部内置教材」即可）。<br><br>
             换手机、换浏览器、清缓存之前先导出一次；在新环境里点「从备份恢复」选中那个文件，记录就回来了。
           </div>
         </div>
@@ -962,6 +1212,15 @@ let CTX0=[];
    表现就是「教材页进得去、里面全空、课程标签栏和节条都没有」。 */
 let CH=[];
 let ST=LS.g('stats',{i:0,o:0,days:{}}), CFG=LS.g('cfg',null);
+/* 课堂代理（可选）：两栏都留空＝原来的 BYOK 直连；填齐地址和邀请码才启用。
+   单独存一个键，导出备份时整键排除——邀请码和 API Key 一样是凭证。 */
+let PX=LS.g('proxy',{url:'',invite:''});
+if(!PX||typeof PX!=='object'||Array.isArray(PX))PX={url:'',invite:''};
+PX.url=String(PX.url||'').trim();PX.invite=String(PX.invite||'').trim();
+function proxyOn(){return !!(PX.url&&PX.invite)}
+/* 第 2 周最小版：代理端统一用 DeepSeek 付费档。后端并不锁厂商（HOSTS 白名单 6 家），
+   但服务端只持有 DEEPSEEK_KEY，前端若把用户设置页里的智谱 base 传过去必然 401。 */
+const PX_BASE='https://api.deepseek.com/v1', PX_MODEL='deepseek-flash';
 let PM=LS.g('pm',{});
 let ME=LS.g('meth.v2',DEF_METHOD);localStorage.removeItem(P+'meth');
 let who=LS.g('who','cauchy'), curCh=null, ctrl=null, rev=null;
@@ -1292,6 +1551,9 @@ function goView(v){
   document.querySelectorAll('.nv button').forEach(function(x){x.classList.toggle('on',x.dataset.v===v)});
   document.querySelectorAll('section.view').forEach(function(s){s.classList.remove('on')});
   $('v-'+v).classList.add('on');
+  syncNavGroup(v);renderShell();
+  /* 向导盖的是 #stage；点到别的页签要收掉，否则会悬在教材页上面 */
+  if(v!=='lesson')closeLaunch();
   /* 手机端 css 用 data-view 决定要不要显示课程/节标签栏；顺便收起导师面板 */
   document.body.dataset.view=v;
   const lb=$('lbar1');if(lb)lb.classList.remove('mopen');
@@ -1304,6 +1566,125 @@ function goView(v){
   if(v==='set'){fillRq(false);renderRst();renderRout()}
 }
 document.querySelectorAll('.nv button').forEach(function(b){b.onclick=function(){goView(b.dataset.v)}});
+
+/* ---------- 破卷式外壳：三标签导航 / 开课向导 / 一行状态条 ----------
+   原则：不新增状态。向导里每一张卡都是「遥控器」，点它＝点原来那颗药丸，
+   所以「每节各记各的导师 / 章节」「老数据回落」「体验版只给前三位」全都不用重写。
+   renderShell / syncNavGroup 里用到的映射写在函数内部：这两个函数会被启动早期
+   的 renderModes()/goView() 调到，不能引用后面才初始化的顶层 const（TDZ）。 */
+const NAV_G={lesson:'study',book:'study',card:'study',vid:'life',prog:'life',set:'eco'};
+const PACE_NAME={slow:'慢工细活',mid:'正常进度',fast:'主线速通'};
+const PACE_DSC={slow:'重多轮追问与习题，覆盖更细致',mid:'自洽应节奏，兼顾深度与效率',fast:'直奔核心主干，快速推进'};
+const WHO_TAG={cauchy:'严谨追问 · 定义优先',leibniz:'几何直觉 · 符号会思考',newton:'量纲与建模 · 回到现实',
+  aemeath:'轻快陪练 · 怕你假装懂',verina:'温和补地基 · 慢慢长',changli:'布局推演 · 问代价',
+  xiangliyao:'边界条件 · 先猜再验',shorekeeper:'长期复盘 · 记得你卡过'};
+const WHO_CLR=['#5B8DEF','#E58AA0','#9B7AE8','#4FAE9B','#E0A45C','#6F8CD9','#C077CE','#5AA6B8'];
+let DARK=LS.g('theme','dark')!=='light';
+function onId(id,fn){const e=$(id);if(e)e.onclick=fn}
+function applyTheme(){
+  document.body.classList.toggle('dark',DARK);
+  const b=$('lhTheme');if(b)b.textContent=DARK?'☀ 浅色':'☾ 深色';
+  const t=$('ltheme');if(t)t.textContent=DARK?'☀':'☾';
+  const m=document.querySelector('meta[name="theme-color"]');
+  if(m)m.setAttribute('content',DARK?'#141417':'#185FA5');
+}
+function syncNavGroup(v){
+  const g=({lesson:'study',book:'study',card:'study',vid:'life',prog:'life',set:'eco'})[v];
+  if(!g)return;
+  document.body.dataset.navgrp=g;
+  document.querySelectorAll('#gtabs button').forEach(function(b){b.classList.toggle('on',b.dataset.g===g)});
+}
+document.querySelectorAll('#gtabs button').forEach(function(b){
+  b.onclick=function(){
+    document.body.dataset.navgrp=b.dataset.g;
+    document.querySelectorAll('#gtabs button').forEach(function(x){x.classList.toggle('on',x===b)});
+  };
+});
+/* 侧栏当前课程卡 / 课堂那一行摘要 / 向导底部状态，都从现有状态现算，不另存 */
+function renderShell(){
+  const pn={slow:'慢工细活',mid:'正常进度',fast:'主线速通'};
+  const cn=$('nvcname');if(cn)cn.textContent=cname(COURSE);
+  const cs=$('nvsess');if(cs)cs.textContent=sessLabel(CURS)+' · '+MS.filter(function(m){return sid(m)===CURS}).length+' 条';
+  const cc=$('nvcnt');if(cc)cc.textContent=String(SESS.length);
+  const sum=$('lsum');if(sum)sum.textContent=getP(who).n+' · '+curMode().n+' · '+(pn[PA]||'正常进度')+' · '+CTX.length+' 章';
+  const lc=$('lhCourse');if(lc)lc.textContent=cname(COURSE);
+  const lt=$('lhTitle');if(lt)lt.textContent=cname(COURSE);
+  const st=$('lhStatus');if(st)st.textContent=getP(who).n+' · '+curMode().n+' · '+(pn[PA]||'正常进度');
+}
+function closeLaunch(){const l=$('launch');if(l)l.hidden=true}
+function openLaunch(){renderLaunch();const l=$('launch');if(l)l.hidden=false}
+function renderLaunch(){
+  const wb=$('lhWho');if(!wb)return;
+  wb.innerHTML='';
+  pKeys().forEach(function(k,i){
+    const p=getP(k),d=document.createElement('div');
+    d.className='lh-card'+(who===k?' on':'');
+    d.innerHTML='<span class="lh-ck">✓</span><div class="lh-av" style="background:'
+      +WHO_CLR[i%WHO_CLR.length]+'">'+esc(p.n.slice(0,1))+'</div><div class="lh-nm">'
+      +esc(p.n)+'</div><div class="lh-ds">'+esc(WHO_TAG[k]||'你自己加的人设')+'</div>';
+    d.onclick=function(){
+      const pill=[].slice.call($('pbox').querySelectorAll('.pill')).filter(function(x){return x.textContent===p.n})[0];
+      if(pill)pill.click();
+      renderLaunch();renderShell();
+    };
+    wb.appendChild(d);
+  });
+  const pb=$('lhPace');pb.innerHTML='';
+  ['slow','mid','fast'].forEach(function(k){
+    const d=document.createElement('div');d.className='lh-opt'+(PA===k?' on':'');
+    d.innerHTML='<span class="lh-radio"></span><div><b>'+PACE_NAME[k]+'</b><p>'+PACE_DSC[k]+'</p></div>';
+    d.onclick=function(){PA=k;LS.s('pace',k);const pe=$('pace');if(pe)pe.value=k;
+      renderLaunch();renderShell();toast('节奏：'+PACE_NAME[k])};
+    pb.appendChild(d);
+  });
+  const mb=$('lhMode');mb.innerHTML='';
+  Object.keys(MODE).forEach(function(k){
+    const b=document.createElement('button');b.type='button';b.className='sm'+(MODEK===k?' on':'');
+    b.textContent=MODE[k].n;
+    b.onclick=function(){
+      const pill=[].slice.call($('mbox').querySelectorAll('.pill')).filter(function(x){return x.textContent===MODE[k].n})[0];
+      if(pill)pill.click();
+      renderLaunch();renderShell();
+    };
+    mb.appendChild(b);
+  });
+  const cx=$('lhCtx');if(cx){
+    const ts=CTX.map(function(id){const c=CH.filter(function(x){return x.id===id})[0];return c?c.title:id});
+    cx.innerHTML=ts.length?('<b>'+ts.length+' 章</b>　'+esc(ts.slice(0,3).join('、'))+(ts.length>3?' …':''))
+      :'<b>未勾选</b>　导师只按教材名开场，按需勾最省 token';
+  }
+  renderShell();
+}
+/* 「更换课程」列出这台设备上真正存在的课，点了仍走原来的 switchCourse */
+function renderLaunchCourses(){
+  const box=$('lhCourses');if(!box)return;
+  box.innerHTML='';
+  courseList().gs.forEach(function(g){
+    const b=document.createElement('button');b.type='button';b.className='sm'+(COURSE===g.k?' pri':'');
+    b.textContent=cname(g.k);
+    b.onclick=function(){switchCourse(g.k);box.hidden=true;renderLaunch();renderShell();toast('已换到「'+cname(g.k)+'」')};
+    box.appendChild(b);
+  });
+  if(!box.children.length)box.innerHTML='<span class="tag">还没有教材，先到教材页导入</span>';
+}
+onId('lhSwap',function(){const b=$('lhCourses');if(!b)return;b.hidden=!b.hidden;if(!b.hidden)renderLaunchCourses()});
+onId('lhGoBook',function(){closeLaunch();goView('book')});
+onId('lhClose',closeLaunch);
+onId('lhTheme',function(){DARK=!DARK;LS.s('theme',DARK?'dark':'light');applyTheme()});
+onId('ltheme',function(){DARK=!DARK;LS.s('theme',DARK?'dark':'light');applyTheme()});
+onId('lhStart',function(){
+  closeLaunch();
+  const i=$('in');if(i)i.focus();
+  const k=$('key')?$('key').value.trim():'';
+  /* 没配接口就别弹「先去设置」，也别在测试里平白发一次请求 */
+  if(k||proxyOn()){const s=$('start');if(s)s.click()}
+  else toast('设置好了。填好模型接口后点「开始今天的一课」，也可以直接在下面提问');
+});
+onId('lsetup',openLaunch);
+onId('nvcourse',function(){goView('lesson')});
+onId('lexpand',function(){this.textContent=document.body.classList.toggle('expand')?'⋯ 收起':'⋯ 更多'});
+onId('pctoggle',function(){this.textContent=document.body.classList.toggle('paceopen')?'节奏 ▴':'节奏 ▾'});
+applyTheme();
 
 /* ---------- markdown ---------- */
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]})}
@@ -2166,6 +2547,7 @@ function renderChips(){
   (CTX||[]).forEach(function(id){const c=C.filter(function(x){return x.id===id})[0];
     const s=document.createElement('span');s.className='chip';s.innerHTML=esc(c?c.title.slice(0,14):id)+'<b>×</b>';
     s.querySelector('b').onclick=function(){toggleCtx(id)};b.appendChild(s)});
+  renderShell();   /* 「N 章」这个摘要跟着勾选变 */
 }
 /* ---------- 每一节记自己的导师 ----------
    同一门课里，讲导数的这一节可能想让牛顿带、讲证明的那一节想让柯西带。
@@ -2233,6 +2615,7 @@ function renderMCtrl(){
   const b=$('mctrl');if(!b)return;
   const lb=$('lbar1');
   b.textContent=getP(who).n+' · '+curMode().n+(lb&&lb.classList.contains('mopen')?' ▴':' ▾');
+  renderShell();   /* 侧栏课程卡 / 课堂那一行摘要跟着导师、模式一起刷新 */
 }
 function renderMyPs(){
   const b=$('myplist');if(!b)return;
@@ -2531,7 +2914,7 @@ function startEdit(i){
     const v=ta.value.trim();
     if(!v){toast('内容不能为空');ta.focus();return}
     /* 先确认接口可用：否则截断了对话却发不出去，白丢 */
-    if(!$('key').value.trim()||!$('base').value.trim()){alert('先到「设置」填接口地址和 API Key，点保存。');return}
+    if(!proxyOn()&&(!$('key').value.trim()||!$('base').value.trim())){alert('先到「设置」填接口地址和 API Key，或填课堂代理地址和邀请码。');return}
     if(v===m.c&&!later){close();return}
     if(later&&!confirm('这会删除这条之后的 '+later+' 条对话，然后重新回答。继续？'))return;
     MS=MS.slice(0,i).concat(MS.slice(i).filter(function(x){return sid(x)!==CURS}));saveMs();reloadMsgs();
@@ -2580,10 +2963,23 @@ function sysMsg(){
        放在模式之前会自相矛盾（嘴上说最高，位置却更低）。 */
     +'\n\n'+EXIT;
 }
+/* 代理返回的都是可操作的配置/额度错误，别让它们表现成一句生硬的 HTTP 状态。 */
+function pxErr(code,j,raw){
+  const e=j&&j.error||'';
+  if(code===401)return '邀请码不对或已失效（401）。到「设置 · 课堂代理」核对，或清空代理地址改回自己填 Key。';
+  if(code===402)return '这个邀请码的免费额度用完了（402）。找发码的人续额度；也可以清空代理地址，改用自己的 API Key 继续学。';
+  if(code===429)return '问得太快了（429），代理每分钟限 '+((j&&j.retryAfter)||60)+' 次左右，缓一下再发。';
+  if(code===403)return '当前网址不在代理的允许列表里（403）。只有主站和 GitHub 体验版被放行。';
+  if(e==='NO_UPSTREAM_KEY')return '代理服务端还没配模型 Key（500），让管理员设置 DEEPSEEK_KEY。';
+  if(code===502)return '代理连不上模型服务（502），稍后再试。';
+  if(e==='UPSTREAM_NOT_ALLOWED')return '代理不允许这个上游地址（400），检查设置里的接口地址。';
+  return '代理返回错误：'+raw;
+}
 async function ask(text,opt){
   opt=opt||{};
+  const usePx=proxyOn();
   const key=$('key').value.trim(),base=$('base').value.trim();
-  if(!key||!base){alert('先到「设置」填接口地址和 API Key，点保存。');return}
+  if(!usePx&&(!key||!base)){alert('先到「设置」填接口地址和 API Key，或填课堂代理地址和邀请码。');return}
   pinBottom();   /* 自己发了话，就是要看回答：恢复跟随 */
   BUSY=true;
   const pack=[{role:'system',content:sysMsg()+'\n\n'+ctxText()}];
@@ -2605,11 +3001,23 @@ async function ask(text,opt){
   const myCtrl=ctrl;
   let full='';   /* 提到 try 外：catch 里也要用（原来在 try 内用 let 声明，abort 时 catch 反而抛错） */
   try{
-    const r=await fetch(base.replace(/\/+$/,'')+'/chat/completions',{method:'POST',signal:ctrl.signal,
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify({model:$('model').value.trim(),messages:pack,temperature:opt.temp||0.6,stream:true})});
-    if(!r.ok){let m=r.status+' '+r.statusText;try{const j=await r.json();m+=' '+(j.error&&j.error.message?j.error.message:JSON.stringify(j).slice(0,150))}catch(e){}
-      throw new Error(m)}
+    /* 走代理：绝对 URL + X-Invite-Code，绝不带上自己的 API Key；
+       base/model 固定为服务端持 Key 的那家，避免把用户设置页里的智谱地址传过去必然 401。
+       没填代理时，下面这个三元组的右半边与改动前一字不差。 */
+    const ep=usePx?PX.url.replace(/\/+$/,'')+'/api/chat':base.replace(/\/+$/,'')+'/chat/completions';
+    const hd=usePx?{'Content-Type':'application/json','X-Invite-Code':PX.invite}
+                  :{'Content-Type':'application/json','Authorization':'Bearer '+key};
+    const bd=usePx?{model:PX_MODEL,base:PX_BASE,messages:pack,temperature:opt.temp||0.6,stream:true}
+                  :{model:$('model').value.trim(),messages:pack,temperature:opt.temp||0.6,stream:true};
+    let r;
+    try{r=await fetch(ep,{method:'POST',signal:ctrl.signal,headers:hd,body:JSON.stringify(bd)})}
+    catch(fe){
+      if(usePx)throw new Error('连不上课堂代理（'+PX.url+'）。检查地址是不是 HTTPS；也可以到「设置」清空代理地址，继续用自己填的 API Key。');
+      throw fe;
+    }
+    if(!r.ok){let m=r.status+' '+r.statusText,j=null;try{j=await r.json()}catch(e){}
+      if(j&&j.error)m+=' '+(j.error.message||j.error);else if(j)m+=' '+JSON.stringify(j).slice(0,150);
+      throw new Error(usePx?pxErr(r.status,j,m):m)}
     const rd=r.body.getReader(),dc=new TextDecoder();let buf='';
     for(;;){const o=await rd.read();if(o.done)break;
       buf+=dc.decode(o.value,{stream:true});const ls=buf.split('\n');buf=ls.pop();
@@ -2648,11 +3056,14 @@ async function ask(text,opt){
     if(opt.card)return full;
   }catch(e){
     if(String(e.name)==='AbortError'){if(COURSE===myCourse&&CURS===mySess)el.innerHTML=md(full||'（已停止）');return}
+    /* 代理的错误全是「额度/邀请码/限速/连不上」这类可操作提示，保留刚发出的提问，
+       别像 BYOK 那样 MS.pop() 把消息撤掉，让人以为自己没发出去。 */
+    const keep=usePx;
     if(COURSE===myCourse){
-      el.innerHTML='<span style="color:#A32D2D">出错了：'+esc(String(e.message||e))+'</span>';
+      el.innerHTML='<span style="color:#A32D2D">'+(usePx?'':'出错了：')+esc(String(e.message||e))+'</span>';
       const last=MS[MS.length-1];
-      if(last&&last.r==='user'&&last.c===text){MS.pop();saveMs();renderSTabs()}
-    }else if(myMs.length&&myMs[myMs.length-1].r==='user'){
+      if(!keep&&last&&last.r==='user'&&last.c===text){MS.pop();saveMs();renderSTabs()}
+    }else if(!keep&&myMs.length&&myMs[myMs.length-1].r==='user'){
       /* 已切到别的课：只撤掉原课程那条占位的提问，不碰当前课程 */
       myMs.pop();LS.s('msgs.'+myCourse,myMs);
     }
@@ -2660,7 +3071,8 @@ async function ask(text,opt){
   }finally{BUSY=false;if(ctrl===myCtrl)$('stop').disabled=true}
 }
 function updTok(){
-  const v=PROV[$('prov').value]&&PROV[$('prov').value].io||[0,0];
+  /* 走代理时 token 由服务端代付，不能拿用户自己选的那家单价算「约 ¥x」 */
+  const v=proxyOn()?[0,0]:(PROV[$('prov').value]&&PROV[$('prov').value].io||[0,0]);
   const c=(ST.i/1e6)*v[0]+(ST.o/1e6)*v[1];
   $('tok').textContent=Math.round((ST.i+ST.o)/1000)+'K token'+(v[0]?' · 约 ¥'+c.toFixed(2):'');
   renderFoot();
@@ -2978,7 +3390,7 @@ function renderProg(){
   $('ptable').querySelectorAll('[data-c]').forEach(function(s){s.onchange=function(){toggleCtx(s.dataset.c)}});
   const done=CH.filter(function(c){return PR[c.id]===2}).length;
   const doing=CH.filter(function(c){return PR[c.id]===1}).length;
-  const pv2=PROV[pv.value]||{};const v=pv2.io||[0,0];
+  const pv2=PROV[pv.value]||{};const v=proxyOn()?[0,0]:(pv2.io||[0,0]);
   const cost=(ST.i/1e6)*v[0]+(ST.o/1e6)*v[1];
   $('statc').innerHTML=
     '<div class="statc"><div class="n">'+streak()+'</div><div class="l">连续学习天数</div></div>'+
@@ -2986,12 +3398,13 @@ function renderProg(){
     '<div class="statc"><div class="n">'+doing+'</div><div class="l">在学</div></div>'+
     '<div class="statc"><div class="n">'+cardList().length+'</div><div class="l">闪卡</div></div>'+
     '<div class="statc"><div class="n">'+((ST.i+ST.o)/1000).toFixed(0)+'K</div><div class="l">累计 token</div></div>'+
-    '<div class="statc"><div class="n">¥'+cost.toFixed(2)+'</div><div class="l">累计花费估算</div></div>';
+    '<div class="statc"><div class="n">'+(proxyOn()?'—':'¥'+cost.toFixed(2))+'</div><div class="l">'+(proxyOn()?'代理代付 · 不计个人费用':'累计花费估算')+'</div></div>';
 }
 function renderFoot(){
   const d=dueList().length;
   $('foot').innerHTML='<div>今天：'+(ST.days[today()]?(ST.days[today()].m||0)+' 轮问答':'还没开课')+'</div>'
     +'<div>闪卡到期：'+d+'</div>';
+  renderShell();
 }
 
 /* ---------- 绑定 ---------- */
@@ -3011,6 +3424,39 @@ $('test').onclick=async function(){
     $('tst').textContent='连接正常';$('tst').className='okmsg';
   }catch(e){$('tst').textContent='失败：'+String(e.message||e).slice(0,80);$('tst').className='warn'}
 };
+/* ---------- 课堂代理（可选） ----------
+   代理地址是绝对 URL（前端在静态托管上、后端在另一个域名，相对路径会打回自己）。
+   鉴权头用 X-Invite-Code：后端 CORS 只放行这个头，Authorization 会触发预检失败，
+   而且用户的 API Key 本来就不该发到代理。 */
+$('pxurl').value=PX.url;$('pxinv').value=PX.invite;
+$('pxsave').onclick=function(){
+  PX={url:$('pxurl').value.trim(),invite:$('pxinv').value.trim()};
+  LS.s('proxy',PX);updTok();
+  toast(proxyOn()?'已保存：接下来由代理转发，不用自己填 API Key':'已清空代理，回到自己填 Key 直连');
+};
+function pxApi(path){return PX.url.replace(/\/+$/,'')+path}
+$('pxtest').onclick=async function(){
+  if(!PX.url){$('pxtst').textContent='先填代理地址并保存';$('pxtst').className='warn';return}
+  $('pxtst').textContent='测试中…';$('pxtst').className='';
+  try{
+    const r=await fetch(pxApi('/api/health'));let j={};try{j=await r.json()}catch(e){}
+    if(!r.ok||!j.ok)throw new Error(r.status+' '+(j.error||''));
+    $('pxtst').textContent=j.upstreamConfigured?'代理正常，服务端已配 Key':'代理在线，但服务端还没配 Key';
+    $('pxtst').className=j.upstreamConfigured?'okmsg':'warn';
+  }catch(e){$('pxtst').textContent='连不上：'+String(e.message||e).slice(0,70);$('pxtst').className='warn'}
+};
+$('pxquota').onclick=async function(){
+  if(!proxyOn()){$('pxtst').textContent='先填齐代理地址和邀请码并保存';$('pxtst').className='warn';return}
+  $('pxtst').textContent='查询中…';$('pxtst').className='';
+  try{
+    const r=await fetch(pxApi('/api/me/quota'),{headers:{'X-Invite-Code':PX.invite}});
+    let j={};try{j=await r.json()}catch(e){}
+    if(r.status===401)throw new Error('邀请码不对或已失效');
+    if(!r.ok)throw new Error(r.status+' '+(j.error||''));
+    $('pxtst').textContent='剩余 '+Number(j.left||0).toLocaleString()+' / '+Number(j.free||0).toLocaleString()+' token';
+    $('pxtst').className='okmsg';
+  }catch(e){$('pxtst').textContent='查询失败：'+String(e.message||e).slice(0,70);$('pxtst').className='warn'}
+};
 /* ---------- 导师推荐 ---------- */
 fillRq(false);renderRst();renderRout();
 $('rq').oninput=function(){renderRout()};
@@ -3022,7 +3468,7 @@ $('sys').value=PM[who]||getP(who).p;
 $('bkn').value=getBkn();
 $('svb').onclick=function(){setBkn($('bkn').value.trim()||BKDEF);toast('已记下（作用于课程：'+cname(COURSE)+'）')};
 $('pace').value=PA;
-$('pace').onchange=function(){PA=$('pace').value;LS.s('pace',PA);toast('节奏已切换')};
+$('pace').onchange=function(){PA=$('pace').value;LS.s('pace',PA);renderShell();toast('节奏已切换')};
 $('course').onchange=function(){switchCourse(this.value)};
 $('sys').oninput=function(){PM[who]=$('sys').value;LS.s('pm',PM)};
 $('rstd').onclick=function(){delete PM[who];LS.s('pm',PM);$('sys').value=getP(who).p;toast('已恢复默认')};
@@ -3146,7 +3592,23 @@ function renderSym(){
   });
   gw.appendChild(box);
 }
-$('symtoggle').onclick=function(){SYMA=SYMA?0:1;LS.s('syma',SYMA);renderSym();applyHabit()};
+$('symtoggle').onclick=function(){
+  /* 简洁外壳下：这颗按钮只管「展开 / 收起符号抽屉」，不动用户的 SYMA 偏好。
+     点「⋯ 更多」展开完整工具栏时，符号面板按老习惯由 SYMA 决定。 */
+  if(document.body.classList.contains('compact')&&!document.body.classList.contains('expand')){
+    const on=document.body.classList.toggle('symopen');
+    this.className='sm'+(on?' pri':'');
+    return;
+  }
+  SYMA=SYMA?0:1;LS.s('syma',SYMA);renderSym();applyHabit()
+};
+/* 简洁外壳默认把符号抽屉收着，但 SYMA 仍是用户「进页面时是否展开」的偏好。
+   只在启动时把这颗按钮的高亮抹平，renderSym() 本身照旧跟随 SYMA ——
+   设置页改偏好时按钮仍会亮起来（test_edit.js 守着这条）。 */
+function syncSymToggle(){
+  if(document.body.classList.contains('compact')&&!document.body.classList.contains('symopen'))
+    $('symtoggle').className='sm';
+}
 /* 手机端：点摘要展开/收起导师与模式（桌面端这个按钮 display:none，走不到这里） */
 $('mctrl').onclick=function(){
   const lb=$('lbar1');if(!lb)return;
@@ -3432,17 +3894,25 @@ $('wipe').onclick=async function(){
    导出一份 JSON 是唯一能跨环境带走的手段。刻意不含 API Key —— 备份文件常被
    随手丢进网盘或聊天窗口，密钥不该跟着走。 */
 const BKP='ai-study-buddy';
+/* 凭证一律不进备份：gx.key（旧写法）、gx.proxy（代理地址＋邀请码整键），
+   还有 gx.cfg 里那个 key 字段——CFG 是个对象，以前只排除 gx.key，
+   API Key 其实一直跟着 gx.cfg 被导出，和页面上「不含 API Key」的承诺不符。 */
+const NOBKP=[P+'key',P+'proxy'];
 function bkpKeys(){
   const ks=[];
   for(let i=0;i<localStorage.length;i++){
     const k=localStorage.key(i);
-    if(k&&k.indexOf(P)===0&&k!==P+'key')ks.push(k);
+    if(k&&k.indexOf(P)===0&&NOBKP.indexOf(k)<0)ks.push(k);
   }
   return ks;
 }
+function stripKey(k,v){
+  if(k===P+'cfg'&&v){try{const j=JSON.parse(v);delete j.key;return JSON.stringify(j)}catch(e){}}
+  return v;
+}
 $('expall').onclick=function(){
   const d={app:BKP,ver:1,at:new Date().toISOString(),data:{}};
-  bkpKeys().forEach(function(k){d.data[k]=localStorage.getItem(k)});
+  bkpKeys().forEach(function(k){d.data[k]=stripKey(k,localStorage.getItem(k))});
   const n=Object.keys(d.data).length;
   if(!n){toast('这台设备上还没有可导出的记录');return}
   dl('学习记录备份_'+today()+'.json',JSON.stringify(d));
@@ -3457,11 +3927,14 @@ $('impf').onchange=async function(){
   if(!j||j.app!==BKP||!j.data||typeof j.data!=='object'){alert('这不是本站导出的备份文件。');return}
   const ks=Object.keys(j.data);
   if(!ks.length){alert('备份文件里没有记录。');return}
-  if(!confirm('将写入 '+ks.length+' 项记录；同名的当前记录会被备份里的覆盖（API Key 和教材不受影响）。继续？'))return;
+  if(!confirm('将写入 '+ks.length+' 项记录；同名的当前记录会被备份里的覆盖（API Key、代理邀请码和教材不受影响）。继续？'))return;
   let n=0;
   ks.forEach(function(k){
-    if(k.indexOf(P)!==0||k===P+'key')return;      /* 只认本站前缀，密钥一律不动 */
-    try{localStorage.setItem(k,j.data[k]);n++}catch(e){}
+    if(k.indexOf(P)!==0||NOBKP.indexOf(k)>=0)return;   /* 只认本站前缀，凭证一律不动 */
+    let v=j.data[k];
+    /* 备份里的 gx.cfg 已经去掉 key，恢复时把本机现有的补回去，别把人家的 Key 冲掉 */
+    if(k===P+'cfg'&&v){try{const o=JSON.parse(v),c=JSON.parse(localStorage.getItem(k)||'{}');o.key=c.key||'';v=JSON.stringify(o)}catch(e){}}
+    try{localStorage.setItem(k,v);n++}catch(e){}
   });
   toast('已恢复 '+n+' 项记录，正在重新载入…');
   setTimeout(function(){location.reload()},700);
@@ -3530,7 +4003,7 @@ function applyLite(){
 /* applySessWho 顶替原来的 renderPs()：它内部就会 renderPs，还会按「当前这一节」把导师、
    系统提示词一起摆正 —— 否则刷新后节条停在第 3 节，导师却还是上次全局选的那位。 */
 applyLite();
-applySessWho();renderModes();applyHabit();updTok();renderSym();renderTts();updTts();renderMic();renderVoiceName();
+applySessWho();renderModes();applyHabit();updTok();renderSym();syncSymToggle();renderTts();updTts();renderMic();renderVoiceName();renderShell();
 vLoad().catch(function(e){storeWarn(e,'网课库')});
 MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();
@@ -3540,7 +4013,7 @@ if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e
   const tkLine=LITE
     ?'- **教材**：演示版自带两册自制免费讲义（极限与导数入门、导数与微分精讲），进「教材」点「免费讲义」载入、勾一节就能开课；这两册可自由下载转给同学，想用完整教材就点「导入教材」上传自己的 md / pdf / epub'
     :'- **教材**：进「教材」勾选正在学的那一节；站点没带教材正文时会自动放一份示例讲义兜底，也可以用「导入教材」换成自己的 md / txt / pdf / epub';
-  addMsg('assistant','先到「设置」填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token\n'+tkLine+'\n- **导师**：顶部「导师」决定“怎么说话”，**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
+  addMsg('assistant',(proxyOn()?'已连上课堂代理，不用自己填 API Key，直接开课。':'先到「设置」（侧栏「生态」）填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token')+'\n'+tkLine+'\n- **选课配置**：点课堂上的「开课设置」，一屏选好导师 / 节奏 / 模式；**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
 (async function(){
   let err=null;
   /* 教材库打不开（存储被禁 / 库坏了 / 被别的标签页占着）不能连累整页：
@@ -3549,10 +4022,16 @@ if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e
   try{ CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)}) }
   catch(e){ err=e;CH=[];storeWarn(e,'教材库') }
   renderChips();          /* 等教材读出来再画：勾选章节的 chip 要显示章节标题，不是原始 id */
+  const rv=LS.g('view','lesson');
+  /* 新的一节还没聊过：先把开课向导摆出来，一屏选完再进课堂。
+     放在教材抓取之前、try 之外：断网 / 部署空档时也要留着这个入口，
+     否则整个页面就只剩两排空白工具栏。刷新回正在上的那一节时不打扰 ——
+     只看「这一节有没有我发过的话」，系统自动写的开场白不算。 */
+  if(rv==='lesson'&&!MS.some(function(m){return m&&m.r==='user'&&sid(m)===CURS}))openLaunch();
+  else renderShell();
   try{
     /* 刷新后回到上次待着的那一页。放在这儿而不是启动那一刻：
        进度页/闪卡页要等教材读完才渲染得出东西，太早切过去只会看到一片空。 */
-    const rv=LS.g('view','lesson');
     if(rv!=='lesson'&&rv!=='set'&&$('v-'+rv))goView(rv);
     const had=COURSE;                      /* updateCourses 可能回落，先把原课程记下来 */
     renderBook();
@@ -3575,6 +4054,7 @@ if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e
       toast('「'+cname(had)+'」的教材这次没载入，但这门课的学习记录都还在——把它重新导入就能接着用');
     }
   }catch(e2){ if(!err){err=e2;_errToast(e2&&(e2.message||e2))} }
+  renderShell();
 })();
 /* 公式库若是从备用源延迟加载成功的，加载完重画一遍，把之前裸着的 LaTeX 补上 */
 window.addEventListener('katexready',function(){
