@@ -140,7 +140,7 @@ setTimeout(() => {
       const pl = w.document.querySelectorAll('#pbox .pill');
       pl[w.eval("pKeys().indexOf('aemeath')")].click();
       console.log('切到爱弥斯        ', w.eval('who'), '| sys 含名:', w.eval("$('sys').value.indexOf('爱弥斯')>=0"), '|', w.document.getElementById('pcur').textContent);
-      w.eval("$('mpn').value='测试导师';$('mpp').value='你是测试导师，负责测试。';$('mpk').value='';");
+      w.eval("$('mpn').value='测试伙伴';$('mpp').value='你是测试伙伴，负责测试。';$('mpk').value='';");
       w.document.getElementById('mpsave').click();
       console.log('新增自定义后      ', q('#pbox .pill'), '个 | 当前:', w.eval('who'), '| 列表:', q('#myplist .chip'));
       const chipX = w.document.querySelector('#myplist .chip b');

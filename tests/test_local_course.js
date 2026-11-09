@@ -65,7 +65,7 @@ const log = (...a) => out.push(a.join(' '));
   await wait(80);
 
   log('--- 课程标签栏（载入 2 个分册 + 1 本线代）---');
-  log('标签数', w.document.querySelectorAll('#ctabs .ctab').length, '（应为 3：自由问答/高数合课/线代）');
+  log('标签数', w.document.querySelectorAll('#ctabs .ctab').length, '（应为 2：高数合课 / 线代；自由问答已搬到课余群聊）');
   log('标签文字', [...w.document.querySelectorAll('#ctabs .ctab')].map(b => b.textContent.trim()).join(' | '));
   log('当前课程', ev('COURSE'));
 

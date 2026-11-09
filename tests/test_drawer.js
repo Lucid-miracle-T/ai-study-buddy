@@ -7,7 +7,7 @@
  *   - 只搬 DOM 节点（#nav / #ctabs / #stabs / #lbar1 / #lbar2 换父节点），不复制状态
  *   - 桌面 / jsdom（innerWidth=1024）一行不改：body.mobile 不存在，原结构原样
  *   - #foot 仍是 #nav 的直接子元素（test_foot.js / test_shell.js 的老根因）
- *   - 六个视图、LITE 过滤、每节独立状态、向导、原工具栏控件全部仍在
+ *   - 七个视图（含课余群聊）、LITE 过滤、每节独立状态、向导、原工具栏控件全部仍在
  *   - 抽屉里点页面要自动收起；遮罩 / Esc / 关闭按钮都能关
  *   - 顶栏的「停止」「＋」是遥控器，点它＝点原来的按钮，不另写一套逻辑
  */
@@ -108,7 +108,7 @@ function boot(opts) {
     ok(q('#nav').parentElement.id === 'dNav', '#nav 整块搬进「页面」子栏目');
     ok(q('#ctabs').parentElement.id === 'dTabs' && q('#stabs').parentElement.id === 'dTabs',
       '课程 / 节两条标签栏搬进「课程与节」子栏目');
-    ok(q('#lbar1').parentElement.id === 'dSec', '导师 / 模式工具栏搬进「这一节」子栏目');
+    ok(q('#lbar1').parentElement.id === 'dSec', '伙伴 / 模式工具栏搬进「这一节」子栏目');
     ok(q('#lbar2').parentElement.id === 'dActs', '课堂操作按钮搬进「课堂操作」子栏目');
     ok(qa('#drawer details').length === 4, '抽屉有 4 个可折叠子栏目');
     ok(q('#drawer details').open === true, '默认展开「这一节」');
@@ -120,7 +120,7 @@ function boot(opts) {
     ok(!!foot && foot.parentElement.id === 'nav' && !q('.nv #foot'),
       '#foot 仍是 #nav 的直接子元素（搬的是 #nav，不是拆开它）');
     const vs = qa('.nv button').map(b => b.dataset.v).sort().join(',');
-    ok(vs === 'book,card,lesson,prog,set,vid', '六个视图入口都还在：' + vs);
+    ok(vs === 'book,card,chat,lesson,prog,set,vid', '七个视图入口都还在（课余多了群聊）：' + vs);
     ok(/body\.mobile #drawer \.nv button\[data-v\]\{display:flex\}/.test(src),
       '抽屉里取消三标签分组隐藏，六个入口一次露全');
     ok(!/body\.mobile #drawer \.nv button\[data-v\]\{display:flex!important\}/.test(src),
@@ -159,11 +159,12 @@ function boot(opts) {
     ok(!doc.body.classList.contains('drawer'), '选完页面抽屉自动收起');
     qa('.nv button').filter(b => b.dataset.v === 'lesson')[0].click();
 
-    /* ＋ 是开课向导的遥控器 */
+    /* ＋ ＝开新的一节：一律先摆出整屏向导，选完再上课 */
     q('#dOpen').click(); q('#dNew').click();
     ok(q('#launch').hidden === false, '点 ＋ 打开开课向导（不另写一套选课逻辑）');
     ok(!doc.body.classList.contains('drawer'), '打开向导时抽屉收起');
     q('#lhClose').click();
+    ok(q('#launch').hidden === false, '这一节还没开课，✕ 不跳过选择');
 
     /* ⏹ 是 #stop 的遥控器：没在生成时点了不炸 */
     const before = errs.length;
@@ -183,7 +184,7 @@ function boot(opts) {
     await wait(900);
     const vid = doc.querySelector('[data-v="vid"]');
     ok(!!vid && vid.style.display === 'none', '体验版「网课」入口仍被隐藏（内联样式赢过抽屉规则）');
-    ok(doc.querySelectorAll('#lhWho .lh-card').length <= 3, '体验版导师仍只有前三位');
+    ok(doc.querySelectorAll('#lhWho .lh-card').length <= 3, '体验版伙伴仍只有前三位');
     ok(!!doc.querySelector('#dlfree'), '免费讲义入口在体验版保留');
     ok(doc.body.classList.contains('mobile'), '体验版手机同样启用抽屉');
     ok(errs.length === 0, '体验版手机启动无 JS 异常' + (errs.length ? '：' + errs[0] : ''));

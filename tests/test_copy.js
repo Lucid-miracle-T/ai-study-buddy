@@ -1,4 +1,4 @@
-/* 为什么复制导师的公式会「前后不一样」
+/* 为什么复制伙伴的公式会「前后不一样」
  *
  * KaTeX 默认 output:'htmlAndMathml'，一个公式在 DOM 里存两份：
  *   .katex-mathml  —— 给读屏软件用的 MathML，视觉上 clip 到 1px，但文字仍可被选中

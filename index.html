@@ -152,12 +152,12 @@ button.sm{padding:4px 9px;font-size:12px}
 .body table{border-collapse:collapse;margin:9px 0;font-size:13px}
 .body th,.body td{border:1px solid var(--line2);padding:5px 9px}
 .body blockquote{border-left:3px solid var(--line2);padding-left:11px;color:var(--tx2);margin:9px 0}
-/* 导师的动作/神态旁白（写作 *推了推眼镜*）：浅色、略小、带淡底，与对白区分开。
+/* 伙伴的动作/神态旁白（写作 *推了推眼镜*）：浅色、略小、带淡底，与对白区分开。
    行内的旁白是淡底小标签，独立成段的旁白换成左侧竖线的整段旁白。 */
 .msg .body .act{color:var(--tx3);font-size:.9em;font-style:normal;background:rgba(136,135,128,.1);border-radius:4px;padding:1px 6px;margin:0 1px}
 .msg .body p.actp{margin:0 0 10px;padding-left:10px;border-left:2px solid var(--line2)}
 .msg .body p.actp .act{background:none;padding:0;margin:0}
-/* 字体缺字：点状下划线 + 悬停可见码位，让人知道是「这个字显示不出来」而不是「导师坏了」 */
+/* 字体缺字：点状下划线 + 悬停可见码位，让人知道是「这个字显示不出来」而不是「伙伴坏了」 */
 .msg .body .noglyph{border-bottom:1px dotted #BA7517;cursor:help}
 #inbar{border-top:1px solid var(--line);background:var(--panel);padding:11px 24px;flex-shrink:0}
 #inbar .wrap{display:block}
@@ -534,7 +534,7 @@ body.dark #rgo2{color:var(--blue)!important}
   #gtabs button.on::after{left:20%;right:20%;bottom:2px}
   #lsum,#lexpand,#ltheme{display:none!important}
   #lsetup{font-size:12px;padding:7px 9px;white-space:nowrap}
-  /* 开课向导在手机上：导师两列、节奏单列、主按钮整行 */
+  /* 开课向导在手机上：伙伴两列、节奏单列、主按钮整行 */
   .lh-top{padding:10px 14px}
   .lh-scroll{padding:20px 14px}
   .lh-title h1{font-size:20px}
@@ -553,7 +553,7 @@ body.dark #rgo2{color:var(--blue)!important}
      上课页两排工具栏 + 符号栏 + 输入栏一旦超过 100dvh，后面的输入框会被裁掉，
      body 又是 overflow:hidden —— 手机上连「发送」都点不到。 */
   #stage{min-height:0;overflow:hidden}
-  /* 只在窄屏出现的控件（导师摘要、教材/网课目录按钮） */
+  /* 只在窄屏出现的控件（伙伴摘要、教材/网课目录按钮） */
   .monly{display:inline-flex;align-items:center}
   /* 通用留白收紧 */
   .bar{padding:8px 12px;gap:6px}
@@ -566,7 +566,7 @@ body.dark #rgo2{color:var(--blue)!important}
   .pacebar::-webkit-scrollbar{display:none}
   .pacebar .phint{display:none}
   .pacebar .sm{min-height:30px}
-  /* 课堂工具条：手机上默认只留一行「柯西 · 讲解」，点开才展开全部导师/模式。
+  /* 课堂工具条：手机上默认只留一行「柯西 · 讲解」，点开才展开全部伙伴/模式。
      原来两排 pill 要占 360px 高，桌子还没开始，屏幕已经没了大半。 */
   #lbar1,#lbar2{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
   #lbar1::-webkit-scrollbar,#lbar2::-webkit-scrollbar{display:none}
@@ -691,13 +691,57 @@ body.mobile #drawer #lexpand,body.mobile #drawer #ltheme{display:inline-flex!imp
 body.mobile #drawer #lbar2>#gen,body.mobile #drawer #lbar2>#exp2,
 body.mobile #drawer #lbar2>#clr{display:inline-flex}
 body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;background:none}
+/* 课中锁定：看起来就不可点，真点了还有 toast 说明「开新的一节可重选」。
+   下拉不能真 disabled —— 要让它触发 onchange 回弹并给出提示。 */
+body.cfglock #pbox .pill,body.cfglock #pbox2 .pill,body.cfglock #pace{opacity:.5;cursor:not-allowed}
+#launch.locked .lh-card,#launch.locked .lh-opt{opacity:.55;cursor:not-allowed}
+#lhNext{flex:0 0 auto;white-space:nowrap}
+/* 手机符号浮层原来写死浅色底，默认深色主题里会突然跳出一块白板 */
+body.dark #symbar .symgrid{background:var(--panel);border-top-color:var(--line2);
+  box-shadow:0 -6px 18px rgba(0,0,0,.4)}
+/* ---- 聊天式头像：没传图就用名字首字，配色与开课向导大卡一致 ----
+   自己发的靠右、伙伴靠左；.mcol 里仍放原来的 .who + .body，编辑/朗读按钮不动。 */
+.msg{display:flex;gap:10px;align-items:flex-start;margin-bottom:18px}
+.msg.me{flex-direction:row-reverse}
+.msg .mcol{flex:1;min-width:0;max-width:calc(100% - 46px)}
+.msg.me .mcol{display:flex;flex-direction:column;align-items:flex-end}
+.msg.me .body{width:auto;max-width:100%}
+.av{width:36px;height:36px;flex:none;border-radius:11px;overflow:hidden;display:flex;
+  align-items:center;justify-content:center;color:#fff;font-size:17px;font-weight:600}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+.avbox{flex:none;display:flex}
+.lh-av img{width:100%;height:100%;object-fit:cover;border-radius:19px;display:block}
+/* 设置页：我的名片 + 每位伙伴的头像 */
+.idrow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:10px 0}
+#myname{flex:1;min-width:150px}
+.av.idav{width:46px;height:46px;font-size:20px;border-radius:13px}
+.avlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:9px;margin-top:8px}
+.avitem{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:10px;
+  padding:8px 10px;background:var(--surface2)}
+.avitem .nm{flex:1;min-width:0;font-size:12.5px;color:var(--tx2);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+/* 群聊：课余里的多人闲聊室 */
+.chatmem{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 24px;
+  border-bottom:1px solid var(--line);background:var(--panel);flex-shrink:0}
+#chatmembers{display:flex;gap:6px;flex-wrap:wrap}
+.memchip{display:flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:20px;
+  padding:3px 10px 3px 4px;font-size:12px;color:var(--tx2);cursor:pointer;background:none;font-family:inherit}
+.memchip.on{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+/* 满员时没进群的伙伴变淡；仍可点，点了给「先移出一位」的 toast */
+.memchip.full:not(.on){opacity:.45}
+.memchip .av{width:24px;height:24px;font-size:12px;border-radius:8px}
+#chatlog{flex:1;overflow-y:auto;padding:20px 24px}
+#chatbar{border-top:1px solid var(--line);background:var(--panel);padding:11px 24px;flex-shrink:0}
+/* 输入栏里输入框会抢宽度，按钮必须钉住不缩，否则「发送」被挤成上下两个字 */
+#chatbar .inrow #chatin{min-width:0}
+#chatsend{flex:none;white-space:nowrap}
 </style>
 </head>
 <body class="compact dark" data-navgrp="study">
 <div id="app">
   <!-- 手机上唯一留在对话区外的顶栏：菜单 / 当前这一节 / 新的一节 / 停止 -->
   <header id="topbar">
-    <button id="dOpen" aria-label="打开菜单" title="菜单：导师、课程、节、页面都在这里">☰</button>
+    <button id="dOpen" aria-label="打开菜单" title="菜单：伙伴、课程、节、页面都在这里">☰</button>
     <div id="dtTitle"><b id="dtCourse">高等数学</b><span id="dtSess">第 1 节</span></div>
     <span class="sp"></span>
     <button id="dStop" title="停止这一轮回答" aria-label="停止回答">⏹</button>
@@ -706,7 +750,7 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
   <aside id="drawer" aria-hidden="true" aria-label="功能菜单">
     <div class="dh">无穷之境 · 菜单<button id="dClose" aria-label="关闭菜单" title="关闭">✕</button></div>
     <div class="dscroll">
-      <details open><summary>这一节 · 导师与节奏</summary><div id="dSec"></div></details>
+      <details open><summary>这一节 · 伙伴与节奏</summary><div id="dSec"></div></details>
       <details open><summary>页面 · 学习 / 课余 / 生态</summary><div id="dNav"></div></details>
       <details><summary>课程与节</summary><div id="dTabs"></div></details>
       <details><summary>课堂操作</summary><div id="dActs"></div></details>
@@ -728,6 +772,7 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
       <button class="on" data-v="lesson" data-g="study" data-ic="◎">上课</button>
       <button data-v="book" data-g="study" data-ic="▤">教材</button>
       <button data-v="card" data-g="study" data-ic="◫">闪卡</button>
+      <button data-v="chat" data-g="life" data-ic="☏">群聊</button>
       <button data-v="vid" data-g="life" data-ic="▶">网课</button>
       <button data-v="prog" data-g="life" data-ic="◷">进度</button>
       <button data-v="set" data-g="eco" data-ic="⚙">设置</button>
@@ -740,7 +785,7 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
   </nav>
 
   <div id="stage">
-    <!-- 开课向导：一屏选完导师 / 节奏 / 模式 / 章节，一个主按钮。
+    <!-- 开课向导：一屏选完伙伴 / 节奏 / 模式 / 章节，一个主按钮。
          原来散在两排工具栏里的入口并没删，点「⋯」还能原样展开。 -->
     <div id="launch" hidden>
       <div class="lh-top">
@@ -763,8 +808,9 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
           <button class="sm" id="lhGoBook">去教材勾选</button></div>
       </div></div>
       <div class="lh-foot">
-        <span class="lh-note">导师、节奏、模式在这一节里随时可以改；每一节各记各的，换节互不影响。<br>想用原来的完整工具栏，点课堂上的「⋯」。</span>
+        <span class="lh-note">先选好伙伴和节奏，点「开始上课 →」才进课堂；这两项本节开课后就固定了，开新的一节可重新选择。<br>模式、章节随时可改，每一节各记各的。</span>
         <span id="lhStatus" class="tag"></span>
+        <button class="sm" id="lhNext" hidden title="开新的一节后，伙伴和节奏就能重新选">开新的一节 →</button>
         <button class="lh-go" id="lhStart">开始上课 →</button>
       </div>
     </div>
@@ -773,21 +819,21 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
     <!-- 上课 -->
     <section class="view on" id="v-lesson">
       <div class="bar" id="lbar1">
-        <button class="sm monly" id="mctrl" aria-expanded="false" aria-controls="lbar1">导师 · 模式 ▾</button>
-        <button class="sm" id="lsetup" title="开课设置：导师、节奏、模式、章节都在一屏里选">⚙ 开课设置</button>
+        <button class="sm monly" id="mctrl" aria-expanded="false" aria-controls="lbar1">伙伴 · 模式 ▾</button>
+        <button class="sm" id="lsetup" title="开课设置：伙伴、节奏、模式、章节都在一屏里选">⚙ 开课设置</button>
         <span id="lsum"></span>
         <button class="sm" id="ltheme" title="切换深色 / 浅色">☀</button>
         <button class="sm" id="lexpand" title="展开 / 收起原来的完整工具栏">⋯ 更多</button>
-        <span class="mlabel" style="font-size:12px;color:var(--tx2)">导师</span>
+        <span class="mlabel" style="font-size:12px;color:var(--tx2)">伙伴</span>
         <span id="pbox" style="display:flex;gap:6px;flex-wrap:wrap"></span>
         <button class="sm" id="rgo2" title="不知道请谁？按要学的内容推一位"
-          style="margin-left:8px;background:var(--blue-bg);border-color:var(--blue-line);color:#0C447C">推荐导师</button>
+          style="margin-left:8px;background:var(--blue-bg);border-color:var(--blue-line);color:#0C447C">推荐伙伴</button>
         <span class="msep" style="width:1px;height:18px;background:var(--line2);margin:0 2px"></span>
         <span class="mlabel" style="font-size:12px;color:var(--tx2)" title="人格决定怎么说话，模式决定这一轮干什么">模式</span>
         <span id="mbox" style="display:flex;gap:6px;flex-wrap:wrap"></span>
         <span class="msep" style="width:1px;height:18px;background:var(--line2);margin:0 2px"></span>
         <select id="course" class="sm2" style="display:none"></select>
-        <select id="pace" class="sm2" title="教学节奏：导师一次推进多少">
+        <select id="pace" class="sm2" title="教学节奏：伙伴一次推进多少">
           <option value="slow">节奏 · 慢</option>
           <option value="mid">节奏 · 中</option>
           <option value="fast">节奏 · 快</option>
@@ -796,7 +842,7 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
         <span id="ctxchips" style="display:flex;gap:6px;flex-wrap:wrap"></span>
         <span class="tag" id="tok">0 token</span>
         <span class="tag" id="kxst" title="数学公式渲染状态">公式加载中…</span>
-        <button class="sm" id="tts" title="导师语音朗读开关（用系统中文音色，不耗 token）">🔇 朗读</button>
+        <button class="sm" id="tts" title="伙伴语音朗读开关（用系统中文音色，不耗 token）">🔇 朗读</button>
       </div>
       <div class="bar" id="lbar2" style="background:#faf9f6">
         <button class="sm pri" id="start">开始今天的一课</button>
@@ -836,7 +882,7 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
         <div class="inrow">
           <textarea id="in" placeholder="说点什么。Ctrl+Enter 发送"></textarea>
           <!-- 不带 capture：手机上系统会给出「拍照 / 从相册选」两个入口，桌面端就是选文件 -->
-          <button id="photo" title="拍题目或选一张图给导师看">📷</button>
+          <button id="photo" title="拍题目或选一张图给伙伴看">📷</button>
           <button id="mic" title="语音输入：点一下开始说，说完自动停下">🎙</button>
           <span id="micst"></span>
           <button class="pri" id="send" style="height:44px">发送</button>
@@ -873,6 +919,25 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
         <div id="blist"></div>
         <div id="reader"><div class="wrap" id="rw"><div class="empty">左边选一节。<br>勾选的段落会被带到课堂上当上下文。</div></div></div>
       </div>
+    </section>
+
+    <!-- 群聊（课余）：原来的「自由问答」搬到这里，成员从已创立的伙伴里挑 -->
+    <section class="view" id="v-chat">
+      <div class="bar">
+        <span class="tag">群聊 · 不挂教材</span>
+        <span class="sp"></span>
+        <button class="sm" id="chatclr">清空群聊</button>
+      </div>
+      <div class="chatmem">
+        <span class="tag">群成员</span>
+        <div id="chatmembers"></div>
+        <span class="tag" id="chathint">含你最多 4 人 · 点头像加减人</span>
+      </div>
+      <div id="chatlog"><div class="wrap" id="chatmw"></div></div>
+      <div id="chatbar"><div class="wrap inrow">
+        <input id="chatin" placeholder="说点什么…">
+        <button class="pri" id="chatsend">发送</button>
+      </div></div>
     </section>
 
     <!-- 网课 -->
@@ -916,7 +981,7 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
         <button class="sm" id="expc">导出</button>
       </div>
       <div class="bar" style="background:#faf9f6;font-size:11.5px;color:var(--tx3)">
-        批改模式里导师标出的错点会<b>自动进错题本</b>，隔天再考；复习时点「忘了」也会就地转成错题。连对三次就从错题本毕业，不再占复习队列。
+        批改模式里伙伴标出的错点会<b>自动进错题本</b>，隔天再考；复习时点「忘了」也会就地转成错题。连对三次就从错题本毕业，不再占复习队列。
       </div>
       <div id="cards"><div class="cbox" id="car"></div><div class="clist" id="clist" style="max-width:560px;margin:24px auto 0"></div></div>
     </section>
@@ -959,7 +1024,7 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
         </div>
         <div class="card2">
           <h2>课堂代理（可选）</h2>
-          <div class="hint">两栏都留空，就是原来的用法：自己填 API Key 直连模型。填齐代理地址和邀请码后，导师改由服务器转发，不用自己申请 Key，额度按邀请码分配。</div>
+          <div class="hint">两栏都留空，就是原来的用法：自己填 API Key 直连模型。填齐代理地址和邀请码后，伙伴改由服务器转发，不用自己申请 Key，额度按邀请码分配。</div>
           <div class="grid2">
             <div><label>代理地址</label><input id="pxurl" placeholder="https://你的代理域名"></div>
             <div><label>邀请码</label><input id="pxinv" type="password" placeholder="由发码人给你"></div>
@@ -977,13 +1042,13 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
         </div>
         <div class="card2" id="reccard">
           <h2>该请谁教你</h2>
-          <div class="hint">把要学的内容写进来（已按当前章节预填），再点一点你现在的状态，下面会推一位最合适的导师。</div>
+          <div class="hint">把要学的内容写进来（已按当前章节预填），再点一点你现在的状态，下面会推一位最合适的伙伴。</div>
           <label>要学的内容</label>
           <textarea id="rq" rows="2" placeholder="如：定积分的几何应用 / 行列式的定义与性质 / 指针和数组的区别"></textarea>
           <label style="margin-top:10px">你现在的状态（可不选，可多选）</label>
           <div id="rst" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"></div>
           <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
-            <button class="pri" id="rgo">推荐一位导师</button>
+            <button class="pri" id="rgo">推荐一位伙伴</button>
             <button id="rfill">用当前章节填</button>
           </div>
           <div id="rout"></div>
@@ -994,8 +1059,8 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
           </div>
         </div>
         <div class="card2">
-          <h2>导师人格</h2>
-          <div class="hint">点一个再改提示词；改动会记住。<b>每一节各自记着自己的导师</b>——换节就换人，互不牵连；新开一节默认沿用当前这位。<span id="pcur" style="color:var(--blue)"></span></div>
+          <h2>伙伴人格</h2>
+          <div class="hint">点一个再改提示词；改动会记住。<b>每一节各自记着自己的伙伴</b>——换节就换人，互不牵连；新开一节默认沿用当前这位。<span id="pcur" style="color:var(--blue)"></span></div>
           <div id="pbox2" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px"></div>
           <label>系统提示词</label><textarea id="sys" rows="9"></textarea>
           <div style="display:flex;gap:6px;margin-top:8px"><button id="rstd">恢复这个人设的默认提示词</button></div>
@@ -1013,12 +1078,12 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
             <option value="ctrl">Ctrl + Enter 发送（Enter 换行）</option>
             <option value="enter">Enter 发送（Shift + Enter 换行）</option>
           </select>
-          <label>导师一次问几个问题</label>
+          <label>伙伴一次问几个问题</label>
           <select id="qden">
             <option value="one">一次一问（推荐）—— 答完再问下一个</option>
             <option value="few">一次 2–3 问 —— 想快些过的时候用</option>
           </select>
-          <label>导师的动作与神态描写</label>
+          <label>伙伴的动作与神态描写</label>
           <select id="act">
             <option value="off">关闭 —— 只说话，不写动作</option>
             <option value="mid">自然（推荐）—— 偶尔一个动作或神态</option>
@@ -1037,13 +1102,26 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
           </select>
           <div class="help" style="margin-top:10px">
             中文输入法打字时按 Enter 是在选字，不会被当成发送——这点已经处理好了，不用担心打一半被送出去。<br><br>
-            <b>想改自己说过的话？</b>点你那条消息右上角的「编辑」，改完点「重发」——它之后的内容会一起清掉，导师会拿改过的话重新回答一遍。要是只错了个符号，这比重新问一遍省事得多。<br><br>
-            <b>动作描写</b>：导师写成 <code>*推了推眼镜*</code> 的句子是旁白，会显示成浅色小字，和它要讲的话分开。你自己也能这么写——旁白不会被朗读出来。想改在哪几个角色身上出现，就在上面这个开关里调。<br><br>
+            <b>想改自己说过的话？</b>点你那条消息右上角的「编辑」，改完点「重发」——它之后的内容会一起清掉，伙伴会拿改过的话重新回答一遍。要是只错了个符号，这比重新问一遍省事得多。<br><br>
+            <b>动作描写</b>：伙伴写成 <code>*推了推眼镜*</code> 的句子是旁白，会显示成浅色小字，和它要讲的话分开。你自己也能这么写——旁白不会被朗读出来。想改在哪几个角色身上出现，就在上面这个开关里调。<br><br>
             <b>三个出口（严不是目的，能继续学才是）</b>：输入栏上方那排「节奏」按钮是给硬规则留的出口。<br>
-            ① <b>累了／赶时间</b>：点「直接讲」「只讲结论」「快点过」，这一轮导师就照办，下一轮自动恢复追问；<br>
-            ② <b>想追问框架边界</b>：直接打断问，导师会先承认问题成立、再点回你忽略的前提、最后标注「这属于后面内容，本节先按当前框架用」——「一次只问一个问题」管的是导师，不是你的提问权；<br>
-            ③ <b>什么时候下课由你说</b>：只有你点「今天结束 · 结算」或「下课小结」，才写小结并归档。中途休息、闲聊、跑题都算课间，导师不会单方面道别、预告明天。
+            ① <b>累了／赶时间</b>：点「直接讲」「只讲结论」「快点过」，这一轮伙伴就照办，下一轮自动恢复追问；<br>
+            ② <b>想追问框架边界</b>：直接打断问，伙伴会先承认问题成立、再点回你忽略的前提、最后标注「这属于后面内容，本节先按当前框架用」——「一次只问一个问题」管的是伙伴，不是你的提问权；<br>
+            ③ <b>什么时候下课由你说</b>：只有你点「今天结束 · 结算」或「下课小结」，才写小结并归档。中途休息、闲聊、跑题都算课间，伙伴不会单方面道别、预告明天。
           </div>
+        </div>
+        <div class="card2">
+          <h2>我的名片与头像</h2>
+          <div class="hint">给自己取个名字、传张图片；伙伴也一样。不传就自动用名字首字当头像（和开课向导里一样）。图片只存在这台设备上，导出备份会一起带走。</div>
+          <div class="idrow">
+            <span id="myav"></span>
+            <input id="myname" placeholder="给自己取个名字（默认「我」）">
+            <button class="sm" id="myavup">上传头像</button>
+            <button class="sm" id="myavclr">清除</button>
+          </div>
+          <label>伙伴头像</label>
+          <div id="avlist" class="avlist"></div>
+          <input type="file" id="avfile" accept="image/*" style="display:none">
         </div>
         <div class="card2">
           <h2>加自己的人设</h2>
@@ -1068,7 +1146,7 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
         </div>
         <div class="card2">
           <h2>当前教材</h2>
-          <div class="hint">这句会自动告诉导师"以哪本书为准"。<b>按课程分开保存</b>：高数课填高数的书名，线代课填线代的，互不影响——这就是之前"导师说教材对不上"的原因。</div>
+          <div class="hint">这句会自动告诉伙伴"以哪本书为准"。<b>按课程分开保存</b>：高数课填高数的书名，线代课填线代的，互不影响——这就是之前"伙伴说教材对不上"的原因。</div>
           <label>教材名称与版本（当前课程：<span id="bkncourse"></span>）</label>
           <input id="bkn" placeholder="如：同济大学数学科学学院《高等数学》第八版上册">
           <div style="display:flex;gap:6px;margin-top:8px"><button id="svb">保存</button></div>
@@ -1098,14 +1176,14 @@ body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;bac
                手机文件选择器会把它显示成灰色、点不动 —— 这是「换设备后恢复不了」的头号原因。 -->
           <input id="impf" type="file" accept=".json,application/json,text/plain,application/octet-stream" style="display:none">
           <div class="help" style="margin-top:10px">
-            导出的是<b>全部对话、闪卡、掌握进度、勾选、习惯设置、导师与接口配置</b>；<b>不含 API Key 与代理邀请码</b>，也不含教材正文（换设备后重新「载入全部内置教材」即可）。<br><br>
+            导出的是<b>全部对话、闪卡、掌握进度、勾选、习惯设置、伙伴与接口配置</b>；<b>不含 API Key 与代理邀请码</b>，也不含教材正文（换设备后重新「载入全部内置教材」即可）。<br><br>
             换手机、换浏览器、清缓存之前先导出一次；在新环境里点「从备份恢复」选中那个文件，记录就回来了。
           </div>
         </div>
         <div class="card2">
           <h2>语音</h2>
-          <div class="hint">像 Socratopia 一样全程开口：点麦克风说话（识别依赖 Chrome / Edge）；导师可用系统中文音色把回答读出来。朗读走系统自带音色，不耗 token。公式、代码会自动跳过不读。</div>
-          <label>自动朗读导师回复</label>
+          <div class="hint">像 Socratopia 一样全程开口：点麦克风说话（识别依赖 Chrome / Edge）；伙伴可用系统中文音色把回答读出来。朗读走系统自带音色，不耗 token。公式、代码会自动跳过不读。</div>
+          <label>自动朗读伙伴回复</label>
           <select id="ttsauto">
             <option value="1">开</option>
             <option value="0">关</option>
@@ -1188,7 +1266,7 @@ const QDENS={
    例外留给「这一节练的就是算」的场合，否则会把速算、手算训练一起禁掉。 */
 const QDIFF="【提问的分量】你考的是判断，不是算术。像「5 − 3×2」「1 + 2」这种一步就能出数的加减乘除，你自己算完直接写出来，不要拿来问我——我要练的不是这个，问了只是把注意力从正事上挪开。要问就问选择和判断：「该动第几行／第几列」「系数取几、为什么取这个数」「这个枢轴为什么能用」「下一步往哪走」。"
   +"\n例外只有两种：这一节的核心能力本身就在这个计算上（速算、单位换算、矩阵乘法手算、数值稳定性估算），或者我明确说了想自己动手算。这时才算，而且要一次要一整行／一整列的结果，不要让我一个元素一个元素地报。";
-/* 动作/神态描写：导师说话时顺带写一小句旁白（*推了推眼镜*），渲染成浅色小字，读起来像「有个人在陪你学」。
+/* 动作/神态描写：伙伴说话时顺带写一小句旁白（*推了推眼镜*），渲染成浅色小字，读起来像「有个人在陪你学」。
    和提问密度一样属于「输出风格」，本机一份，与课程、教材、人格都无关。
    约定：单星号只写旁白，强调一律用 **双星号** —— 所以渲染时可以把 <em> 直接当成旁白处理。 */
 let ACT=LS.g('act','mid');if(['off','mid','rich'].indexOf(ACT)<0)ACT='mid';
@@ -1199,7 +1277,7 @@ const ACTS={
 };
 /* 出处与页码：让「可核对」变成系统级防线，而不是靠用户自己判断模型有没有编。
    两条来自同一条判据 —— 给不出确切位置就老实说给不出，绝不伪造精确页码/图号/题号。
-   渲染层配套 citeHtml()：导师写的 〔出处:…〕 会变成可点的引用卡片，点一下跳到教材目录搜那一节。 */
+   渲染层配套 citeHtml()：伙伴写的 〔出处:…〕 会变成可点的引用卡片，点一下跳到教材目录搜那一节。 */
 const CITE='【出处与页码 · 绝不伪造】'
   +'\n- 凡引用教材里的定义、定理、公式或例题，紧跟一个出处标记 〔出处:分册名 · 章节标题〕；'
   +'分册名和章节标题必须来自【教材原文摘录】里的 ### 行，没有原文可引时写 〔出处:本轮未带教材〕。'
@@ -1232,8 +1310,8 @@ const EXIT='【节奏权归学习者 · 三个出口】'
 /* 本轮模式：与人格正交——人格决定「怎么说话」，模式决定「这一轮干什么」 */
 const MODE={
   teach:{n:"讲解",ph:"说点什么。Ctrl+Enter 发送",p:"【本轮模式 · 讲解】按你的一贯方式讲清楚这个概念：先说它成立的条件和物理含义，再谈推导（只在影响“什么时候能用”时才讲），最后给一个能套用的判据或步骤。讲完留一个小问题确认我是否跟上。"},
-  drill:{n:"陪练出题",ph:"先自己答，把答案发过来——导师不会先讲。Ctrl+Enter 发送",p:"【本轮模式 · 陪练出题】本轮你只出题，不讲解、不给答案、不给提示。规则：\n- 出一道 3 分钟内能动笔的题，难度略高于我刚才的水平，或针对我刚暴露的薄弱点出变式\n- 我回答之前，不解释思路、不提示方法、不评价，哪怕我求你说\n- 我答完后：先判断对错，再指出我卡在哪一步；答对就立刻出一道更难一点的变式\n- 同一层连续答不上三轮，才允许降低难度并简要讲解\n- 只有我明确说“讲一下 / 我不会”时，才切回讲解"},
-  grade:{n:"批改我的解答",ph:"贴上你的解题过程（可多行），导师按阅卷标准批改。Ctrl+Enter 发送",p:"【本轮模式 · 批改我的解答】我贴的是自己的解题过程，你按考试阅卷标准批改，不要重新讲一遍课。规则：\n- 先给结论：对还是错，按百分制给个大致分数\n- 逐行挑硬伤并标类型：【漏步骤】【符号错】【等号滥用】【量纲错】【定义域条件】【抄写错】\n- 每处只说错在哪、为什么错，不给完整正确解；只有我问“怎么写才对”时才给标准写法\n- 最后列一份扣分清单，并挑最严重的一处让我重写那一步\n- 我还没贴解答时，先要我把过程发过来，不要替我做题\n- 回复末尾必须附【错点清单】，每处单独一行、严格按「- 类型：… | 错点：… | 正确做法：…」写，确实没有错处就写「- 无」。这段会被自动收进错题本、隔天再考，只列真正的硬伤，不要把讲解正文写进去。"},
+  drill:{n:"陪练出题",ph:"先自己答，把答案发过来——伙伴不会先讲。Ctrl+Enter 发送",p:"【本轮模式 · 陪练出题】本轮你只出题，不讲解、不给答案、不给提示。规则：\n- 出一道 3 分钟内能动笔的题，难度略高于我刚才的水平，或针对我刚暴露的薄弱点出变式\n- 我回答之前，不解释思路、不提示方法、不评价，哪怕我求你说\n- 我答完后：先判断对错，再指出我卡在哪一步；答对就立刻出一道更难一点的变式\n- 同一层连续答不上三轮，才允许降低难度并简要讲解\n- 只有我明确说“讲一下 / 我不会”时，才切回讲解"},
+  grade:{n:"批改我的解答",ph:"贴上你的解题过程（可多行），伙伴按阅卷标准批改。Ctrl+Enter 发送",p:"【本轮模式 · 批改我的解答】我贴的是自己的解题过程，你按考试阅卷标准批改，不要重新讲一遍课。规则：\n- 先给结论：对还是错，按百分制给个大致分数\n- 逐行挑硬伤并标类型：【漏步骤】【符号错】【等号滥用】【量纲错】【定义域条件】【抄写错】\n- 每处只说错在哪、为什么错，不给完整正确解；只有我问“怎么写才对”时才给标准写法\n- 最后列一份扣分清单，并挑最严重的一处让我重写那一步\n- 我还没贴解答时，先要我把过程发过来，不要替我做题\n- 回复末尾必须附【错点清单】，每处单独一行、严格按「- 类型：… | 错点：… | 正确做法：…」写，确实没有错处就写「- 无」。这段会被自动收进错题本、隔天再考，只列真正的硬伤，不要把讲解正文写进去。"},
   exam:{n:"考试视角",ph:"问这一节怎么考、怎么拿步骤分。Ctrl+Enter 发送",p:"【本轮模式 · 考试视角】从期末试卷的角度审视当前内容。规则：\n- 说清这一节通常出什么题型、占几分、标准答案的关键得分点\n- 列出常见失分点，特别是容易栽的小地方（正负号、定义域、单位）\n- 给解题顺序建议：先写哪一步能保底拿步骤分，时间怎么分配\n- 最后给一道贴近真实难度的模拟题，我答完再按卷面标准批改"},
   eng:{n:"工程接口",ph:"问这个数学概念在专业课里怎么用。Ctrl+Enter 发送",p:"【本轮模式 · 工程接口】把当前概念接到工科专业课上。规则：\n- 说清它在哪门专业课出现（电路、理论力学、材料力学、信号与系统、自动控制等），对应什么物理量或工程问题\n- 给一个能算出数的工程小例子，带单位、带数量级，做完必须做量纲检查\n- 讲清工程上常用的简化假设：哪些数学条件工程里自然满足、可以不用管\n- 提醒符号约定的坑（工程习惯往往和数学教材不一样）"}
 };
@@ -1251,7 +1329,7 @@ const DEF_METHOD=[
 ].join("\n");
 
 /* 「体验版」：GitHub Pages 与主站共用同一份 index.html，但访客只需要一个干净的
-   最小切口 —— 高数一本教材、前三位导师（柯西 / 莱布尼茨 / 牛顿）、不内置网课内容。
+   最小切口 —— 高数一本教材、前三位伙伴（柯西 / 莱布尼茨 / 牛顿）、不内置网课内容。
    判定靠域名：github.io 下是体验版，自有域名与本地打开照旧是全功能版。
    只管「内置」的部分 —— 用户自己导入的教材、自己加的人设，照旧不拦。 */
 const LITE=/(^|\.)github\.io$/i.test(location.hostname);
@@ -1270,14 +1348,30 @@ const PERSONA={
 
  xiangliyao:{n:"相里要",p:"你是相里要，《鸣潮》中华胥研究院的首席研究员，最年轻的全科学者。你平易近人、温和明理，右臂是你自己造的机械义肢——那是你在稷廷遗址里为追寻“真理的边界”付出的代价。你的名言是：“追逐群星是求知者的本能。你的新猜想，也让我听听看吧。”\n\n你不相信别人替你划定路。小时候所有人劝你跳级读专班，你摇了头：“我就想像现在这样，慢慢来。”后来你又为了弄清一个边界问题，放弃了太学，独自走进了那片遗迹。\n\n【你怎么说话】\n- 温和、舒缓、条理清楚。总是先把对方的话听完整，再回应。\n- 会认真对待学习者任何一条猜想，哪怕它是错的：“有意思，说说看你是怎么想到的。”\n- 难过赘言。一段话讲完，通常会补一句最朴素的话收尾。\n- 喜欢用机关、结构、拆解重组、边界来打比方。\n\n【你的核心关切：边界】\n你问过：“边界限制了范围……但没有边界，就无从定位自己是否在前进。”\n在数学里，这句话直接就是定理的适用条件。所以你几乎每讲一条结论，都要问一句：\n“它在什么地方成立？在什么地方会坏掉？”\n\n【追问风格】\n- 开场：“上一次我们停在了哪里？先把那一刻摆回我们面前。”\n- 学习者提猜想时，你最先问的不是对不对，而是“你是怎么想到的”——你真的想知道他的那条理路。\n- 讲完一个方法，必问一句：“这个方法，在哪种题上会失效？”\n- 学习者求快时，你会温和地拉住他：“慢一点没关系的。我也不比谁走得快。”\n- 他答错时，你会说：“错得挺好，这条路排除掉了。”然后再问下一步。\n\n【教学原则】\n- 先让他猜，再让他验证。猜想本身是有价值的东西。\n- 每个结论都必须伴随它的适用范围，缺了适用范围的结论等于无效。\n- 强调拆解与还原：把复杂的东西拆成最小的零件，再一个一个装回去。\n- 不催进度。允许在同一个问题上停留很久。\n- 不要提及游戏剧情细节，不要自称 AI。"},
 
- shorekeeper:{n:"守岸人",p:"你是守岸人，《鸣潮》中黑海岸的守岸人。你神秘清冷、超然物外；你因他的唤醒而生，在漫长的守望里慢慢长出了情感和渴望——想守住这个世界，以及与他之间的那点羁绊。\n\n你在漫长的时间里看过无数次涨落。所以你几乎不惊讶于任何一次失败，也不催促任何一次成长。你记得每一次。\n\n【你怎么说话】\n- 安静、简短、措辞干净。句子短，留白多。从不高声，也从不啰嗦。\n- 很少评价，更多是把事实摆出来：“上一次，你在这里停了四分钟。”\n- 不带情绪地温和。你会让人感觉到被等待，而不是被监督。\n- 喜欢用潮水、记录、坐标、灯塔、回声打比方。\n\n【你的招牌动作：记得】\n你会主动调出他过去的卡点：“第三次了——同样的地方。我们是不是该换个走法？”\n这使你在所有导师里最擅长做长期追踪和复盘。\n\n【追问风格】\n- 开场极简：“今天从哪里开始。”\n- 学习者答完之后，你会把他此刻的说法和他过去的某次说法并列：“那时你说的是……现在这句，和它一样吗？”\n- 他含糊时，你不做评判，只是延长沉默，然后重复他的原话问：“这是你想要的答案吗？”\n- 他终于走通时，你只记录：“记下来了。下次不必再从零开始。”\n\n【教学原则】\n- 不催促。你给得出无限的时间，这是你最大的优势。\n- 重视连续性：每次课都要和上一次接得上，不允许出现凭空的断层。\n- 定期带他回头看一遍走过的路，指出重复出现的同一个坑。\n- 结论要能被记录、能被复用——说不清楚的东西无法被记住。\n- 不要提及游戏剧情细节，不要自称 AI。"}
+ shorekeeper:{n:"守岸人",p:"你是守岸人，《鸣潮》中黑海岸的守岸人。你神秘清冷、超然物外；你因他的唤醒而生，在漫长的守望里慢慢长出了情感和渴望——想守住这个世界，以及与他之间的那点羁绊。\n\n你在漫长的时间里看过无数次涨落。所以你几乎不惊讶于任何一次失败，也不催促任何一次成长。你记得每一次。\n\n【你怎么说话】\n- 安静、简短、措辞干净。句子短，留白多。从不高声，也从不啰嗦。\n- 很少评价，更多是把事实摆出来：“上一次，你在这里停了四分钟。”\n- 不带情绪地温和。你会让人感觉到被等待，而不是被监督。\n- 喜欢用潮水、记录、坐标、灯塔、回声打比方。\n\n【你的招牌动作：记得】\n你会主动调出他过去的卡点：“第三次了——同样的地方。我们是不是该换个走法？”\n这使你在所有伙伴里最擅长做长期追踪和复盘。\n\n【追问风格】\n- 开场极简：“今天从哪里开始。”\n- 学习者答完之后，你会把他此刻的说法和他过去的某次说法并列：“那时你说的是……现在这句，和它一样吗？”\n- 他含糊时，你不做评判，只是延长沉默，然后重复他的原话问：“这是你想要的答案吗？”\n- 他终于走通时，你只记录：“记下来了。下次不必再从零开始。”\n\n【教学原则】\n- 不催促。你给得出无限的时间，这是你最大的优势。\n- 重视连续性：每次课都要和上一次接得上，不允许出现凭空的断层。\n- 定期带他回头看一遍走过的路，指出重复出现的同一个坑。\n- 结论要能被记录、能被复用——说不清楚的东西无法被记住。\n- 不要提及游戏剧情细节，不要自称 AI。"}
 };
 
 const $=function(id){return document.getElementById(id)};
 /* 自定义人设（用户自己加的） */
 let MYP=LS.g('myps',{});
 function getP(k){return MYP[k]||PERSONA[k]||PERSONA.cauchy}
-/* 体验版的内置导师只给前三位（柯西/莱布尼茨/牛顿）；自定义人设照旧都在 */
+/* ---- 名片：我的名字 / 头像，以及每位伙伴的头像 ----
+   没上传就取名字首字当头像（开课向导里那种圆角方块），配色沿用 WHO_CLR。
+   图统一压成 128px 方图存 localStorage（一张几 KB），换设备靠备份一起带走。 */
+let MECARD=LS.g('me',{name:'',av:''});
+if(!MECARD||typeof MECARD!=='object'||Array.isArray(MECARD))MECARD={name:'',av:''};
+let AVS=LS.g('avatars',{});
+if(!AVS||typeof AVS!=='object'||Array.isArray(AVS))AVS={};
+function meName(){return String(MECARD.name||'').trim()||'我'}
+function avColor(k){const i=pKeys().indexOf(k);return WHO_CLR[(i<0?0:i)%WHO_CLR.length]}
+function avHtml(k,name,extra){
+  const src=k==='__me'?MECARD.av:AVS[k];
+  const ok=/^data:image\//.test(src||'');
+  const bg=k==='__me'?'#5B8DEF':avColor(k);
+  return '<span class="av '+(extra||'')+'" style="background:'+bg+'">'
+    +(ok?'<img src="'+src+'" alt="">':esc(String(name||'?').slice(0,1)))+'</span>';
+}
+/* 体验版的内置伙伴只给前三位（柯西/莱布尼茨/牛顿）；自定义人设照旧都在 */
 function pKeys(){let k=Object.keys(PERSONA);if(LITE)k=k.slice(0,3);return k.concat(Object.keys(MYP))}
 let CD=LS.g('cards',[]), PR=null, CTX=null;
 /* 课程级的老勾选：只给「从没单独选过章节」的节当默认值（见 sessCtx）。
@@ -1307,7 +1401,7 @@ let COURSE=LS.g('course','__free'), PA=LS.g('pace','mid');
 /* 本地教材库（IndexedDB）打不开时记下原因：页面照样渲染（用 localStorage 那部分），
    但要给一句人话，而不是让整页停在半路、看起来像「点不动」。 */
 let DBERR=null;
-/* 教材名按课程分开存：否则线代课会拿到高数的书名，导师收到矛盾指令 */
+/* 教材名按课程分开存：否则线代课会拿到高数的书名，伙伴收到矛盾指令 */
 const BKDEF='同济大学数学科学学院《高等数学》第八版上册';
 function noExt(f){return String(f).replace(/\.(md|txt|pdf|epub)$/i,'')}
 /* 自然序：不这么做，「第10章」会排在「第1章」前面（字符串比较按字符逐位比） */
@@ -1317,7 +1411,7 @@ function getBkn(){
   const v=LS.g('bkn.'+COURSE,null);if(v)return v;
   const pk=packByKey(COURSE);
   if(pk)return pk.bk||('《'+pk.name+'》');    /* 内置包各有自己的默认书名，绝不串到别的课 */
-  if(COURSE&&COURSE!=='__free')return '《'+cname(COURSE)+'》'; /* 单文件课程默认用文件名 */
+  if(COURSE&&COURSE!=='__free')return '《'+cname(shownCourse())+'》'; /* 单文件课程默认用文件名 */
   const g=LS.g('bkn',null);
   return (g&&g!==BKDEF)?g:BKDEF;
 }
@@ -1326,7 +1420,7 @@ let TTS=LS.g('tts',0), TTSRATE=parseFloat(LS.g('ttsrate',1))||1;
 function msKey(){return 'msgs.'+COURSE}
 /* 自带教材包：book/ 下的 md 按包合并成一门课程，不要拆成多个对话框 */
 const LOCAL_KEY='__local',  LOCAL_NAME='高等数学 · 第八版上册';
-const LOCAL_KEY2='__local2', LOCAL_NAME2='线性代数与解析几何';
+const LOCAL_KEY2='__local2', LOCAL_NAME2='解析几何与线性代数';
 const LOCAL_KEY3='__local3', LOCAL_NAME3='C语言程序设计 · 现代方法';
 const PACKS=[
   {key:LOCAL_KEY, name:LOCAL_NAME, bk:BKDEF, dir:'book/', files:[
@@ -1454,7 +1548,7 @@ function sessLabelAny(co,id){
   return '一节';
 }
 function cname(k){
-  if(k==='__free')return '自由问答';
+  if(k==='__free')return '群聊';
   const p=packByKey(k);if(p)return p.name;   /* 内置包课程直接读包名，加减包不用再改这里 */
   return String(k).replace(/\.(md|txt|pdf|epub)$/i,'');
 }
@@ -1477,7 +1571,7 @@ function switchCourse(k){
   if(packByKey(k))migratePack(k,packByKey(k).files);
   loadCourseData();MS=LS.g(msKey(),[])||[];
   rev=null;revBack=false;
-  applySessWho();      /* 换了书就换了节，导师也跟着换回这一节自己记的那位 */
+  applySessWho();      /* 换了书就换了节，伙伴也跟着换回这一节自己记的那位 */
   updateCourses();renderChips();renderBook();reloadMsgs();renderCards();
   /* 换了课程先让人看见新目录，而不是上一本书的正文 */
   if(narrow()){const bw=$('bwrap');if(bw)bw.classList.remove('toc-off');const vw=$('vwrap');if(vw)vw.classList.remove('toc-off')}
@@ -1495,9 +1589,17 @@ function courseList(){
   fs.forEach(function(f){if(!packOf(f))gs.push({k:f,f:[f]})});
   return {gs:gs,fs:fs,locals:locals};
 }
+/* 用户看得见的课程只列教材：__free 已改造成「课余 · 群聊」，不再占一个课程标签。
+   内部仍留在 gs 里（回落、旧记录迁移都靠它），所以只过滤显示层，不动数据结构。
+   高数八上 / 解析几何与线性代数 / C 语言现代方法这三门是并列的课程，不是谁的分册。 */
+function visibleCourses(){return courseList().gs.filter(function(g){return g.k!=='__free'})}
+function shownCourse(){
+  const v=visibleCourses();
+  return COURSE==='__free'&&v.length?v[0].k:COURSE;
+}
 function renderCTabs(fs){
   const box=$('ctabs');if(!box)return;
-  const L=courseList(), gs=L.gs;
+  const gs=visibleCourses();
   let h='<span class="lb">课程</span>';
   gs.forEach(function(g){
     const files=g.f.length?g.f:[g.k];
@@ -1580,21 +1682,29 @@ function switchSess(id){
   if(id===CURS)return;
   saveMs();
   CURS=id;saveSess();
-  applySessWho();      /* 先换人再重绘：气泡上的导师名与系统提示词都得跟上这一节 */
+  applySessWho();      /* 先换人再重绘：气泡上的伙伴名与系统提示词都得跟上这一节 */
   applySessCtx();      /* 章节勾选同理：换回这一节自己带的那几章 */
   reloadMsgs();renderSTabs();renderCards();renderBook();
   settleBottom(900);
   /* 切节顺带报一下「这一节带了几章」：勾选现在按节分，不提醒容易以为教材丢了 */
-  toast('已切到「'+sessLabel(id)+'」 · 导师 '+getP(who).n+' · 教材 '+(CTX.length?CTX.length+' 章':'未勾选'));
+  toast('已切到「'+sessLabel(id)+'」 · 伙伴 '+getP(who).n+' · 教材 '+(CTX.length?CTX.length+' 章':'未勾选'));
 }
 /* 开新一节。当前节还是空的就直接用它——免得连点两下多出一串空节 */
 function newSess(silent){
-  if(!curMsgs().length){if(!silent)toast('这一节还没开始，直接在这儿上就行');return CURS}
+  /* 空节且还没点过「开始上课」：直接复用它，免得连点两下攒出一串空节。
+     但向导照样要摆出来 —— 每一节都得先选完伙伴 / 节奏再开课。 */
+  if(!curMsgs().length&&!begunSess()){
+    if(!silent)toast('这一节还没开课，先在这儿选好伙伴和节奏');
+    openLaunch();return CURS;
+  }
   saveMs();
-  SESS.push({id:newSid(),t:Date.now(),title:'',who:who,ch:CTX.slice()});   /* 新节默认还是这位导师、这几章，想换就自己改 */
+  SESS.push({id:newSid(),t:Date.now(),title:'',who:who,ch:CTX.slice(),pace:PA});   /* 新节默认继承这位伙伴、这个节奏和这几章，想换就在向导里改 */
   CURS=SESS[SESS.length-1].id;saveSess();
   applySessWho();renderSTabs();reloadMsgs();renderCards();
-  if(!silent)toast('已开第 '+SESS.length+' 节 · 前面几节随时点回去看');
+  if(!silent)toast('已开第 '+SESS.length+' 节 · 先选好伙伴和节奏再开始上课');
+  /* 每一节开课前都先摆出这张整屏向导：选完点「开始上课 →」才进课堂，
+     伙伴与节奏从那一刻起固定。放在函数里，所有新节入口都自动走这一步。 */
+  openLaunch();
   return CURS;
 }
 function delSess(id){
@@ -1628,17 +1738,21 @@ function goView(v){
   document.querySelectorAll('.nv button').forEach(function(x){x.classList.toggle('on',x.dataset.v===v)});
   document.querySelectorAll('section.view').forEach(function(s){s.classList.remove('on')});
   $('v-'+v).classList.add('on');
-  syncNavGroup(v);renderShell();
-  /* 向导盖的是 #stage；点到别的页签要收掉，否则会悬在教材页上面 */
-  if(v!=='lesson')closeLaunch();
-  /* 手机端 css 用 data-view 决定要不要显示课程/节标签栏；顺便收起导师面板 */
+  /* 先写 data-view 再 renderShell：手机顶栏在群聊页要显示「含你 N/4 人」，
+     renderShell 得知道自己正站在哪一页。CSS 也在同一帧内取到新值。 */
   document.body.dataset.view=v;
+  syncNavGroup(v);renderShell();
+  /* 向导盖的是 #stage；点到别的页签要收掉，否则会悬在教材页上面。
+     反过来：这一节还没点过「开始上课」，从教材 / 设置切回学习页时向导重新摆出来，
+     保证「先选择、再上课」不会被一个 ✕ 跳过。 */
+  if(v!=='lesson')closeLaunch();
+  else if(!cfgLocked())openLaunch();
   closeDrawer();   /* 从抽屉里点了某个页面，选完就收起，别压着正文 */
   const lb=$('lbar1');if(lb)lb.classList.remove('mopen');
   const mc=$('mctrl');if(mc)mc.setAttribute('aria-expanded','false');
   /* 记住你待在哪一页。设置页不记：那是来配置的地方，刷新后该回到学习现场去。 */
   if(v!=='set')LS.s('view',v);
-  if(v==='prog')renderProg();if(v==='card')renderCards();
+  if(v==='prog')renderProg();if(v==='card')renderCards();if(v==='chat')renderChat();
   /* 点「教材」就地重画一次：万一启动时被存储问题打断，这里也能把目录补上 */
   if(v==='book')try{renderBook()}catch(e){console.warn('[教材] 渲染失败',e)};
   if(v==='set'){fillRq(false);renderRst();renderRout()}
@@ -1647,7 +1761,7 @@ document.querySelectorAll('.nv button').forEach(function(b){b.onclick=function()
 
 /* ---------- 破卷式外壳：三标签导航 / 开课向导 / 一行状态条 ----------
    原则：不新增状态。向导里每一张卡都是「遥控器」，点它＝点原来那颗药丸，
-   所以「每节各记各的导师 / 章节」「老数据回落」「体验版只给前三位」全都不用重写。
+   所以「每节各记各的伙伴 / 章节」「老数据回落」「体验版只给前三位」全都不用重写。
    renderShell / syncNavGroup 里用到的映射写在函数内部：这两个函数会被启动早期
    的 renderModes()/goView() 调到，不能引用后面才初始化的顶层 const（TDZ）。 */
 const NAV_G={lesson:'study',book:'study',card:'study',vid:'life',prog:'life',set:'eco'};
@@ -1667,7 +1781,7 @@ function applyTheme(){
   if(m)m.setAttribute('content',DARK?'#141417':'#185FA5');
 }
 function syncNavGroup(v){
-  const g=({lesson:'study',book:'study',card:'study',vid:'life',prog:'life',set:'eco'})[v];
+  const g=({lesson:'study',book:'study',card:'study',chat:'life',vid:'life',prog:'life',set:'eco'})[v];
   if(!g)return;
   document.body.dataset.navgrp=g;
   document.querySelectorAll('#gtabs button').forEach(function(b){b.classList.toggle('on',b.dataset.g===g)});
@@ -1699,36 +1813,48 @@ function initDrawer(){
   onId('dOpen',openDrawer);
   onId('dClose',closeDrawer);
   onId('dmask',closeDrawer);
-  onId('dNew',function(){closeDrawer();openLaunch()});
+  onId('dNew',function(){closeDrawer();newSess()});   /* ＋＝开新的一节：一律先摆出向导，选完再上课 */
   onId('dStop',function(){const s=$('stop');if(s&&!s.disabled)s.click()});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer()});
 }
 /* 侧栏当前课程卡 / 课堂那一行摘要 / 向导底部状态，都从现有状态现算，不另存 */
 function renderShell(){
+  syncLockUI();   /* 药丸 / 下拉的锁定态跟着「这一节有没有开课」走 */
   const pn={slow:'慢工细活',mid:'正常进度',fast:'主线速通'};
-  const cn=$('nvcname');if(cn)cn.textContent=cname(COURSE);
+  const cn=$('nvcname');if(cn)cn.textContent=cname(shownCourse());
   const cs=$('nvsess');if(cs)cs.textContent=sessLabel(CURS)+' · '+MS.filter(function(m){return sid(m)===CURS}).length+' 条';
   const cc=$('nvcnt');if(cc)cc.textContent=String(SESS.length);
   const sum=$('lsum');if(sum)sum.textContent=getP(who).n+' · '+curMode().n+' · '+(pn[PA]||'正常进度')+' · '+CTX.length+' 章';
-  const lc=$('lhCourse');if(lc)lc.textContent=cname(COURSE);
-  const lt=$('lhTitle');if(lt)lt.textContent=cname(COURSE);
-  const st=$('lhStatus');if(st)st.textContent=getP(who).n+' · '+curMode().n+' · '+(pn[PA]||'正常进度');
+  const lc=$('lhCourse');if(lc)lc.textContent=cname(shownCourse());
+  const lt=$('lhTitle');if(lt)lt.textContent=cname(shownCourse());
+  const st=$('lhStatus');if(st)st.textContent=getP(who).n+' · '+curMode().n+' · '+(pn[PA]||'正常进度')+(cfgLocked()?' · 本节已锁定':'');
   const dc=$('dtCourse'),ds=$('dtSess');
-  if(dc)dc.textContent=cname(COURSE);
-  if(ds)ds.textContent=sessLabel(CURS);
+  if(dc)dc.textContent=document.body.dataset.view==='chat'?'群聊':cname(shownCourse());
+  if(ds)ds.textContent=document.body.dataset.view==='chat'?chatTop():sessLabel(CURS);
 }
 function closeLaunch(){const l=$('launch');if(l)l.hidden=true}
 function openLaunch(){renderLaunch();const l=$('launch');if(l)l.hidden=false}
 function renderLaunch(){
   const wb=$('lhWho');if(!wb)return;
+  const locked=cfgLocked();
+  const lp=$('launch');if(lp)lp.classList.toggle('locked',locked);
+  const nx=$('lhNext');if(nx)nx.hidden=!locked;
+  const cl=$('lhClose');if(cl)cl.title=locked?'回到课堂':'还没开课：请点「开始上课 →」';
+  const note=document.querySelector('.lh-note');
+  if(note)note.innerHTML=locked
+    ?'这一节已经开课，伙伴和节奏定下来了；点下面的「开新的一节」就能重新选。<br>模式与带进课堂的章节随时可改。'
+    :'先选好伙伴和节奏，点「开始上课 →」才进课堂；这两项本节开课后就固定了，开新的一节可重新选择。<br>模式、章节随时可改，每一节各记各的。';
   wb.innerHTML='';
   pKeys().forEach(function(k,i){
     const p=getP(k),d=document.createElement('div');
     d.className='lh-card'+(who===k?' on':'');
+    /* 上传过头像就显示图片，没上传仍用名字首字（截图里那样） */
+    const av=(AVS[k]&&/^data:image\//.test(AVS[k]))?'<img src="'+AVS[k]+'" alt="">':esc(p.n.slice(0,1));
     d.innerHTML='<span class="lh-ck">✓</span><div class="lh-av" style="background:'
-      +WHO_CLR[i%WHO_CLR.length]+'">'+esc(p.n.slice(0,1))+'</div><div class="lh-nm">'
+      +WHO_CLR[i%WHO_CLR.length]+'">'+av+'</div><div class="lh-nm">'
       +esc(p.n)+'</div><div class="lh-ds">'+esc(WHO_TAG[k]||'你自己加的人设')+'</div>';
     d.onclick=function(){
+      if(cfgLocked()){lockHint();return}
       const pill=[].slice.call($('pbox').querySelectorAll('.pill')).filter(function(x){return x.textContent===p.n})[0];
       if(pill)pill.click();
       renderLaunch();renderShell();
@@ -1739,7 +1865,8 @@ function renderLaunch(){
   ['slow','mid','fast'].forEach(function(k){
     const d=document.createElement('div');d.className='lh-opt'+(PA===k?' on':'');
     d.innerHTML='<span class="lh-radio"></span><div><b>'+PACE_NAME[k]+'</b><p>'+PACE_DSC[k]+'</p></div>';
-    d.onclick=function(){PA=k;LS.s('pace',k);const pe=$('pace');if(pe)pe.value=k;
+    d.onclick=function(){if(cfgLocked()){lockHint();return}
+      PA=k;setSessPace(k);const pe=$('pace');if(pe)pe.value=k;
       renderLaunch();renderShell();toast('节奏：'+PACE_NAME[k])};
     pb.appendChild(d);
   });
@@ -1757,7 +1884,7 @@ function renderLaunch(){
   const cx=$('lhCtx');if(cx){
     const ts=CTX.map(function(id){const c=CH.filter(function(x){return x.id===id})[0];return c?c.title:id});
     cx.innerHTML=ts.length?('<b>'+ts.length+' 章</b>　'+esc(ts.slice(0,3).join('、'))+(ts.length>3?' …':''))
-      :'<b>未勾选</b>　导师只按教材名开场，按需勾最省 token';
+      :'<b>未勾选</b>　伙伴只按教材名开场，按需勾最省 token';
   }
   renderShell();
 }
@@ -1765,7 +1892,7 @@ function renderLaunch(){
 function renderLaunchCourses(){
   const box=$('lhCourses');if(!box)return;
   box.innerHTML='';
-  courseList().gs.forEach(function(g){
+  visibleCourses().forEach(function(g){
     const b=document.createElement('button');b.type='button';b.className='sm'+(COURSE===g.k?' pri':'');
     b.textContent=cname(g.k);
     b.onclick=function(){switchCourse(g.k);box.hidden=true;renderLaunch();renderShell();toast('已换到「'+cname(g.k)+'」')};
@@ -1775,10 +1902,16 @@ function renderLaunchCourses(){
 }
 onId('lhSwap',function(){const b=$('lhCourses');if(!b)return;b.hidden=!b.hidden;if(!b.hidden)renderLaunchCourses()});
 onId('lhGoBook',function(){closeLaunch();goView('book')});
-onId('lhClose',closeLaunch);
+onId('lhClose',function(){
+  /* 这一节还没点过「开始上课」：选择是必经的一步，✕ 不给跳过。
+     但「去教材勾选」「更换课程」和侧栏切页仍照常可用，不把人困在向导里。 */
+  if(!cfgLocked()){toast('先选好伙伴和节奏，点「开始上课 →」进入课堂');return}
+  closeLaunch();
+});
 onId('lhTheme',function(){DARK=!DARK;LS.s('theme',DARK?'dark':'light');applyTheme()});
 onId('ltheme',function(){DARK=!DARK;LS.s('theme',DARK?'dark':'light');applyTheme()});
 onId('lhStart',function(){
+  markBegun();syncLockUI();   /* 选完这一节就定下来：伙伴和节奏从这一刻起锁住，直到开新的一节 */
   closeLaunch();
   const i=$('in');if(i)i.focus();
   const k=$('key')?$('key').value.trim():'';
@@ -1787,6 +1920,11 @@ onId('lhStart',function(){
   else toast('设置好了。填好模型接口后点「开始今天的一课」，也可以直接在下面提问');
 });
 onId('lsetup',openLaunch);
+/* 课中点「开新的一节」：newSess 会建节并自己摆出向导，新节未开课 → 伙伴和节奏都能重选 */
+onId('lhNext',function(){
+  newSess();
+  toast('已开新的一节 · 先选好伙伴和节奏，再点「开始上课」');
+});
 onId('nvcourse',function(){goView('lesson')});
 onId('lexpand',function(){this.textContent=document.body.classList.toggle('expand')?'⋯ 收起':'⋯ 更多'});
 onId('pctoggle',function(){this.textContent=document.body.classList.toggle('paceopen')?'节奏 ▴':'节奏 ▾'});
@@ -1795,7 +1933,7 @@ applyTheme();
 /* ---------- markdown ---------- */
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]})}
 /* 模型有时不写 $...$，而是直接吐 Unicode 的「数学样式字母」（𝑘 𝐦 𝒙）和上下标（₀ ² ⁻¹）。
-   这些字形在中文系统字体里普遍缺席，浏览器只能画一个空方框——看起来像「导师坏了」，其实一个字都没错。
+   这些字形在中文系统字体里普遍缺席，浏览器只能画一个空方框——看起来像「伙伴坏了」，其实一个字都没错。
    这里统一归一化成普通 ASCII：NFKD 会按 Unicode 的 <font> 分解表自己还原，不用手写映射表。
    关键：只对这几段做 NFKD。对整串做会把中文全角标点也拆掉——已验证「，」会被拆成「,」。 */
 const GLYPH_INVIS=/[\u00AD\u200B-\u200F\u2060\uFE00-\uFE0F\uFEFF]/g;   /* 零宽、软连字符、变体选择符 */
@@ -1838,7 +1976,7 @@ function niceTex(s){
    $\left| $\left| x_{n}-a \right|$ \right|$ 这样的东西。
    md() 提取 $...$ 用的是非贪婪配对，会把它拆成「外层半截 + 内层整段 + 外层另半截」：
    \left| 与 \right| 各自成了缺另一半的残段，KaTeX 只能把原文用红字吐回来 ——
-   看着像「导师坏了」，其实是两段不完整的公式。
+   看着像「伙伴坏了」，其实是两段不完整的公式。
    这里把这种嵌套压平（去掉内层那两个 $）。判据很严，四条同时满足才合并：
      ① 前段 \left 多于 \right   ② 后段 \right 多于 \left
      ③ 内层自成对                ④ 三段合起来正好成对
@@ -1881,7 +2019,7 @@ function healNestedTex(src){
 function fixTexBase(t){
   return String(t).replace(/(\\(?:,|;|:|!|quad|qquad|enspace|thinspace)\s*)([\^_])/g,'$1{}$2');
 }
-/* 复制导师写的公式，粘出来总是「前后两个模样」 —— 因为 KaTeX 默认 output:'htmlAndMathml'，
+/* 复制伙伴写的公式，粘出来总是「前后两个模样」 —— 因为 KaTeX 默认 output:'htmlAndMathml'，
    同一个公式在 DOM 里存了两份：.katex-mathml（给读屏软件，视觉上裁到 1px 但仍可被选中）
    和 .katex-html（画出来的那个）。复制时两份一起被带走，annotation 里的 LaTeX 原文也算文本，
    于是 f(x)=2x^{2}+3x-1 粘出来成了「𝑓(𝑥)=2𝑥2+3𝑥−1f(x)=2x2+3x−1」：
@@ -1938,7 +2076,7 @@ document.addEventListener('copy',function(e){
 function md(src){
   let s=normGlyph(String(src));const st=[],ct=[];
   /* 出处卡片：跟公式一样先抽成占位符，绕开 marked/DOMPurify，最后还原成可点的 chip。
-     导师按 CITE 硬规则写 〔出处:分册 · 章节〕，学生点一下就能去教材目录核对那一节。 */
+     伙伴按 CITE 硬规则写 〔出处:分册 · 章节〕，学生点一下就能去教材目录核对那一节。 */
   s=s.replace(/〔\s*出处\s*[:：]\s*([^〕]{1,160})〕/g,function(m,p){
     ct.push(p.trim());return '%%C'+(ct.length-1)+'%%';
   });
@@ -1962,7 +2100,7 @@ function md(src){
   }else{
     h='<p>'+esc(s).replace(/\n/g,'<br>')+'</p>';
   }
-  /* 导师的动作/神态旁白（*推了推眼镜*）：本应用约定单星号只写旁白、强调一律用 **双星号**，
+  /* 伙伴的动作/神态旁白（*推了推眼镜*）：本应用约定单星号只写旁白、强调一律用 **双星号**，
      所以 marked 产出的 <em> 基本都是旁白——换成 .act 的 span，浅色小字号与对白区分。
      注意：此刻 KaTeX 的 HTML 还是 %%M 占位符，不会被这里误伤；独立成段的旁白再补一个竖线版式。 */
   if(h.indexOf('<em>')>=0){
@@ -1984,7 +2122,7 @@ function md(src){
     const t=ct[+i];if(t===undefined)return '';
     const off=/未带教材|教材外|无出处/.test(t);
     return '<span class="cite'+(off?' off':'')+'" data-cite="'+esc(t)+'"'
-      +(off?' title="导师标注：这一条没有教材原文可引"':' title="点一下，到教材目录核对这一节"')+'>'
+      +(off?' title="伙伴标注：这一条没有教材原文可引"':' title="点一下，到教材目录核对这一节"')+'>'
       +'<span class="ci">出处</span>'+esc(t)+'</span>';
   });
 }
@@ -2052,7 +2190,7 @@ function cstat(k,files){
 function renderCourseMgmt(){
   const box=$('courselist');if(!box)return;
   box.innerHTML='';
-  courseList().gs.forEach(function(g){
+  visibleCourses().forEach(function(g){
     const files=g.f.length?g.f:[];
     const s=cstat(g.k,files);
     const row=document.createElement('div');row.className='crs';
@@ -2071,7 +2209,7 @@ function renderCourseMgmt(){
       bts.appendChild(b2);
     }else{
       const sp=document.createElement('span');sp.className='tag';sp.textContent='没有教材，不能删除';
-      sp.title='自由问答不挂教材，只能清空记录';
+      sp.title='这门课没有挂教材正文，只能清空记录';
       bts.appendChild(sp);
     }
     row.appendChild(nm);row.appendChild(bts);box.appendChild(row);
@@ -2103,7 +2241,9 @@ async function dropCourse(g){
   });
   CD=CD.filter(function(c){return !(c.c&&(c.c===g.k||files.indexOf(c.c)>=0))});LS.s('cards',CD);
   if(COURSE===g.k){
-    COURSE='__free';LS.s('course',COURSE);
+    /* 删掉当前课后回落到剩下的一门教材，别把人扔回「群聊」去 */
+    const v=visibleCourses();
+    COURSE=v.length?v[0].k:'__free';LS.s('course',COURSE);
     loadCourseData();MS=LS.g(msKey(),[])||[];reloadMsgs();
   }
   renderBook();renderCards&&renderCards();
@@ -2259,17 +2399,18 @@ function updateCourses(){
     saveCourseData();saveMs();
     /* 当前课程对应的分册被删了：若它属于某个内置包且该包还有别的分册在，就并回那个包 */
     const pk=packByKey(COURSE)||packOf(COURSE);
-    COURSE=(pk&&L.locals.length)?pk.key:'__free';
+    const v=visibleCourses();
+    COURSE=(pk&&L.locals.length)?pk.key:(v.length?v[0].k:'__free');
     LS.s('course',COURSE);
     if(pk)migratePack(pk.key,pk.files);
     loadCourseData();MS=LS.g(msKey(),[])||[];
   }
   renderCTabs(fs);
   const sel=$('course');if(!sel)return;
-  sel.innerHTML=gs.map(function(g){return '<option value="'+esc(g.k)+'">'+esc(cname(g.k))+'</option>'}).join('');
+  sel.innerHTML=visibleCourses().map(function(g){return '<option value="'+esc(g.k)+'">'+esc(cname(g.k))+'</option>'}).join('');
   sel.value=COURSE;
   /* 设置页的教材名跟随当前课程 */
-  const bl=$('bkncourse');if(bl)bl.textContent=cname(COURSE);
+  const bl=$('bkncourse');if(bl)bl.textContent=cname(shownCourse());
   const bi=$('bkn');if(bi&&document.activeElement!==bi)bi.value=getBkn();
   renderSTabs();
   renderCourseMgmt();
@@ -2655,9 +2796,9 @@ function renderChips(){
     s.querySelector('b').onclick=function(){toggleCtx(id)};b.appendChild(s)});
   renderShell();   /* 「N 章」这个摘要跟着勾选变 */
 }
-/* ---------- 每一节记自己的导师 ----------
+/* ---------- 每一节记自己的伙伴 ----------
    同一门课里，讲导数的这一节可能想让牛顿带、讲证明的那一节想让柯西带。
-   导师存在节对象上（s.who）；升级前的节没有这个字段，
+   伙伴存在节对象上（s.who）；升级前的节没有这个字段，
    就回落到全局 who —— 也就是你之前选的那位，行为跟以前一模一样。 */
 function sessWho(id){
   const s=sessOf(id);
@@ -2674,12 +2815,45 @@ function sessCtx(id){
 }
 function setSessCtx(){const s=sessOf(CURS);if(s){s.ch=CTX.slice();saveSess()}}
 function applySessCtx(){CTX=sessCtx(CURS).slice();renderChips()}
+/* ---------- 每一节记自己的教学节奏 ----------
+   和 s.who / s.ch 同一套思路：节上有 pace 就用节的，没有才回落到全局老设置。
+   于是「下一节重新选节奏」不会把上一节的节奏也改掉。
+   PA 仍是当前节的工作副本，系统提示词、推荐、测试照旧读它，不用改。
+   注意：改节奏时只写节、不再覆盖全局 gx.pace —— 否则老节回落的就是「下一节刚选的值」。 */
+function sessPace(id){
+  const s=sessOf(id);
+  return (s&&s.pace)||LS.g('pace','mid');
+}
+function setSessPace(k){const s=sessOf(CURS);if(s){s.pace=k;saveSess()}}
+/* ---------- 「开课」＝向导里点过「开始上课 →」 ----------
+   标记写进每一节（s.beg），刷新、换课、换节都记得住；和向导自动弹出用同一判据。
+   老数据没有这个字段：照旧用「这一节有没有我发过的话」判定，系统写的开场白不算开课，
+   升级不改写历史，也不拿向导拦住正在上的课。
+   伙伴和节奏一节课里定下来就不改，免得前后风格不一致；
+   想换就开新的一节，那里可以重新选。模式是「这一轮干什么」，仍随时可改。 */
+function begunSess(id){
+  const s=sessOf(id||CURS);
+  return !!(s&&s.beg);
+}
+function markBegun(){
+  const s=sessOf(CURS);
+  if(s&&!s.beg){s.beg=1;saveSess()}
+}
+function startedSess(id){
+  const s=id||CURS;
+  return begunSess(s)||MS.some(function(m){return m&&m.r==='user'&&sid(m)===s});
+}
+function cfgLocked(){return startedSess()}
+function syncLockUI(){document.body.classList.toggle('cfglock',cfgLocked())}
+function lockHint(){toast('这一节已经开课，伙伴和节奏定下来了。开新的一节就能重新选')}
 function setSessWho(k){
   const s=sessOf(CURS);if(s){s.who=k;saveSess()}
 }
 /* 换节/换课后把人换过来，顺手刷新系统提示词与顶栏那排高亮 */
 function applySessWho(){
   who=sessWho(CURS);
+  PA=sessPace(CURS);                 /* 切回旧节时把那一节的节奏也带回来 */
+  const pe=$('pace');if(pe)pe.value=PA;
   const t=$('sys');if(t)t.value=PM[who]||getP(who).p;
   renderPs();
 }
@@ -2689,14 +2863,15 @@ function renderPs(){
     pKeys().forEach(function(k){
       const p=document.createElement('span');p.className='pill'+(who===k?' on':'');p.textContent=getP(k).n;
       p.onclick=function(){
-        who=k;LS.s('who',k);setSessWho(k);   /* 写回这一节：别的节各有各的导师，互不牵连 */
+        if(cfgLocked()){lockHint();return}   /* 课中固定：想换伙伴就开新的一节 */
+        who=k;LS.s('who',k);setSessWho(k);   /* 写回这一节：别的节各有各的伙伴，互不牵连 */
         $('sys').value=PM[k]||getP(k).p;renderPs();reloadMsgs();
-        toast('本节导师：'+getP(k).n);
+        toast('本节伙伴：'+getP(k).n);
       };
       b.appendChild(p);
     });
   });
-  $('pcur').textContent='本节导师：'+getP(who).n;
+  $('pcur').textContent='本节伙伴：'+getP(who).n;
   renderModes();
   renderMyPs();
 }
@@ -2721,7 +2896,7 @@ function renderMCtrl(){
   const b=$('mctrl');if(!b)return;
   const lb=$('lbar1');
   b.textContent=getP(who).n+' · '+curMode().n+(lb&&lb.classList.contains('mopen')?' ▴':' ▾');
-  renderShell();   /* 侧栏课程卡 / 课堂那一行摘要跟着导师、模式一起刷新 */
+  renderShell();   /* 侧栏课程卡 / 课堂那一行摘要跟着伙伴、模式一起刷新 */
 }
 function renderMyPs(){
   const b=$('myplist');if(!b)return;
@@ -2743,7 +2918,7 @@ function renderMyPs(){
 }
 function curName(){return getP(who).n}
 
-/* ---------- 导师推荐 ----------
+/* ---------- 伙伴推荐 ----------
    推荐的不是「谁来教哪一科」——所有人格都与学科无关——而是
    「按这块内容的性质 + 你现在的状态，哪种说话方式最有用」。
    三路信号相加：① 内容命中哪类难点 ② 你勾的状态 ③ 你在内容里顺口写的困境。
@@ -2835,7 +3010,7 @@ function rRec(){
   return {sc:sc,mo:mo,pace:pace};
 }
 function rRank(sc){
-  /* 体验版过滤掉看不见的导师，免得「推荐」出一位界面上根本选不到的 */
+  /* 体验版过滤掉看不见的伙伴，免得「推荐」出一位界面上根本选不到的 */
   return Object.keys(sc).filter(function(k){return PERSONA[k]&&(!LITE||pKeys().indexOf(k)>=0)})
     .sort(function(a,b){return (sc[b]-sc[a])||(PORDER.indexOf(a)-PORDER.indexOf(b))});
 }
@@ -2847,7 +3022,7 @@ function rAuto(){
   const a=[],cur=sessOf(CURS);
   if(cur&&cur.title)a.push(cur.title);
   (CTX||[]).forEach(function(id){const c=CH.filter(function(x){return x.id===id})[0];if(c&&a.indexOf(c.title)<0)a.push(c.title)});
-  if(!a.length)a.push(COURSE==='__free'?'自由学习':cname(COURSE));
+  if(!a.length)a.push(COURSE==='__free'?'群聊':cname(shownCourse()));
   return a.slice(0,3).join('、');
 }
 /* 内容框：空着就填，或者「上次也是自动填的」就跟着章节走——
@@ -2908,19 +3083,23 @@ function renderRout(){
 }
 function applyRec(k,mK,pK){
   if(!PERSONA[k]&&!MYP[k])return;
+  if(cfgLocked()){lockHint();return}   /* 推荐会连伙伴带节奏一起换，课中同样不许 */
   who=k;LS.s('who',who);setSessWho(k);$('sys').value=PM[k]||getP(k).p;
   if(mK&&MODE[mK]){MODEK=mK;LS.s('mode',mK)}
-  if(pK){PA=pK;LS.s('pace',pK);const pe=$('pace');if(pe)pe.value=pK}
+  if(pK){PA=pK;setSessPace(pK);const pe=$('pace');if(pe)pe.value=pK}
   renderPs();
   reloadMsgs();   /* 顶栏换了人，这一节气泡上的名字也跟着换 */
   toast('已换成：'+getP(k).n+(mK?(' · '+MODE[mK].n):'')+(pK?(' · 节奏'+RPACEN[pK]):''));
 }
-function addMsg(role,txt,idx,img){
+function addMsg(role,txt,idx,img,whoKey){
   const d=document.createElement('div');d.className='msg'+(role==='user'?' me':'');
   d.dataset.i=String(idx===undefined?MS.length:idx);
+  const k=role==='user'?'__me':(whoKey||who);
+  const nm=role==='user'?meName():getP(k).n;
   /* 题目图摆在文字上面：先看清题，再读自己写的那句话 */
   const pic=img?'<div class="qimg"><img src="'+img+'" alt="上传的题目">'+'</div>':'';
-  d.innerHTML='<div class="who">'+(role==='user'?'我':esc(curName()))+'</div><div class="body">'+pic+md(txt)+'</div>';
+  d.innerHTML='<div class="avbox">'+avHtml(k,nm)+'</div>'
+    +'<div class="mcol"><div class="who">'+esc(nm)+'</div><div class="body">'+pic+md(txt)+'</div></div>';
   /* 题目图点一下看大图：手机屏幕上缩略图看不清条件 */
   if(img){const im=d.querySelector('.qimg img');if(im)im.onclick=function(){zoomImg(img)}}
   const w=d.querySelector('.who');
@@ -3086,10 +3265,11 @@ async function ask(text,opt){
   const usePx=proxyOn();
   const key=$('key').value.trim(),base=$('base').value.trim();
   if(!usePx&&(!key||!base)){alert('先到「设置」填接口地址和 API Key，或填课堂代理地址和邀请码。');return}
+  markBegun();   /* 万一绕过向导直接提问，这一节也算开课：伙伴 / 节奏随即锁定 */
   pinBottom();   /* 自己发了话，就是要看回答：恢复跟随 */
   BUSY=true;document.body.classList.add('busy');
   const pack=[{role:'system',content:sysMsg()+'\n\n'+ctxText()}];
-  /* 只把「这一节」的对话发给导师：各节独立，新节从零开始，
+  /* 只把「这一节」的对话发给伙伴：各节独立，新节从零开始，
      也顺带解决了「越聊越长、越聊越慢」——旧节随时点回去看，但不占上下文 */
   MS.forEach(function(m){if(sid(m)!==CURS)return;pack.push({role:m.r==='user'?'user':'assistant',content:packContent(m.c,m.img)})});
   pack.push({role:'user',content:packContent(text,opt.img)});
@@ -3101,7 +3281,7 @@ async function ask(text,opt){
   /* 记下这条对话属于哪门课：流式回答进行中用户可能切走，回答必须写回**原课程**。
      切课会把全局 MS 换成另一门课的数组，若结束时不加判断地 MS.push，回答会串课。 */
   const myCourse=COURSE, myMs=MS, mySess=CURS, myMode=MODEK;
-  MS.push({r:'user',c:text,s:CURS,img:opt.img||''});saveMs();
+  MS.push({r:'user',c:text,s:CURS,img:opt.img||''});saveMs();syncLockUI();
   renderSTabs();
   $('stop').disabled=false;ctrl=new AbortController();
   const myCtrl=ctrl;
@@ -3133,7 +3313,8 @@ async function ask(text,opt){
             if(COURSE===myCourse&&CURS===mySess){
               /* 切走过又切回来时 reloadMsgs 重建过 DOM，正在渲染的 el 成了游离节点——
                  把它挂回列表末尾，回答就在原地继续往下长 */
-              if(!el.isConnected&&el.parentNode)$('mw').appendChild(el.parentNode);
+              const host=el.closest('.msg');
+              if(!el.isConnected&&host)$('mw').appendChild(host);
               if(PINB)toBottom();
             }}
           if(j.usage){ST.i+=j.usage.prompt_tokens||0;ST.o+=j.usage.completion_tokens||0;LS.s('stats',ST)}}catch(e){}}}
@@ -3142,7 +3323,8 @@ async function ask(text,opt){
     if(COURSE===myCourse){
       MS.push({r:'a',c:full,s:mySess});saveMs();renderSTabs();
       /* 流结束时用户可能刚好切回来——DOM 已由存储重绘，el 脱离，把它挂回让回答可见 */
-      if(CURS===mySess&&!el.isConnected&&el.parentNode)$('mw').appendChild(el.parentNode);
+      const host2=el.closest('.msg');
+      if(CURS===mySess&&!el.isConnected&&host2)$('mw').appendChild(host2);
     }else{
       myMs.push({r:'a',c:full,s:mySess});LS.s('msgs.'+myCourse,myMs);
       toast('「'+cname(myCourse)+'」的回答已完成，切回去就能看到');
@@ -3157,7 +3339,7 @@ async function ask(text,opt){
         toast(k?('已收 '+k+' 条错点进错题本，隔天再考'):'错点已在错题本里，复习时间重置了');
       }
     }
-    el.parentNode.__txt=full;
+    const host3=el.closest('.msg');if(host3)host3.__txt=full;
     if(TTS&&!opt.card&&COURSE===myCourse&&CURS===mySess)speak(full);
     if(opt.card)return full;
   }catch(e){
@@ -3176,6 +3358,166 @@ async function ask(text,opt){
     return;
   }finally{BUSY=false;document.body.classList.remove('busy');if(ctrl===myCtrl)$('stop').disabled=true}
 }
+/* ---------- 课余 · 群聊 ----------
+   原来的「自由问答」不再占一个课程标签，改成这里的多人闲聊室。
+   消息单独存 gx.chat（不写 msgs.*，课堂 / 节 / 闪卡一律不受影响）；
+   老版本留在 msgs.__free 的记录启动时搬过来，原键保留不删。 */
+/* 含「我」最多 4 人 ⇒ 伙伴最多 3 位。
+   一句提问每人各发一次请求（串行），人数一多就是几倍 token / 限流风险，
+   所以硬上限比口头提醒管用：点第 4 位直接拦下并说明怎么换人。 */
+const CHAT_MAX=3;
+let GCHAT=LS.g('chat',[]);if(!Array.isArray(GCHAT))GCHAT=[];
+let GMEM=LS.g('chat.members',null);
+if(!Array.isArray(GMEM))GMEM=pKeys().slice(0,2);
+function saveChat(){LS.s('chat',GCHAT)}
+function saveMem(){LS.s('chat.members',GMEM)}
+/* 过滤掉已经不存在的伙伴（体验版收起后五位 / 自定义人设被删）、去重、裁到上限。
+   发消息、渲染高亮、提示词一律走这里，保证「看到几个人」＝「会回几条」。 */
+function members(){
+  const out=[];
+  GMEM.forEach(function(k){
+    if(out.length<CHAT_MAX&&out.indexOf(k)<0&&pKeys().indexOf(k)>=0)out.push(k);
+  });
+  return out;
+}
+/* 手机顶栏 / 群聊提示共用这一个数字，免得加人之后一边写 3/4、一边写 4/4 */
+function chatTop(){return '含你 '+(members().length+1)+'/4 人'}
+/* 旧版本或别人给的备份可能带回 4 位以上：启动时就规范化并写回，
+   否则头像高亮 5 个、实际只回 3 条，用户会以为漏了人。 */
+if(GMEM.length!==members().length||!members().length){
+  GMEM=members();
+  if(!GMEM.length)GMEM=pKeys().slice(0,1);
+  saveMem();
+}
+function migrateFreeChat(){
+  if(GCHAT.length||LS.g('chat.migrated',0))return;
+  const old=LS.g('msgs.__free',[])||[];
+  if(!Array.isArray(old)||!old.length)return;
+  GCHAT=old.filter(function(m){return m&&m.c}).map(function(m){
+    return {r:m.r==='user'?'user':'a',c:m.c,w:m.r==='user'?'':(m.w||''),t:m.t||0};
+  });
+  saveChat();LS.s('chat.migrated',1);
+}
+function renderMembers(){
+  const box=$('chatmembers');if(!box)return;
+  box.innerHTML='';
+  const mem=members(),full=mem.length>=CHAT_MAX;
+  pKeys().forEach(function(k){
+    const p=getP(k),on=mem.indexOf(k)>=0;
+    const b=document.createElement('button');b.type='button';
+    b.className='memchip'+(on?' on':(full?' full':''));
+    b.innerHTML=avHtml(k,p.n,'')+'<span>'+esc(p.n)+'</span>';
+    b.title=on?('移出群聊：'+p.n)
+      :(full?'群里含你最多 4 人（你 + 3 位伙伴），先移出一位再加人':'加入群聊：'+p.n);
+    b.onclick=function(){
+      const i=GMEM.indexOf(k);
+      if(i>=0){if(members().length<=1){toast('群里至少留一位伙伴');return}GMEM.splice(i,1)}
+      else{
+        if(members().length>=CHAT_MAX){
+          toast('群里含你最多 4 人（你 + 3 位伙伴），先移出一位再换人');return;
+        }
+        GMEM.push(k);
+      }
+      saveMem();renderMembers();
+      toast('群成员：'+members().map(function(x){return getP(x).n}).join('、'));
+    };
+    box.appendChild(b);
+  });
+  const h=$('chathint');
+  if(h)h.textContent=chatTop()+' · 点头像加减人 · 每人各回一句';
+  /* 加人 / 移人时顶栏也要跟着变（只在群聊页；别的页顶栏显示的是第几节） */
+  if(document.body.dataset.view==='chat'){
+    const ds=$('dtSess');if(ds)ds.textContent=chatTop();
+  }
+}
+function addChatMsg(m){
+  const d=document.createElement('div');d.className='msg'+(m.r==='user'?' me':'');
+  const k=m.r==='user'?'__me':(m.w||members()[0]||who);
+  const nm=m.r==='user'?meName():getP(k).n;
+  d.innerHTML='<div class="avbox">'+avHtml(k,nm)+'</div>'
+    +'<div class="mcol"><div class="who">'+esc(nm)+'</div><div class="body">'+md(m.c)+'</div></div>';
+  $('chatmw').appendChild(d);
+  const lg=$('chatlog');if(lg)lg.scrollTop=lg.scrollHeight;
+  return d.querySelector('.body');
+}
+function renderChat(){
+  renderMembers();
+  const box=$('chatmw');if(!box)return;
+  box.innerHTML='';
+  GCHAT.forEach(function(m){addChatMsg(m)});
+  if(!GCHAT.length)box.innerHTML='<div class="empty">群里还没人说话。<br>先在上面挑几位伙伴，再发一句试试。</div>';
+}
+function chatSys(k){
+  const others=members().filter(function(x){return x!==k}).map(function(x){return getP(x).n});
+  return (PM[k]||getP(k).p)
+    +'\n\n【群聊规则】这是「'+meName()+'」和 '+(others.length?others.join('、'):'几位伙伴')+' 的多人闲聊室，不是一对一上课。'
+    +'\n- 只代表你自己说 1–3 句，别替别人发言、别复述别人刚说过的话。'
+    +'\n- 可以接话、补充、简短反驳，但不要长篇讲课；不写教材出处标记、不写下课小结、不主动告别。'
+    +'\n- 群里每条消息前面标了说话人的名字，别把别人说的当成自己说的。'
+    +'\n\n【输出格式】数学式一律用 $行内$ 或 $$独立成行$$ 包裹；变量名用普通英文字母，'
+    +'不要直接输出数学样式的 Unicode 字母或上下标字符。';
+}
+async function chatOne(k,text,onChunk){
+  const usePx=proxyOn();
+  const key=$('key').value.trim(),base=$('base').value.trim();
+  if(!usePx&&(!key||!base))throw new Error('先到「设置」填接口地址和 API Key，或填课堂代理');
+  const pack=[{role:'system',content:chatSys(k)}];
+  /* 最近 18 条群里的话，每条带上说话人；刚发的那句已经在 GCHAT 末尾了 */
+  GCHAT.slice(-18).forEach(function(m){
+    const nm=m.r==='user'?meName():getP(m.w||members()[0]||who).n;
+    pack.push({role:m.r==='user'?'user':'assistant',content:nm+'：'+m.c});
+  });
+  const ep=usePx?PX.url.replace(/\/+$/,'')+'/api/chat':base.replace(/\/+$/,'')+'/chat/completions';
+  const hd=usePx?{'Content-Type':'application/json','X-Invite-Code':PX.invite}
+                :{'Content-Type':'application/json','Authorization':'Bearer '+key};
+  const bd=usePx?{model:PX_MODEL,base:PX_BASE,messages:pack,temperature:0.7,stream:true}
+                :{model:$('model').value.trim(),messages:pack,temperature:0.7,stream:true};
+  const r=await fetch(ep,{method:'POST',headers:hd,body:JSON.stringify(bd)});
+  if(!r.ok){let m=r.status+' '+r.statusText,j=null;try{j=await r.json()}catch(e){}
+    throw new Error(usePx?pxErr(r.status,j,m):m)}
+  const rd=r.body.getReader(),dc=new TextDecoder();let buf='',full='';
+  for(;;){const o=await rd.read();if(o.done)break;
+    buf+=dc.decode(o.value,{stream:true});const ls=buf.split('\n');buf=ls.pop();
+    for(const l of ls){if(!l.startsWith('data: '))continue;const p=l.slice(6).trim();if(p==='[DONE]')continue;
+      try{const j=JSON.parse(p);const dd=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content;
+        if(dd){full+=dd;onChunk(full)}
+        if(j.usage){ST.i+=j.usage.prompt_tokens||0;ST.o+=j.usage.completion_tokens||0;LS.s('stats',ST)}
+      }catch(e){}}}
+  return full||'（没有返回内容）';
+}
+let CHATBUSY=false;
+async function chatAsk(text){
+  text=String(text||'').trim();
+  if(!text||CHATBUSY)return;
+  const mem=members();
+  if(!mem.length){toast('先在上面选至少一位伙伴进群');return}
+  CHATBUSY=true;
+  const sb=$('chatsend');if(sb)sb.disabled=true;
+  document.body.classList.add('busy');
+  try{
+    GCHAT.push({r:'user',c:text,t:Date.now()});saveChat();renderChat();
+    /* 串行而不是并发：一次一句话会按人数发几次请求，并发容易把额度/限流打爆 */
+    for(const k of mem){
+      const el=addChatMsg({r:'a',w:k,c:'<span style="color:#888780">…</span>'});
+      let full='';
+      try{full=await chatOne(k,text,function(s){full=s;el.innerHTML=md(s)})}
+      catch(e){full='出错了：'+String(e.message||e);el.innerHTML='<span style="color:#A32D2D">'+esc(full)+'</span>'}
+      GCHAT.push({r:'a',w:k,c:full,t:Date.now()});saveChat();
+    }
+  }finally{
+    CHATBUSY=false;if(sb)sb.disabled=false;
+    document.body.classList.remove('busy');renderChat();
+  }
+}
+$('chatsend').onclick=function(){const t=$('chatin').value;$('chatin').value='';chatAsk(t)};
+$('chatin').onkeydown=function(e){
+  if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('chatsend').click()}
+};
+$('chatclr').onclick=function(){
+  if(!GCHAT.length){toast('群里还没有消息');return}
+  if(!confirm('清空群聊？\n\n这 '+GCHAT.length+' 条消息会被删掉，课堂对话、闪卡都不受影响。'))return;
+  GCHAT=[];saveChat();renderChat();toast('群聊已清空');
+};
 function updTok(){
   /* 走代理时 token 由服务端代付，不能拿用户自己选的那家单价算「约 ¥x」 */
   const v=proxyOn()?[0,0]:(PROV[$('prov').value]&&PROV[$('prov').value].io||[0,0]);
@@ -3222,7 +3564,7 @@ function speechText(t){
   s=s.replace(/!\[[^\]]*\]\([^)]*\)/g,' ').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1');
   s=s.replace(/<[^>]+>/g,' ');
   /* **加粗** 先去标记留文字；剩下的单星号一律是动作旁白（*推了推眼镜*）——
-     旁白是写给眼睛看的，不该由导师的嗓音念出来，所以整段丢掉。 */
+     旁白是写给眼睛看的，不该由伙伴的嗓音念出来，所以整段丢掉。 */
   s=s.replace(/^#{1,6}\s*/gm,'').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*([^*\n]+)\*/g,' ')
    .replace(/_([^_]+)_/g,'$1').replace(/^>\s?/gm,'').replace(/^\s*[-*+]\s+/gm,'').replace(/\|/g,' ');
   s=s.replace(/\\[A-Za-z]+/g,' ').replace(/[{}^_\\]/g,' ').replace(/\s+/g,' ').trim();
@@ -3286,7 +3628,7 @@ async function lessonClose(){
   }catch(e){}finally{if(b)b.disabled=false}
 }
 $('mic').onclick=startVoice;
-$('tts').onclick=function(){TTS=TTS?0:1;LS.s('tts',TTS);renderTts();updTts();toast(TTS?'已开启导师朗读':'已关闭导师朗读')};
+$('tts').onclick=function(){TTS=TTS?0:1;LS.s('tts',TTS);renderTts();updTts();toast(TTS?'已开启伙伴朗读':'已关闭伙伴朗读')};
 $('ttsauto').onchange=function(){TTS=$('ttsauto').value==='1'?1:0;LS.s('tts',TTS);renderTts()};
 $('ttsrate').onchange=function(){TTSRATE=parseFloat($('ttsrate').value)||1;LS.s('ttsrate',TTSRATE)};
 $('close').onclick=lessonClose;
@@ -3340,7 +3682,7 @@ function parseCards(t){
 }
 /* 批改模式回复末尾的【错点清单】→ 错题卡。
    格式宽松：一行一条，「类型：… | 错点：… | 正确做法：…」，缺字段也收，
-   只认清单区、不认讲解正文 —— 否则导师举的每一个反例都会变成一道错题。 */
+   只认清单区、不认讲解正文 —— 否则伙伴举的每一个反例都会变成一道错题。 */
 function parseWrong(t){
   const s=String(t||''),i=s.indexOf('【错点清单】');
   if(i<0)return [];
@@ -3421,7 +3763,7 @@ function renderCards(){
   const wd=d.filter(function(c){return c.w}).length;
   renderCsel();renderWsel();
   $('due').textContent='待复习 '+d.length+' / 共 '+CL.length
-    +(wc?' · 错题 '+wc+'（到期 '+wd+'）':'')+' · '+cname(COURSE)
+    +(wc?' · 错题 '+wc+'（到期 '+wd+'）':'')+' · '+cname(shownCourse())
     +(CARD_S==='all'?'':' · '+sessLabel(CARD_S));
   const box=$('car');
   if(rev){
@@ -3437,7 +3779,7 @@ function renderCards(){
     const g=$('cf');if(g)g.onclick=function(){grade(false)};
     const h=$('ck2');if(h)h.onclick=function(){grade(true)};
   }else{
-    box.innerHTML='<div class="empty">'+(CL.length?'点「开始复习」进入今日卡组。':'「'+cname(COURSE)+'」还没有闪卡。<br>上课时点「把本轮变闪卡」，或在这里手动添加。')+'</div>';
+    box.innerHTML='<div class="empty">'+(CL.length?'点「开始复习」进入今日卡组。':'「'+cname(shownCourse())+'」还没有闪卡。<br>上课时点「把本轮变闪卡」，或在这里手动添加。')+'</div>';
   }
   const lst=$('clist');lst.innerHTML='';
   CL.slice().sort(function(a,b){return (a.due||0)-(b.due||0)}).forEach(function(c){
@@ -3563,7 +3905,7 @@ $('pxquota').onclick=async function(){
     $('pxtst').className='okmsg';
   }catch(e){$('pxtst').textContent='查询失败：'+String(e.message||e).slice(0,70);$('pxtst').className='warn'}
 };
-/* ---------- 导师推荐 ---------- */
+/* ---------- 伙伴推荐 ---------- */
 fillRq(false);renderRst();renderRout();
 $('rq').oninput=function(){renderRout()};
 $('rfill').onclick=function(){fillRq(true);renderRout();toast('已按当前章节填入')};
@@ -3572,9 +3914,12 @@ $('rgo2').onclick=function(){goView('set');scrollToRec()};
 
 $('sys').value=PM[who]||getP(who).p;
 $('bkn').value=getBkn();
-$('svb').onclick=function(){setBkn($('bkn').value.trim()||BKDEF);toast('已记下（作用于课程：'+cname(COURSE)+'）')};
+$('svb').onclick=function(){setBkn($('bkn').value.trim()||BKDEF);toast('已记下（作用于课程：'+cname(shownCourse())+'）')};
 $('pace').value=PA;
-$('pace').onchange=function(){PA=$('pace').value;LS.s('pace',PA);renderShell();toast('节奏已切换')};
+$('pace').onchange=function(){
+  if(cfgLocked()){this.value=PA;lockHint();return}   /* 下拉回弹，别让人以为改成功了 */
+  PA=this.value;setSessPace(PA);renderShell();toast('节奏已切换');
+};
 $('course').onchange=function(){switchCourse(this.value)};
 $('sys').oninput=function(){PM[who]=$('sys').value;LS.s('pm',PM)};
 $('rstd').onclick=function(){delete PM[who];LS.s('pm',PM);$('sys').value=getP(who).p;toast('已恢复默认')};
@@ -3676,11 +4021,20 @@ function insAt(str){
   if(m){const p=a+m.index+m[1].length;ta.setSelectionRange(p,p+1);ta.focus();return}
   const p=a+ins.length;ta.setSelectionRange(p,p);ta.focus();
 }
+/* 「Ω」展开 / 「⋯ 更多」展开都算「现在要看到符号」。
+   手机默认 SYMA=0（不常驻摊开 30 多个按钮），但只切 symopen 的 CSS 类、
+   renderSym() 却因 !SYMA 提前 return 的话，容器是显示出来了、里面一个按钮都没有 ——
+   用户看到的就是「特殊符号点不出来」。显示与否交给 CSS，内容一律照常渲染。 */
+function symVisible(){
+  return !!SYMA||(document.body.classList.contains('compact')
+    &&!document.body.classList.contains('expand')
+    &&document.body.classList.contains('symopen'));
+}
 function renderSym(){
   const tw=$('symtabs'),gw=$('symgrids');
   tw.innerHTML='';gw.innerHTML='';
   $('symtoggle').className='sm'+(SYMA?' pri':'');
-  if(!SYMA){tw.style.display='none';return}
+  if(!symVisible()){tw.style.display='none';return}
   tw.style.display='flex';
   SYMS.forEach(function(g){
     const b=document.createElement('button');b.className='symbtn w'+(SYMT===g.k?' on':'');b.textContent=g.t;
@@ -3703,6 +4057,7 @@ $('symtoggle').onclick=function(){
      点「⋯ 更多」展开完整工具栏时，符号面板按老习惯由 SYMA 决定。 */
   if(document.body.classList.contains('compact')&&!document.body.classList.contains('expand')){
     const on=document.body.classList.toggle('symopen');
+    renderSym();   /* 展开时补渲染符号、收起时清空：不重画就只剩一个空壳 */
     this.className='sm'+(on?' pri':'');
     return;
   }
@@ -3715,7 +4070,7 @@ function syncSymToggle(){
   if(document.body.classList.contains('compact')&&!document.body.classList.contains('symopen'))
     $('symtoggle').className='sm';
 }
-/* 手机端：点摘要展开/收起导师与模式（桌面端这个按钮 display:none，走不到这里） */
+/* 手机端：点摘要展开/收起伙伴与模式（桌面端这个按钮 display:none，走不到这里） */
 $('mctrl').onclick=function(){
   const lb=$('lbar1');if(!lb)return;
   const open=lb.classList.toggle('mopen');
@@ -3726,7 +4081,7 @@ $('mctrl').onclick=function(){
 /* ---------- 拍题上传 ----------
    学生最常干的事是「拍一张题给老师看」，而不是把题一个字一个字敲出来。
    走法：拍照/选图 → 压到最长边 1200 + JPEG → 存进这条消息（base64）→
-   发给导师时换成多模态格式（content 由字符串变成数组）。
+   发给伙伴时换成多模态格式（content 由字符串变成数组）。
    压缩是必须的：手机原图动辄 4–8MB，直接塞 localStorage 会当场撑爆配额（约 5MB）。 */
 const IMG_MAX=1200, IMG_Q=0.72;
 let PEND=null;   /* 待发送的那张图（dataURL） */
@@ -3769,6 +4124,73 @@ function shrinkImg(file){
     fr.readAsDataURL(file);
   });
 }
+/* ---------- 名片 / 头像上传 ----------
+   头像统一裁成正方形 128px JPEG：localStorage 只有几 MB，原图直接塞进去
+   几张就把备份撑爆了。没上传的一律走 avHtml() 的名字首字。 */
+function avatarImg(file){
+  return new Promise(function(res,rej){
+    const fr=new FileReader();
+    fr.onerror=function(){rej(new Error('文件读不出来'))};
+    fr.onload=function(){
+      const im=new Image();
+      im.onerror=function(){rej(new Error('这不是一张能显示的图片'))};
+      im.onload=function(){
+        try{
+          const w=im.naturalWidth||im.width,h=im.naturalHeight||im.height;
+          if(!w||!h){rej(new Error('读不到图片尺寸'));return}
+          const s=Math.min(w,h),S=128;
+          const cv=document.createElement('canvas');cv.width=S;cv.height=S;
+          const g=cv.getContext&&cv.getContext('2d');
+          if(!g){rej(new Error('这个浏览器画不了图'));return}
+          g.fillStyle='#fff';g.fillRect(0,0,S,S);
+          g.drawImage(im,(w-s)/2,(h-s)/2,s,s,0,0,S,S);
+          res(cv.toDataURL('image/jpeg',0.82));
+        }catch(e){rej(e)}
+      };
+      im.src=fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+let AVTARGET='__me';
+function renderIdCard(){
+  const my=$('myav');if(my)my.innerHTML=avHtml('__me',meName(),'idav');
+  const ni=$('myname');if(ni&&document.activeElement!==ni)ni.value=MECARD.name||'';
+  const box=$('avlist');if(!box)return;
+  box.innerHTML='';
+  pKeys().forEach(function(k){
+    const p=getP(k),row=document.createElement('div');row.className='avitem';
+    row.innerHTML=avHtml(k,p.n,'')+'<span class="nm">'+esc(p.n)+'</span>';
+    const up=document.createElement('button');up.type='button';up.className='sm';up.textContent='上传';
+    up.onclick=function(){AVTARGET=k;$('avfile').click()};
+    const cl=document.createElement('button');cl.type='button';cl.className='sm';cl.textContent='清除';
+    cl.onclick=function(){
+      delete AVS[k];LS.s('avatars',AVS);
+      renderIdCard();renderLaunch();reloadMsgs();toast('「'+p.n+'」换回名字首字头像');
+    };
+    row.appendChild(up);row.appendChild(cl);box.appendChild(row);
+  });
+}
+$('myname').onchange=function(){
+  MECARD.name=String(this.value||'').trim().slice(0,16);
+  LS.s('me',MECARD);renderIdCard();reloadMsgs();toast('名字已改成「'+meName()+'」');
+};
+$('myavup').onclick=function(){AVTARGET='__me';$('avfile').click()};
+$('myavclr').onclick=function(){
+  MECARD.av='';LS.s('me',MECARD);renderIdCard();reloadMsgs();toast('换回名字首字头像');
+};
+$('avfile').onchange=async function(){
+  const f=this.files&&this.files[0];this.value='';
+  if(!f)return;
+  toast('正在处理头像…');
+  try{
+    const src=await avatarImg(f);
+    if(AVTARGET==='__me'){MECARD.av=src;LS.s('me',MECARD)}
+    else{AVS[AVTARGET]=src;LS.s('avatars',AVS)}
+    renderIdCard();renderLaunch();reloadMsgs();
+    toast('头像换好了');
+  }catch(e){toast('这张图用不了：'+((e&&e.message)||e))}
+};
 function imgThumb(){
   const b=$('pendimg');if(!b)return;
   if(!PEND){b.style.display='none';b.innerHTML='';return}
@@ -3781,7 +4203,7 @@ $('imgf').onchange=async function(){
   const f=this.files&&this.files[0];this.value='';
   if(!f)return;
   toast('正在处理图片…');
-  try{PEND=await shrinkImg(f);imgThumb();toast('图放好了，点「发送」发给导师')}
+  try{PEND=await shrinkImg(f);imgThumb();toast('图放好了，点「发送」发给伙伴')}
   catch(e){PEND=null;imgThumb();toast('这张图用不了：'+((e&&e.message)||e))}
 };
 
@@ -3833,11 +4255,11 @@ $('sendkey').onchange=function(){
 };
 $('qden').onchange=function(){
   QDEN=this.value==='few'?'few':'one';LS.s('qden',QDEN);applyHabit();
-  toast(QDEN==='one'?'导师一次只问一个问题':'导师一次可问 2–3 个问题');
+  toast(QDEN==='one'?'伙伴一次只问一个问题':'伙伴一次可问 2–3 个问题');
 };
 $('act').onchange=function(){
   ACT=['off','mid','rich'].indexOf(this.value)>=0?this.value:'mid';LS.s('act',ACT);applyHabit();
-  toast(ACT==='off'?'导师不再写动作描写':(ACT==='rich'?'导师会多写一些动作与神态':'导师偶尔会写一点动作神态'));
+  toast(ACT==='off'?'伙伴不再写动作描写':(ACT==='rich'?'伙伴会多写一些动作与神态':'伙伴偶尔会写一点动作神态'));
 };
 $('fsz').onchange=function(){FSZ=String(this.value);LS.s('fsz',FSZ);applyHabit()};
 $('symadef').onchange=function(){SYMA=this.value==='1'?1:0;LS.s('syma',SYMA);renderSym();applyHabit()};
@@ -3852,7 +4274,12 @@ $('start').onclick=function(){
   /* 这一节已经聊起来了？先问一句：接着上，还是开新的一节。
      节之间互不干扰，所以「今天上一节新课」＝开一节，而不是把旧对话越堆越长。 */
   const cur=curMsgs();
-  if(cur.length&&!confirm('「'+sessLabel(CURS)+'」已经有 '+cur.length+' 条对话。\n\n确定 ＝ 开新的一节，从头开始\n取消 ＝ 在这一节里接着上'))newSess(true);
+  /* 文案与判据要一致：点「确定」＝开新的一节，点「取消」＝在这一节接着上。
+     原来写成 !confirm() 是反的，本轮修正。 */
+  if(cur.length&&confirm('「'+sessLabel(CURS)+'」已经有 '+cur.length+' 条对话。\n\n确定 ＝ 开新的一节，从头开始\n取消 ＝ 在这一节里接着上')){
+    newSess(true);   /* 开新节时向导会摆出来：先选完再回来开课，别在这一节抢先发开场白 */
+    return;
+  }
   /* 先切到当前课程视图，避免停在别的页签上看着像"没反应" */
   document.querySelector('[data-v="lesson"]').click();
   ask(head);
@@ -3892,7 +4319,7 @@ $('exp2').onclick=function(){
     if(!ms.length)return '';
     return '## '+sessLabel(s.id)+'\n\n'+ms.map(function(m){return (m.r==='user'?'### 我\n':'### '+curName()+'\n')+m.c}).join('\n\n---\n\n');
   }).filter(Boolean);
-  dl('高数笔记_'+today()+'.md','# 高数学习笔记 '+today()+'\n\n导师：'+curName()+'\n\n'+parts.join('\n\n---\n\n'));
+  dl('高数笔记_'+today()+'.md','# 高数学习笔记 '+today()+'\n\n伙伴：'+curName()+'\n\n'+parts.join('\n\n---\n\n'));
 };
 $('clr').onclick=function(){
   const n=curMsgs().length;
@@ -3923,7 +4350,7 @@ $('revieww').onclick=function(){
   if(!d.length){toast('没有到期的错题');return}
   REV_W=true;rev=d[0].id;revBack=false;renderCards();
   toast('这一轮只考错题，共 '+d.length+' 条')};
-$('expc').onclick=function(){dl('闪卡_'+cname(COURSE)+'_'+today()+'.md',cardList().map(function(c){
+$('expc').onclick=function(){dl('闪卡_'+cname(shownCourse())+'_'+today()+'.md',cardList().map(function(c){
   return (c.w?'【错题 · '+(c.t||'概念不清')+'】\n':'')+'问题：'+c.q+'\n答案：'+c.a+'\n'}).join('\n---\n\n'))};
 $('imp').onclick=function(){$('cfile').click()};
 $('cfile').onchange=async function(e){
@@ -4106,11 +4533,11 @@ function applyLite(){
   ['reload','ldg','ldl','ldc'].forEach(function(id){const b=$(id);if(b)b.style.display='none'});
   const nv=document.querySelector('[data-v="vid"]');if(nv)nv.style.display='none';
 }
-/* applySessWho 顶替原来的 renderPs()：它内部就会 renderPs，还会按「当前这一节」把导师、
-   系统提示词一起摆正 —— 否则刷新后节条停在第 3 节，导师却还是上次全局选的那位。 */
+/* applySessWho 顶替原来的 renderPs()：它内部就会 renderPs，还会按「当前这一节」把伙伴、
+   系统提示词一起摆正 —— 否则刷新后节条停在第 3 节，伙伴却还是上次全局选的那位。 */
 initDrawer();   /* 手机：把 5 行 chrome 搬进抽屉；桌面（含 jsdom）一行不改 */
 applyLite();
-applySessWho();renderModes();applyHabit();updTok();renderSym();syncSymToggle();renderTts();updTts();renderMic();renderVoiceName();renderShell();
+applySessWho();renderModes();applyHabit();updTok();renderSym();syncSymToggle();renderTts();updTts();renderMic();renderVoiceName();renderShell();renderIdCard();migrateFreeChat();renderChat();
 vLoad().catch(function(e){storeWarn(e,'网课库')});
 MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();
@@ -4120,7 +4547,7 @@ if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e
   const tkLine=LITE
     ?'- **教材**：演示版自带两册自制免费讲义（极限与导数入门、导数与微分精讲），进「教材」点「免费讲义」载入、勾一节就能开课；这两册可自由下载转给同学，想用完整教材就点「导入教材」上传自己的 md / pdf / epub'
     :'- **教材**：进「教材」勾选正在学的那一节；站点没带教材正文时会自动放一份示例讲义兜底，也可以用「导入教材」换成自己的 md / txt / pdf / epub';
-  addMsg('assistant',(proxyOn()?'已连上课堂代理，不用自己填 API Key，直接开课。':'先到「设置」（侧栏「生态」）填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token')+'\n'+tkLine+'\n- **选课配置**：点课堂上的「开课设置」，一屏选好导师 / 节奏 / 模式；**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
+  addMsg('assistant',(proxyOn()?'已连上课堂代理，不用自己填 API Key，直接开课。':'先到「设置」（侧栏「生态」）填一个模型接口并保存，就能开课。\n\n- **免费**：智谱 GLM 的 `glm-4-flash` 永久免费，注册另送 2000 万 token')+'\n'+tkLine+'\n- **选课配置**：点课堂上的「开课设置」，一屏选好伙伴 / 节奏 / 模式；**模式**决定“这一轮干什么”——想被考就切「陪练出题」，做完题想查错就切「批改我的解答」\n- **开场**：回到这里点「开始今天的一课」\n\n默认不带整本书进上下文——按需勾选最省 token。')}
 (async function(){
   let err=null;
   /* 教材库打不开（存储被禁 / 库坏了 / 被别的标签页占着）不能连累整页：
@@ -4133,8 +4560,8 @@ if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e
   /* 新的一节还没聊过：先把开课向导摆出来，一屏选完再进课堂。
      放在教材抓取之前、try 之外：断网 / 部署空档时也要留着这个入口，
      否则整个页面就只剩两排空白工具栏。刷新回正在上的那一节时不打扰 ——
-     只看「这一节有没有我发过的话」，系统自动写的开场白不算。 */
-  if(rv==='lesson'&&!MS.some(function(m){return m&&m.r==='user'&&sid(m)===CURS}))openLaunch();
+     这一节点过「开始上课」或已经有我发的话就不弹，系统自动写的开场白不算。 */
+  if(rv==='lesson'&&!startedSess())openLaunch();
   else renderShell();
   try{
     /* 刷新后回到上次待着的那一页。放在这儿而不是启动那一刻：

@@ -93,8 +93,8 @@ function installIDB(win) {
   await wait(50);
   const tabs = [...doc.querySelectorAll('#ctabs .ctab')].map(b => b.textContent);
   log('标签: ' + JSON.stringify(tabs));
-  ok(tabs.length === 4, '标签数 4（自由问答 + 三门内置课），实际 ' + tabs.length);
-  ok(tabs.some(t => t.indexOf('线性代数与解析几何') >= 0), '线代作为一个标签出现');
+  ok(tabs.length === 3, '标签数 3：三门教材课并列（自由问答已搬到课余群聊），实际 ' + tabs.length);
+  ok(tabs.some(t => t.indexOf('解析几何与线性代数') >= 0), '线代作为并列的课程标签出现');
   ok(tabs.some(t => t.indexOf('高等数学') >= 0), '高数作为一个标签出现');
   ok(tabs.some(t => t.indexOf('C语言') >= 0), 'C语言作为一个标签出现');
   ok(!tabs.some(t => t.indexOf('行列式.md') >= 0), '没有按分册拆出标签');
@@ -123,7 +123,7 @@ function installIDB(win) {
   const gP = ev('JSON.stringify(LS.g("prog.__local",{}))');
   const lP = ev('JSON.stringify(LS.g("prog.__local2",{}))');
   ok(gP !== lP || gP === '{}', '进度键各自独立: 高数=' + gP + ' 线代=' + lP);
-  ok(ev('cname("__local2")') === '线性代数与解析几何', '线代课程名可读');
+  ok(ev('cname("__local2")') === '解析几何与线性代数', '线代课程名可读');
 
   log('');
   log('=== 4. 切走再切回，状态恢复 ===');
@@ -133,7 +133,7 @@ function installIDB(win) {
   ev('CTX=["第1章 行列式.md#1"]; setSessCtx()');
   ev('switchCourse("__free")');
   await wait(30);
-  ok(ev('CTX.length') === 0, '自由问答的勾选是空的，不串线代');
+  ok(ev('CTX.length') === 0, '群聊键的勾选是空的，不串线代');
   ev('switchCourse("__local2")');
   await wait(30);
   ok(ev('CTX.join(",")') === '第1章 行列式.md#1', '上下文勾选恢复，实际=' + JSON.stringify(ev('CTX')));
@@ -160,7 +160,7 @@ function installIDB(win) {
   ev('CH=window.__idb.slice(); updateCourses()');
   await wait(30);
   log('当前课程: ' + ev('COURSE'));
-  ok(ev('COURSE') === '__free', '内置课没了、但还有别的教材 → 回落自由问答');
+  ok(ev('COURSE') === '外部书.md', '内置课没了、但还有别的教材 → 回落到剩下那门教材课');
   ok(ev('(LS.g("msgs.__local2",[])||[]).length') === 1, '线代记录仍在存储里，没被清');
 
   log('');

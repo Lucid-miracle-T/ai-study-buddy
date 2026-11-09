@@ -94,7 +94,7 @@ function boot(preset) {
   /* === 1. 入口 === */
   log('=== 1. 设置页有课程管理 ===');
   ok(!!wnd.document.getElementById('courselist'), '设置页有 #courselist 容器');
-  ok(rows().length === 3, '列出全部课程：自由问答 + 两门教材课（实际 ' + rows().length + ' 行）');
+  ok(rows().length === 2, '只列两门教材课（自由问答已搬到课余群聊，实际 ' + rows().length + ' 行）');
   {
     const txt = rows().map(r => r.textContent);
     ok(txt.some(t => /线代/.test(t)) && txt.some(t => /C语言/.test(t)), '两门课都在列表里');
@@ -112,18 +112,17 @@ function boot(preset) {
     ok(/闪卡 1 张/.test(t), '闪卡只算本课的（1 张）—— 自由问答那张不算进来');
     ok(/掌握 1 节/.test(t), '掌握进度对（1 节）');
     ok(/1 册教材/.test(t), '写清了有几册教材');
-    const free = rows().find(r => /自由问答/.test(r.textContent));
-    ok(free && /对话 0 条/.test(free.textContent), '自由问答单独统计（对话 0 条）');
+    ok(!rows().some(r => /自由问答|群聊/.test(r.textContent)), '课程管理里不再出现「自由问答」这一行');
   }
 
-  /* === 3. 自由问答不能删 === */
+  /* === 3. 自由问答改成课余群聊，不再是课程 === */
   log('');
-  log('=== 3. 自由问答只给清空 ===');
+  log('=== 3. 自由问答 → 课余群聊 ===');
   {
-    const free = rows().find(r => /自由问答/.test(r.textContent));
-    const btns = [...free.querySelectorAll('button')].map(x => x.textContent);
-    ok(btns.length === 1 && btns[0] === '清空记录', '自由问答只有一个按钮：清空记录（实际 ' + JSON.stringify(btns) + '）');
-    ok(/没有教材/.test(free.textContent), '并说明原因：没有教材');
+    ok(!rows().some(r => /自由问答/.test(r.textContent)), '「自由问答」不再占一个课程行');
+    ok(!!wnd.document.getElementById('v-chat'), '课余里有独立的群聊视图');
+    ok(!!wnd.document.querySelector('[data-v="chat"][data-g="life"]'), '群聊按钮归在「课余」分组');
+    ok(ev('cname("__free")') === '群聊', '__free 现在显示成「群聊」');
   }
 
   /* === 4. 清空记录：只清记录 === */
@@ -165,7 +164,7 @@ function boot(preset) {
     ok(!ev('LS.g("course",null)==="C语言.md"'), '当前课程没有被误设成已删的课');
   }
 
-  /* === 6. 删掉当前课程 → 回落到自由问答 === */
+  /* === 6. 删掉当前课程 → 回落到剩下的教材课 === */
   log('');
   log('=== 6. 删掉正在上的课 ===');
   {
@@ -173,10 +172,10 @@ function boot(preset) {
     ok(ev('COURSE') === '线代.md', '前提：当前在线上代课');
     await eva('dropCourse({k:"线代.md",f:["线代.md"]})');
     await wait(150);
-    ok(ev('COURSE') === '__free', '当前课程回落到自由问答（实际 ' + ev('COURSE') + '）');
-    ok(ev('MS.length') === 0, '会话换成自由问答的（空的）');
+    ok(ev('COURSE') === '__free', '教材全删后暂时回落到群聊键（实际 ' + ev('COURSE') + '）');
+    ok(ev('MS.length') === 0, '会话是空的');
     ok(ev('CH.length') === 0, '教材都清掉了');
-    ok(rows().length === 1 && /自由问答/.test(rows()[0].textContent), '只剩自由问答一行');
+    ok(rows().length === 0, '课程管理里一行不剩（群聊不算课程）');
   }
 
   /* === 7. 取消确认就不动数据 === */
@@ -191,7 +190,7 @@ function boot(preset) {
     await eva('dropCourse({k:"概率论.md",f:["概率论.md"]})');
     await wait(120);
     ok(ev('CH.length') === n0, '取消后教材还在（' + n0 + ' 节）');
-    ok(rows().length === 2, '课程行也没少');
+    ok(rows().length === 1, '课程行也没少（现在只数教材课，群聊不算）');
   }
 
   /* === 8. 确认框得说清要删什么 === */

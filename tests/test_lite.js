@@ -2,13 +2,13 @@
  *
  * 背景：主站（自有域名）与 GitHub Pages 用的是同一个文件 —— 前者从本地目录部署，
  *       后者从仓库 main 根目录发布。于是可以靠 location.hostname 一份代码两套行为：
- *         github.io            → 体验版：高数一本教材、前三位导师、不内置网课内容
+ *         github.io            → 体验版：高数一本教材、前三位伙伴、不内置网课内容
  *         自有域名 / 本地打开   → 全功能版
  *
  * 这里钉住的就是「体验版确实缩了、完整版一点没动」：
  *   1. 教材包 PACKS：体验版只剩第一本（高数八上），完整版仍是三本
- *   2. 导师 pKeys()：体验版只给前三位（柯西/莱布尼茨/牛顿），完整版八位
- *   3. 推荐导师 rRank()：不能推荐出界面上选不到的人（RTYPE 里硬编码了后六位）
+ *   2. 伙伴 pKeys()：体验版只给前三位（柯西/莱布尼茨/牛顿），完整版八位
+ *   3. 推荐伙伴 rRank()：不能推荐出界面上选不到的人（RTYPE 里硬编码了后六位）
  *   4. 内置网课 VBUILTIN：体验版为空
  *   5. DOM：仅线代 / 仅 C 语言 / 网课 三个入口收起；「导入教材」仍然留着
  */
@@ -79,7 +79,7 @@ async function boot(url) {
     ok(A.ev('PACKS.length') === 1, 'PACKS 长度是 1，不是 3');
 
     const pk = A.ev('pKeys().join(",")');
-    ok(pk === 'cauchy,leibniz,newton', '导师只剩前三位（柯西/莱布尼茨/牛顿）：' + pk);
+    ok(pk === 'cauchy,leibniz,newton', '伙伴只剩前三位（柯西/莱布尼茨/牛顿）：' + pk);
     ok(A.ev('pKeys().length') === 3, 'pKeys 长度是 3，不是 8');
     ok(A.ev('Object.keys(PERSONA).length') === 8, 'PERSONA 本身没被删（后五位仍在源码里，只是不给用）');
 
@@ -90,7 +90,7 @@ async function boot(url) {
     const ranked = A.ev('rRank({aemeath:9,shorekeeper:8,changli:7,cauchy:3})');
     ok(Array.isArray(ranked) && ranked.indexOf('aemeath') < 0 && ranked.indexOf('shorekeeper') < 0
       && ranked.indexOf('changli') < 0,
-      '推荐不会给出界面上没有的导师：' + JSON.stringify(ranked));
+      '推荐不会给出界面上没有的伙伴：' + JSON.stringify(ranked));
     ok(ranked.length === 1 && ranked[0] === 'cauchy',
       '只剩下真正可用的那位（柯西），而且是分数最高的可见者：' + JSON.stringify(ranked));
 
@@ -130,7 +130,7 @@ async function boot(url) {
     ok(B.ev('LITE') === false, 'LITE 判定为假（不是 github.io）');
     ok(B.ev('PACKS.length') === 3, '三本教材都在（高数 / 线代 / C 语言）：'
       + B.ev('PACKS.map(function(p){return p.key}).join(",")'));
-    ok(B.ev('pKeys().length') === 8, '八位导师都在');
+    ok(B.ev('pKeys().length') === 8, '八位伙伴都在');
     ok(B.ev('VBUILTIN.length') === 3, '三个内置网课包都在');
     ok(B.ev('PORDER.length') === 8, '推荐排序表是完整的八位');
 

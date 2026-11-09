@@ -2,7 +2,7 @@
  *
  * 背景：用户反馈「一次问三个问题，阅读和思考负担都太大」。
  * 根因是默认节奏 PACE.mid 写的是「一次可以提出 2–3 个递进的小问题」，
- * 于是导师几乎每轮都抛两三个问题，学习者要同时记住才行。
+ * 于是伙伴几乎每轮都抛两三个问题，学习者要同时记住才行。
  *
  * 断言四件事：
  *   1. 默认「一次一问」；设置页有对应开关，且默认选中「一次一问」
@@ -74,7 +74,7 @@ function boot(preset) {
   const ev = s => { try { return wnd.eval(s); } catch (e) { errors.push('eval: ' + e.message); return undefined; } };
   const q = s => doc.querySelector(s);
 
-  /* 让导师开场，保证 sysMsg 有课程上下文 */
+  /* 让伙伴开场，保证 sysMsg 有课程上下文 */
   ev('CH=[{id:"c.md#1",file:"c.md",title:"行列式",txt:"x"}]; COURSE="c.md"; LS.s("course",COURSE);');
 
   /* === 1. 默认一次一问 === */
@@ -82,7 +82,7 @@ function boot(preset) {
   ok(ev('QDEN') === 'one', '默认 QDEN = one（实际 ' + ev('QDEN') + '）');
   {
     const sel = q('#qden');
-    ok(!!sel, '设置页有「导师一次问几个问题」开关');
+    ok(!!sel, '设置页有「伙伴一次问几个问题」开关');
     ok(sel && sel.value === 'one', '开关默认选中「一次一问」，实际 ' + (sel && sel.value));
     const opts = sel ? [...sel.options].map(o => o.value).join(',') : '';
     ok(opts === 'one,few', '两个选项 one/few，实际 ' + opts);

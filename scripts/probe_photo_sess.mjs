@@ -1,9 +1,9 @@
-/* 真浏览器验证「拍题上传」与「每节导师」
+/* 真浏览器验证「拍题上传」与「每节伙伴」
    为什么必须用真浏览器：jsdom 没有布局引擎、没有 canvas、没有真实图像解码。
    这里要看的恰恰是这三样：
      · 输入区多了一个 📷 按钮之后，桌面与手机上会不会挤坏/换行
      · 一张 3000×2000 的真图，压缩出来是多少像素、多大体积、多久
-     · 切节时顶栏那排导师高亮与 #pcur 文案有没有真的跟着换
+     · 切节时顶栏那排伙伴高亮与 #pcur 文案有没有真的跟着换
 
    前置：先起静态服务（8902）与 headless Edge（9227）
      python -m http.server 8902 --bind 127.0.0.1
@@ -138,7 +138,7 @@ console.log('  结果：' + await ev(`JSON.stringify({
 })`));
 await shot(path.join(OUT,'photo_thumb.png'));
 
-console.log('\n===== 6. 每节导师：切节换人 =====');
+console.log('\n===== 6. 每节伙伴：切节换人 =====');
 console.log('  造两节：' + await ev(`(function(){
   PEND=null;imgThumb();
   COURSE='__free';LS.s('course',COURSE);

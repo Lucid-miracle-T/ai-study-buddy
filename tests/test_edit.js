@@ -119,7 +119,7 @@ const REPLY = '好$M_{32}$，按行展开。';
     const userBtns = msgs.filter(m => m.classList.contains('me')).map(m => m.querySelector('.who button'));
     const aiBtns = msgs.filter(m => !m.classList.contains('me')).map(m => m.querySelector('.who button'));
     ok(userBtns.every(b => b && b.textContent === '编辑'), '用户消息的按钮是「编辑」');
-    ok(aiBtns.every(b => b && b.textContent === '🔊'), '导师消息的按钮还是「朗读」');
+    ok(aiBtns.every(b => b && b.textContent === '🔊'), '伙伴消息的按钮还是「朗读」');
     ok(qa('#mw .msg.me button').length === 2 && qa('#mw .msg:not(.me) button').length === 2,
       '两类按钮各 2 个，没有串');
   }
@@ -140,7 +140,7 @@ const REPLY = '好$M_{32}$，按行展开。';
       '提示会清掉后面几条（实际 ' + JSON.stringify(hint && hint.textContent) + '）');
     ok(q('#mw .msg[data-i="0"]').classList.contains('editing'), '消息进入 editing 态');
     /* 最后一条消息编辑时不该出现"会清掉后面"的提示 */
-    ok(!q('#mw .msg[data-i="3"] .edbar'), '导师消息没有编辑器（3 号是导师的）');
+    ok(!q('#mw .msg[data-i="3"] .edbar'), '伙伴消息没有编辑器（3 号是伙伴的）');
   }
 
   /* === 3. 取消要能还原 === */

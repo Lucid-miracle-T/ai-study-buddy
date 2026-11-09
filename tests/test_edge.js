@@ -205,7 +205,7 @@ function installIDB(win) {
   {
     ev('PR={}; renderProg();');
     ok(true, '空进度 renderProg() 不崩');
-    ok(ev('cname("__free")') === '自由问答', 'cname(__free) 正确');
+    ok(ev('cname("__free")') === '群聊', 'cname(__free) 已改名为「群聊」');
     ok((ev('cname("奇怪的名字.md")') || '').indexOf('.md') < 0, 'cname 去掉 .md 扩展名');
     ok(typeof ev('cname(undefined)') === 'string', 'cname(undefined) 不崩');
     ok(typeof ev('cname("")') === 'string', 'cname("") 不崩');

@@ -57,7 +57,7 @@ const LAYOUT = `(function(){
             disp:cs.display,bg:cs.backgroundColor,vis:cs.display!=='none'&&r.width>0};}
   return JSON.stringify({
     主题:document.body.className, 分组:document.body.dataset.navgrp,
-    向导:box('#launch'), 向导标题:box('.lh-title h1'), 第一张导师卡:box('.lh-card'),
+    向导:box('#launch'), 向导标题:box('.lh-title h1'), 第一张伙伴卡:box('.lh-card'),
     主按钮:box('.lh-go'), 侧栏:box('#nav'), 图标网格:box('.nv'), 分组标签:box('#gtabs'),
     课堂摘要:box('#lsum'), 课堂工具条:box('#lbar1'), 节奏开关:box('#pctoggle'),
     输入区:box('#inbar'), 发送:box('#send'),

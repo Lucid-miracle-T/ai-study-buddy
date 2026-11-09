@@ -1,4 +1,4 @@
-/* 拍题上传：把题目拍下来直接丢给导师看
+/* 拍题上传：把题目拍下来直接丢给伙伴看
  *
  * 背景：学习场景里最常见的一步是「这道题怎么做」——用户手上是一本纸质教辅，
  * 让他把整道题一个字一个字敲进输入框，既不现实也容易出错。所以要能拍照上传。
@@ -170,7 +170,7 @@ function boot(opts) {
 
       const noText = JSON.parse(ev('JSON.stringify(packContent("",' + JSON.stringify(IMG) + '))'));
       ok(noText[0].text && noText[0].text.length > 0, '有图没写字时补一句说明（text 不能是空串）：' + JSON.stringify(noText[0].text));
-      ok(/题/.test(noText[0].text), '补的那句话提到了「题」，让导师知道要看图');
+      ok(/题/.test(noText[0].text), '补的那句话提到了「题」，让伙伴知道要看图');
     }
 
     log('');

@@ -1,6 +1,6 @@
-/* 「该请谁教你」：按要学的内容 + 你现在的状态，推荐一位导师
+/* 「该请谁教你」：按要学的内容 + 你现在的状态，推荐一位伙伴
  *
- * 用户原话：「能根据要学的内容，推荐一位导师」
+ * 用户原话：「能根据要学的内容，推荐一位伙伴」
  *
  * 设计边界（本测试守的就是这些）：
  *   · 推荐的不是「谁教哪一科」——所有人格都与学科无关（见设置页那段说明）——
@@ -77,7 +77,7 @@ function installIDB(win) {
   log('=== 1. 界面与入口 ===');
   ok(!!doc.querySelector('#reccard'), '设置页有「该请谁教你」卡片');
   ok(!!doc.querySelector('#rq') && !!doc.querySelector('#rst') && !!doc.querySelector('#rgo'), '有输入框、状态条、推荐按钮');
-  ok(!!doc.querySelector('#rgo2'), '上课页顶部也有「推荐导师」入口');
+  ok(!!doc.querySelector('#rgo2'), '上课页顶部也有「推荐伙伴」入口');
   ok(ev('$("rq").value.length>0'), '内容框按当前章节预填（' + ev('$("rq").value') + '）');
   ok(doc.querySelectorAll('#rst .pill').length === ev('RSTATE.length'), '状态标签全渲染出来（' + ev('RSTATE.length') + ' 个）');
 
@@ -135,7 +135,7 @@ function installIDB(win) {
   ok(first && first.dataset.rk === 'leibniz', '主推按钮指向莱布尼茨');
   first.onclick();
   await wait(20);
-  ok(ev('who') === 'leibniz', '点了之后当前导师换成莱布尼茨');
+  ok(ev('who') === 'leibniz', '点了之后当前伙伴换成莱布尼茨');
   ok(ev('LS.g("who")') === 'leibniz', '换人结果已落盘（刷新后还在）');
   ok(ev('$("sys").value') === ev('getP("leibniz").p'), '提示词框跟着换成人格自己的（没被上一位的改动串台）');
   ok(ev('$("v-lesson").classList.contains("on")'), '「用 TA 上课」直接跳到上课页');

@@ -1,23 +1,23 @@
-/* 每一节单独选导师
+/* 每一节单独选伙伴
  *
  * 背景：同一门课里，不同内容的「该请谁教」并不一样 ——
  *   讲极限与证明的那节更适合柯西，讲导数几何意义的那节更适合莱布尼茨，
  *   讲应用题建模的那节更适合牛顿。
- * 原先导师是全局一个开关，换节不换人；用户要求「每一节导师可单独选」。
+ * 原先伙伴是全局一个开关，换节不换人；用户要求「每一节伙伴可单独选」。
  *
- * 做法：把导师存到节对象上（s.who）。
+ * 做法：把伙伴存到节对象上（s.who）。
  *   - 切节 / 切课时按节取人（applySessWho），系统提示词、顶栏高亮、气泡上的名字一起跟上
- *   - 在某节点一位导师，只写进那一节，别的节不动
+ *   - 在某节点一位伙伴，只写进那一节，别的节不动
  *   - 新开一节默认沿用当前这位（多数时候想接着用同一个人）
  *   - 升级前的节没有 who 字段 → 回落到全局 who，也就是你之前选的那位，行为不变
  *
  * 断言：
- *   1. 新节继承当前导师
- *   2. 在某节换导师，只影响这一节
+ *   1. 新节继承当前伙伴
+ *   2. 在某节换伙伴，只影响这一节
  *   3. 切节换人：who / 顶栏高亮 / #pcur 文案 / 系统提示词 一起变
  *   4. 老节（无 who）回落全局设置，行为与升级前一致
- *   5. 推荐导师的结果也写回当前节
- *   6. 气泡上的导师名按「那一节」的导师显示
+ *   5. 推荐伙伴的结果也写回当前节
+ *   6. 气泡上的伙伴名按「那一节」的伙伴显示
  *   7. who 存在 sess 键里 —— 导出备份会把「每节是谁」一起带走
  *   8. 切课程同样按节取人；删掉当前节后也要归位
  */
@@ -86,11 +86,14 @@ function boot() {
   const pills = () => Array.from(doc.querySelectorAll('#pbox .pill'));
   const onPill = () => (pills().filter(p => p.className.indexOf('on') >= 0)[0] || {}).textContent;
 
-  /* 两门课、每门两节，导师先都留空（模拟升级前的老数据） */
+  /* 两门课、每门两节，伙伴先都留空（模拟升级前的老数据） */
   ev('CH=[{id:"c.md#1",file:"c.md",title:"行列式",txt:"x"},{id:"d.md#1",file:"d.md",title:"导数",txt:"y"}];');
   ev('COURSE="c.md";LS.s("course","c.md");');
   ev('SESS=[{id:"sA",t:1,title:"极限"},{id:"sB",t:2,title:"证明"}];CURS="sA";saveSess();');
-  ev('MS=[{r:"user",c:"开始",s:"sA"},{r:"a",c:"好",s:"sA"},{r:"user",c:"继续",s:"sB"},{r:"a",c:"接着",s:"sB"}];saveMs();');
+  /* 只放伙伴的话、不放「我发的话」：新规则下本节一旦有用户发言就锁定伙伴/节奏，
+     这组用例测的是「每节各记各的」存取，场景应当是还没正式开课。
+     课中锁定本身由 tests/test_lock.js 专门守着。 */
+  ev('MS=[{r:"a",c:"好",s:"sA"},{r:"a",c:"再讲一句",s:"sA"},{r:"a",c:"接着",s:"sB"},{r:"a",c:"证明见此",s:"sB"}];saveMs();');
   ev('LS.s("who","cauchy");who="cauchy";applySessWho();');
   await wait(40);
 
@@ -100,7 +103,7 @@ function boot() {
   ok(ev('SESS[0].who') === undefined, '没有偷偷往老数据里塞字段（升级不改写历史）');
 
   log('');
-  log('=== 2. 在某节换导师：只写进这一节 ===');
+  log('=== 2. 在某节换伙伴：只写进这一节 ===');
   {
     /* 当前在 sA，点「牛顿」 */
     const nw = pills().filter(p => p.textContent === '牛顿')[0];
@@ -130,9 +133,9 @@ function boot() {
     /* 切回 sA：人应该跟着回来 */
     ev('switchSess("sA")');
     await wait(60);
-    ok(ev('who') === 'newton', '切回 sA，导师自己回到牛顿');
+    ok(ev('who') === 'newton', '切回 sA，伙伴自己回到牛顿');
     ok(onPill() === '牛顿', '顶栏高亮也跟着回到牛顿（实际「' + onPill() + '」）');
-    ok(/牛顿/.test($('#pcur').textContent), '#pcur 显示本节导师：' + $('#pcur').textContent);
+    ok(/牛顿/.test($('#pcur').textContent), '#pcur 显示本节伙伴：' + $('#pcur').textContent);
 
     /* 切到 sB：换成莱布尼茨 */
     ev('switchSess("sB")');
@@ -144,19 +147,19 @@ function boot() {
     /* 系统提示词要跟着换人 —— 否则界面显示牛顿、发出去的却是柯西的提示词 */
     const sys = ev('$("sys").value') || '';
     const pLeib = ev('getP("leibniz").p') || '';
-    ok(sys === pLeib, '系统提示词换成了当前节那位导师的（不然就是「挂着甲的名、说乙的话」）');
+    ok(sys === pLeib, '系统提示词换成了当前节那位伙伴的（不然就是「挂着甲的名、说乙的话」）');
   }
 
   log('');
-  log('=== 4. 气泡上的名字按「那一节」的导师 ===');
+  log('=== 4. 气泡上的名字按「那一节」的伙伴 ===');
   {
     ev('switchSess("sA")');
     await wait(60);
     ev('reloadMsgs()');
     await wait(40);
     const whos = Array.from(doc.querySelectorAll('#mw .msg .who')).map(e => e.textContent);
-    ok(whos.some(t => /牛顿/.test(t)), 'sA 里导师气泡写的是牛顿：' + JSON.stringify(whos));
-    ok(!whos.some(t => /莱布尼茨/.test(t)), '不会串成另一节的导师');
+    ok(whos.some(t => /牛顿/.test(t)), 'sA 里伙伴气泡写的是牛顿：' + JSON.stringify(whos));
+    ok(!whos.some(t => /莱布尼茨/.test(t)), '不会串成另一节的伙伴');
 
     ev('switchSess("sB")');
     await wait(60);
@@ -177,17 +180,17 @@ function boot() {
     await wait(60);
     ok(ev('SESS.length') === before + 1, '多了一节');
     ok(ev('SESS[SESS.length-1].who') === 'newton', '新节的 who 就是当前这位（多数时候想接着用同一个人）');
-    ok(ev('who') === 'newton', '当前导师没变');
+    ok(ev('who') === 'newton', '当前伙伴没变');
   }
 
   log('');
-  log('=== 6. 推荐导师的结果也写回当前节 ===');
+  log('=== 6. 推荐伙伴的结果也写回当前节 ===');
   {
     ev('switchSess("sB")');
     await wait(50);
     ev('applyRec("cauchy")');
     await wait(40);
-    ok(ev('who') === 'cauchy', '推荐后当前导师是柯西');
+    ok(ev('who') === 'cauchy', '推荐后当前伙伴是柯西');
     ok(ev('sessWho("sB")') === 'cauchy', '写回了 sB 这一节');
     ok(ev('sessWho("sA")') === 'newton', 'sA 仍是牛顿');
 
@@ -208,7 +211,7 @@ function boot() {
     const b = (arr || []).filter(x => x.id === 'sB')[0];
     ok(a && a.who === 'newton', 'sA 的 who 落到了存储里');
     ok(b && b.who === 'cauchy', 'sB 的 who 也落到了存储里');
-    ok(ev('bkpKeys().indexOf("gx.sess.c.md") >= 0'), '这个键在导出备份的范围内（换设备后导师跟着走）');
+    ok(ev('bkpKeys().indexOf("gx.sess.c.md") >= 0'), '这个键在导出备份的范围内（换设备后伙伴跟着走）');
   }
 
   log('');
@@ -219,7 +222,7 @@ function boot() {
     ev('switchCourse("d.md")');
     await wait(80);
     ok(ev('COURSE') === 'd.md', '切到了 d.md');
-    ok(ev('who') === 'cauchy', 'd.md 的 sE 没记导师 → 回落到全局（此刻是柯西）');
+    ok(ev('who') === 'cauchy', 'd.md 的 sE 没记伙伴 → 回落到全局（此刻是柯西）');
     ev('switchSess("sD")');
     await wait(60);
     ok(ev('who') === 'leibniz', 'd.md 的 sD 记着莱布尼茨，切过去就是莱布尼茨');
@@ -235,7 +238,7 @@ function boot() {
     ev('delSess(' + JSON.stringify(delId) + ')');
     await wait(60);
     ok(ev('SESS.some(function(s){return s.id===CURS})'), '当前节落在了一个还存在的节上');
-    ok(ev('who') === ev('sessWho(CURS)'), '导师跟着落回新当前节的那位（不会停留在已删节的人上）');
+    ok(ev('who') === ev('sessWho(CURS)'), '伙伴跟着落回新当前节的那位（不会停留在已删节的人上）');
   }
 
   log('');
@@ -243,10 +246,10 @@ function boot() {
   ok(/function applySessWho/.test(SRC()), '有 applySessWho');
   ok(/applySessWho\(\)/.test(SRC()), '确实被调用');
   ok(/function setSessWho/.test(SRC()), '有 setSessWho');
-  ok(/setSessWho\(k\)/.test(SRC()), '换导师时写回当前节');
-  ok(/who:who/.test(SRC()), '新节带上当前导师');
+  ok(/setSessWho\(k\)/.test(SRC()), '换伙伴时写回当前节');
+  ok(/who:who/.test(SRC()), '新节带上当前伙伴');
   const bootLine = SRC().slice(SRC().indexOf('applySessWho();renderModes()'), SRC().indexOf('applySessWho();renderModes()') + 60);
-  ok(/applySessWho\(\);renderModes\(\)/.test(bootLine), '启动那行用 applySessWho 顶替了裸 renderPs（刷新后导师跟得上节）');
+  ok(/applySessWho\(\);renderModes\(\)/.test(bootLine), '启动那行用 applySessWho 顶替了裸 renderPs（刷新后伙伴跟得上节）');
   ok(/sessWho\(id\)/.test(SRC()), '有按节取人的 sessWho');
 
   log('');

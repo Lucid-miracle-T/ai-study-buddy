@@ -130,7 +130,7 @@ function seedWithCtx(course) {
     const b = boot(s, seedWithCtx());
     const A = mk(b.wnd);
     await wait(2500);
-    ok(A.ev('document.querySelectorAll("#ctabs .ctab").length') > 0, '课程标签栏照样画出来（没被存储问题带崩）');
+    ok(!!A.doc.querySelector('#ctabs .lb'), '课程标签栏照样画出来（没被存储问题带崩；没教材时不硬塞一个群聊标签）');
     ok(A.ev('document.querySelectorAll("#stabs .stab").length') > 0, '「节」那一条照样画出来');
     ok(!!A.doc.querySelector('#storwarn'), '出现一条常驻提示，把原因说清楚');
     ok(/本地存储这次没能打开/.test(A.ev('document.querySelector("#storwarn").textContent') || ''), '提示里写明「本地存储没能打开」');

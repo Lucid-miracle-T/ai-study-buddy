@@ -7,7 +7,7 @@
      3) node scripts/probe_mobile.mjs
 
    检查点：
-   - 上课页：输入栏底边 ≤ 视口高；折叠后的工具条只有一行；点摘要能展开导师/模式
+   - 上课页：输入栏底边 ≤ 视口高；折叠后的工具条只有一行；点摘要能展开伙伴/模式
    - 教材页：选章后目录收起、正文高度 ≥ 400；点「目录」能展开
    - 网课页：选讲后目录收起、正文高度 ≥ 450
    - 各视图没有把页面撑出横向滚动
@@ -59,12 +59,12 @@ const vh = await ev('innerHeight');
 const bar1 = await ev(rect('#lbar1'));
 const inbar = await ev(rect('#inbar'));
 const msgs = await ev(rect('#msgs'));
-ok(bar1 && bar1.h <= 60, `导师/模式默认折叠成一行（实际 ${bar1 && bar1.h}px）`);
+ok(bar1 && bar1.h <= 60, `伙伴/模式默认折叠成一行（实际 ${bar1 && bar1.h}px）`);
 ok(inbar && inbar.b <= vh + 1, `输入栏在视口内（底边 ${inbar && inbar.b} ≤ ${vh}）`);
 ok(msgs && msgs.h >= 300, `对话区保留足够高度（实际 ${msgs && msgs.h}px）`);
 await ev(`$('mctrl').click()`); await sleep(300);
 const pbox = await ev(rect('#pbox'));
-ok(pbox && pbox.d === 'flex' && pbox.h > 0, '点摘要能展开导师列表');
+ok(pbox && pbox.d === 'flex' && pbox.h > 0, '点摘要能展开伙伴列表');
 await shot('lesson-open.png');
 await ev(`$('mctrl').click()`); await sleep(300);
 await shot('lesson.png');

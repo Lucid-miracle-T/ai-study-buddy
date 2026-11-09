@@ -2,12 +2,12 @@
  *
  * 背景（2026-11-08）：用户截图反馈「现在功能入口太多了」，参照破卷改成
  *   ① 侧栏三标签图标网格（学习 / 课余 / 生态）
- *   ② 开课向导：导师 / 节奏 / 模式 / 章节一屏选完，只有一个主按钮
+ *   ② 开课向导：伙伴 / 节奏 / 模式 / 章节一屏选完，只有一个主按钮
  *   ③ 课堂两排工具栏默认收成一行，点「⋯」原样展开
  *
  * 必须守住的底线：
- *   - 六个视图、原来每一个按钮、每一颗药丸都还在 DOM 里，只是默认 display:none
- *   - 向导里的卡是「遥控器」，点它＝点原来的药丸 ⇒ 每节各记各的导师 / 章节、
+ *   - 七个视图（含群聊）、原来每一个按钮、每一颗药丸都还在 DOM 里，只是默认 display:none
+ *   - 向导里的卡是「遥控器」，点它＝点原来的药丸 ⇒ 每节各记各的伙伴 / 章节、
  *     老数据回落、体验版只给前三位，这些旧逻辑一行都不用重写
  *   - #foot 仍是 <nav> 的直接子元素（test_foot.js 的根因），不能塞回 .nv
  *   - 有对话 / 停在别的页签时，别拿向导拦人
@@ -88,7 +88,7 @@ function boot(storage, url) {
     ok(qa('#gtabs button').map(b => b.textContent).join('') === '学习课余生态',
       '标签依次是 学习 / 课余 / 生态');
     const vs = qa('.nv button').map(b => b.dataset.v).sort().join(',');
-    ok(vs === 'book,card,lesson,prog,set,vid', '六个视图入口都还在：' + vs);
+    ok(vs === 'book,card,chat,lesson,prog,set,vid', '七个视图入口都还在（群聊是第七个）：' + vs);
     ok(qa('.nv button').every(b => !!b.dataset.g && !!b.dataset.ic),
       '每个视图都带分组与图标（图标走 CSS ::before，不污染按钮文字）');
     ok(q('.nv button').textContent === '上课', '按钮文字没被图标撑坏，仍是「上课」');
@@ -104,7 +104,7 @@ function boot(storage, url) {
     ok(qa('#pacebar [data-cmd]').length >= 7, '九条节奏命令仍在（默认折叠）');
     ok(!!q('#pacebar [data-act="settle"]'), '「今天结束 · 结算」仍在');
     ok(/body\.compact:not\(\.expand\) #lbar1>#pbox/.test(src),
-      '桌面端默认收起导师药丸的规则在源码里');
+      '桌面端默认收起伙伴药丸的规则在源码里');
     ok(/body\.compact:not\(\.expand\):not\(\.paceopen\) #pacebar>button/.test(src),
       '节奏命令默认折叠的规则在源码里');
     ok(/#launch\[hidden\]\{display:none\}/.test(src), '向导用 hidden 属性开关，不会盖住聊天');
@@ -117,13 +117,13 @@ function boot(storage, url) {
     ok(!!q('#launch') && q('#launch').hidden === false, '新的一节还没聊过：启动时自动摆出开课向导');
     ok(qa('.lh-go').length === 1 && !!q('#lhStart'), '整屏只有一个主按钮「开始上课」');
     const n = ev('pKeys().length');
-    ok(qa('#lhWho .lh-card').length === n, '导师大卡数量＝可选人设数量（' + n + '）');
+    ok(qa('#lhWho .lh-card').length === n, '伙伴大卡数量＝可选人设数量（' + n + '）');
     ok(qa('#lhPace .lh-opt').length === 3, '教学节奏三选一');
     ok(qa('#lhMode button').length === ev('Object.keys(MODE).length'), '本轮模式全在向导里');
     ok(!!q('#lhCtx') && q('#lhCtx').textContent.length > 0, '带进课堂的章节有摘要');
     ok(!!q('#lhGoBook') && !!q('#lhSwap') && !!q('#lhClose'), '去勾选 / 换课程 / 关闭三个出口都在');
-    ok(/导师、节奏、模式在这一节里随时可以改/.test(q('.lh-note').textContent),
-      '说明「随时可改」，不照抄破卷「课中不可更改」的假规则');
+    ok(/开新的一节可重新选择|已经开课/.test(q('.lh-note').textContent),
+      '说明「课中固定、开新的一节可重选」（新规则）');
   }
 
   /* ============ 3. 卡片是遥控器：仍然写回「每一节」 ============ */
@@ -134,7 +134,7 @@ function boot(storage, url) {
     const ni = ev('pKeys().indexOf("newton")');
     ok(ni >= 0, '完整版里有牛顿');
     cards[ni].click();
-    ok(ev('who') === 'newton', '点大卡真的换了导师');
+    ok(ev('who') === 'newton', '点大卡真的换了伙伴');
     ok(ev('sessOf(CURS).who') === 'newton', '写回的是当前这一节，不是全局');
     ok(q('#pbox .pill.on') && q('#pbox .pill.on').textContent === '牛顿',
       '课堂那排药丸同步高亮（虽然默认收起）');
@@ -143,7 +143,8 @@ function boot(storage, url) {
     const opts = qa('#lhPace .lh-opt');
     opts[2].click();
     ok(ev('PA') === 'fast' && q('#pace').value === 'fast', '节奏卡同步了下拉框和 PA');
-    ok(ev('LS.g("pace")') === 'fast', '节奏写进了 localStorage');
+    ok(ev('sessOf(CURS).pace') === 'fast' && ev('LS.g("sess."+COURSE,null) !== null'),
+      '节奏写进当前节（sess 存储），不覆盖全局 gx.pace');
 
     const drill = qa('#lhMode button').filter(b => b.textContent === '陪练出题')[0];
     ok(!!drill, '向导里有「陪练出题」');
@@ -169,7 +170,7 @@ function boot(storage, url) {
 
     q('#gtabs [data-g="study"]').click();
     ok(doc.body.dataset.navgrp === 'study', '点「学习」能切回来');
-    ['lesson', 'book', 'card', 'vid', 'prog', 'set'].forEach(v => {
+    ['lesson', 'book', 'card', 'chat', 'vid', 'prog', 'set'].forEach(v => {
       q('[data-v="' + v + '"]').click();
       ok(q('#v-' + v).classList.contains('on'), '视图「' + v + '」仍然可达');
     });
@@ -213,14 +214,19 @@ function boot(storage, url) {
     q('#lsetup').click();
     ok(q('#launch').hidden === false, '「开课设置」能重新打开向导');
     q('#lhClose').click();
-    ok(q('#launch').hidden === true, '关闭后回到课堂');
-    q('#lsetup').click();
+    ok(q('#launch').hidden === false, '这一节还没开课：✕ 不跳过选择，向导仍摊着');
+    ok(/开始上课/.test((q('#toast') || {}).textContent || ''), '并提示先点「开始上课 →」');
     q('#lhGoBook').click();
     ok(q('#launch').hidden === true && doc.body.dataset.view === 'book',
       '点「去教材勾选」跳到教材页且不带走向导');
-    q('#lsetup').click();
+    q('[data-v="lesson"]').click();
+    ok(q('#launch').hidden === false, '从教材切回学习页：向导重新摆出来（选择是必经的）');
     q('#lhStart').click();
     ok(q('#launch').hidden === true, '主按钮收起向导、进课堂');
+    ok(ev('cfgLocked()') === true, '点过「开始上课」后本节锁定，伙伴 / 节奏固定');
+    q('#lsetup').click();
+    q('#lhClose').click();
+    ok(q('#launch').hidden === true, '已经开课：✕ 照常回到课堂');
     ok(ev('typeof ask') === 'function', '没配接口时不弹设置警告、也不发请求');
   }
 
@@ -229,7 +235,7 @@ function boot(storage, url) {
   log(errs.length ? errs.join('\n') : '无');
   if (errs.length) errors.push(...errs);
 
-  /* ============ 6. 体验版：只给前三位导师 ============ */
+  /* ============ 6. 体验版：只给前三位伙伴 ============ */
   log('');
   log('=== 6. 体验版（github.io） ===');
   {
@@ -238,7 +244,7 @@ function boot(storage, url) {
     const ld = L.wnd.document;
     ok(L.wnd.eval('LITE') === true, 'LITE 判定为真');
     ok(ld.querySelectorAll('#lhWho .lh-card').length === 3,
-      '向导只给前三位导师，不会推荐出选不到的人');
+      '向导只给前三位伙伴，不会推荐出选不到的人');
     ok(ld.querySelector('[data-v="vid"]').style.display === 'none', '网课入口照旧收起');
     ok(!!ld.querySelector('#ldfree'), '免费讲义入口照旧保留');
     ok(ld.querySelectorAll('#gtabs button').length === 3, '体验版也有三标签');

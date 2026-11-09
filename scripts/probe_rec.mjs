@@ -1,4 +1,4 @@
-/* 真浏览器验证「该请谁教你」：按要学的内容 + 现状推荐导师。
+/* 真浏览器验证「该请谁教你」：按要学的内容 + 现状推荐伙伴。
    用法：先起 8899 静态服务与 Edge(9225)，再 node scripts/probe_rec.mjs */
 const PORT = 9225, fs = await import('fs');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -40,11 +40,11 @@ await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, dev
 await send('Page.navigate', { url: 'http://127.0.0.1:8902/index.html' });
 await sleep(3000);
 
-/* 干净起步：清掉旧数据，免得上次实验的导师/状态串进来 */
+/* 干净起步：清掉旧数据，免得上次实验的伙伴/状态串进来 */
 await ev(`(function(){try{localStorage.clear();return 'cleared'}catch(e){return 'EXC '+e.message}})()`);
 await send('Page.reload', { ignoreCache: true }); await sleep(3000);
 
-console.log('\n【1. 入口：上课页顶部的「推荐导师」】');
+console.log('\n【1. 入口：上课页顶部的「推荐伙伴」】');
 console.log('按钮在:', await ev(`!!document.querySelector('#rgo2')`));
 console.log('点它 →', await ev(`(function(){try{document.querySelector('#rgo2').click();return 'ok'}catch(e){return 'EXC '+e.message}})()`));
 await sleep(600);
@@ -85,13 +85,13 @@ console.log('开场白:', await ev(`document.querySelector('#rout .rcopen').text
 console.log('备选:', await ev(`[].map.call(document.querySelectorAll('#rout .rcitem b'),function(b){return b.textContent}).join(' / ')||'（无）'`));
 await ev(`document.querySelector('#reccard').scrollIntoView({block:'center'})`);
 await sleep(400);
-await shot('preview-推荐导师.png');
+await shot('preview-推荐伙伴.png');
 
 console.log('\n【4. 一键应用】');
-console.log('点之前 导师/模式:', await ev(`getP(who).n+' / '+curMode().n`));
+console.log('点之前 伙伴/模式:', await ev(`getP(who).n+' / '+curMode().n`));
 console.log(await ev(`(function(){try{document.querySelector('#rout [data-rk]').click();return 'clicked'}catch(e){return 'EXC '+e.message}})()`));
 await sleep(500);
-console.log('点之后 导师/模式:', await ev(`getP(who).n+' / '+curMode().n`));
+console.log('点之后 伙伴/模式:', await ev(`getP(who).n+' / '+curMode().n`));
 console.log('落到哪一页:', await ev(`document.querySelector('#v-lesson').classList.contains('on')?'上课页':'别处'`));
 console.log('刷新后还在:', await ev(`(function(){try{return LS.g('who')+' / '+LS.g('mode')}catch(e){return 'EXC '+e.message}})()`));
 
@@ -112,20 +112,20 @@ console.log('主推:', await ev(`document.querySelector('#rout .rcname').textCon
 console.log('开场白:', await ev(`document.querySelector('#rout .rcopen').textContent`));
 await ev(`document.querySelector('#reccard').scrollIntoView({block:'center'})`);
 await sleep(400);
-await shot('preview-推荐导师2.png');
+await shot('preview-推荐伙伴2.png');
 
 console.log('\n【7. 手机宽度】');
 await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 await sleep(600);
 await ev(`document.querySelector('#reccard').scrollIntoView({block:'start'})`);
 await sleep(400);
-await shot('preview-推荐导师手机.png');
+await shot('preview-推荐伙伴手机.png');
 
-console.log('\n【8. 上课页顶部那排（加了「推荐导师」会不会挤坏）】');
+console.log('\n【8. 上课页顶部那排（加了「推荐伙伴」会不会挤坏）】');
 await ev(`goView('lesson')`); await sleep(400);
 console.log('手机宽度 390 下顶部 bar 高度:', await ev(`document.querySelector('#v-lesson .bar').getBoundingClientRect().height.toFixed(0)+'px'`));
 console.log('bar 有没有横向溢出:', (await ev(`(function(){var b=document.querySelector('#v-lesson .bar');return b.scrollWidth>b.clientWidth})()`)) ? '溢出' : '正常');
-console.log('「推荐导师」按钮可见:', await ev(`(function(){var e=document.querySelector('#rgo2');var r=e.getBoundingClientRect();return r.width>0&&r.top<200})()`));
+console.log('「推荐伙伴」按钮可见:', await ev(`(function(){var e=document.querySelector('#rgo2');var r=e.getBoundingClientRect();return r.width>0&&r.top<200})()`));
 await shot('preview-推荐入口手机.png');
 await ev(`(function(){window.scrollTo(0,0);['#msgs','#mw','#stage','#v-lesson'].forEach(function(s){var e=document.querySelector(s);if(e)e.scrollTop=0});return 1})()`);
 await sleep(300);

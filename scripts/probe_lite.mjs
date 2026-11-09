@@ -60,10 +60,10 @@ const DUMP = `(function(){
   return JSON.stringify({
     域名:location.hostname, LITE:LITE,
     教材包:PACKS.map(function(p){return p.name}),
-    导师:pKeys(),
+    伙伴:pKeys(),
     内置网课:VBUILTIN.length,
     导航:navs,
-    导师气泡:document.querySelectorAll('#pbox .pill').length,
+    伙伴气泡:document.querySelectorAll('#pbox .pill').length,
     载入按钮文案:(document.querySelector('#reload')||{}).textContent,
     导入网课包:vis('#vimp'),
     课程标签:ctabs, 分册数:(typeof CH!=='undefined'?CH.length:-1),

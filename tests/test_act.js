@@ -1,6 +1,6 @@
-/* 导师的动作/神态描写（*推了推眼镜*）
+/* 伙伴的动作/神态描写（*推了推眼镜*）
  *
- * 背景：用户提议「导师在对话里可以加一些动作、神态描写，用浅一些的字体颜色、
+ * 背景：用户提议「伙伴在对话里可以加一些动作、神态描写，用浅一些的字体颜色、
  * 大小也不一样，以便区分」。
  *
  * 约定（实现依赖它，所以必须被测试守住）：
@@ -90,7 +90,7 @@ const MD_STUB = 'window.marked={parse:function(s){return String(s).split(/\\n{2,
   const ev = s => { try { return wnd.eval(s); } catch (e) { errors.push('eval: ' + e.message); return undefined; } };
   const q = s => doc.querySelector(s);
 
-  /* 让导师有课程上下文 */
+  /* 让伙伴有课程上下文 */
   ev('CH=[{id:"c.md#1",file:"c.md",title:"行列式",txt:"x"}]; COURSE="c.md"; LS.s("course",COURSE);');
 
   /* === 1. 默认与开关 === */
@@ -98,7 +98,7 @@ const MD_STUB = 'window.marked={parse:function(s){return String(s).split(/\\n{2,
   ok(ev('ACT') === 'mid', '默认 ACT = mid（实际 ' + ev('ACT') + '）');
   {
     const sel = q('#act');
-    ok(!!sel, '设置页有「导师的动作与神态描写」开关');
+    ok(!!sel, '设置页有「伙伴的动作与神态描写」开关');
     ok(sel && sel.value === 'mid', '开关默认选中「自然」，实际 ' + (sel && sel.value));
     const opts = sel ? [...sel.options].map(o => o.value).join(',') : '';
     ok(opts === 'off,mid,rich', '三档 off/mid/rich，实际 ' + opts);
