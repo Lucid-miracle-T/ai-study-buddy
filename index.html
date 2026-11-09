@@ -632,10 +632,87 @@ body.dark #rgo2{color:var(--blue)!important}
   .brand{display:none}
   .nv button{padding:8px 10px;font-size:12.5px}
 }
+/* ===== 手机抽屉：把非对话 chrome 收进侧栏，对话区拿满高度 =====
+   用 body.mobile 而不是再开一个 @media：jsdom 的 innerWidth 是 1024，
+   41 套回归仍跑原结构；只有真机窄屏才由 initDrawer() 加这个 class。
+   所有被搬走的都是原来的 DOM 节点（换父节点而已），事件绑定、每节独立状态、
+   体验版过滤、#foot 是 nav 直接子元素，全部保持原样。 */
+#topbar,#drawer,#dmask{display:none}
+#topbar{align-items:center;gap:9px;padding:8px 12px;border-bottom:1px solid var(--line);
+  background:var(--panel);flex-shrink:0;padding-top:calc(8px + env(safe-area-inset-top))}
+#topbar .sp{flex:1}
+#topbar button{border:1px solid var(--line2);background:var(--surface);color:var(--tx);
+  border-radius:10px;width:38px;height:34px;font-size:17px;padding:0;line-height:1}
+#dtTitle{min-width:0;display:flex;flex-direction:column;gap:2px;line-height:1.25}
+#dtTitle b{font-size:13px;font-weight:500;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dtTitle span{font-size:11px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dStop{display:none}
+body.busy #dStop{display:inline-flex;align-items:center;justify-content:center}
+#dmask{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60}
+#drawer{position:fixed;left:0;top:0;bottom:0;width:min(86vw,340px);z-index:61;
+  flex-direction:column;background:var(--panel);border-right:1px solid var(--line);
+  box-shadow:6px 0 24px rgba(0,0,0,.28);overflow:hidden}
+body.mobile #topbar{display:flex}
+body.mobile.drawer #dmask{display:block}
+body.mobile.drawer #drawer{display:flex}
+.dh{display:flex;align-items:center;padding:14px 14px 12px;
+  border-bottom:1px solid var(--line);flex-shrink:0;font-size:13px;color:var(--tx2)}
+.dh button{margin-left:auto;border:1px solid var(--line2);background:none;color:var(--tx2);
+  border-radius:9px;width:32px;height:30px;font-size:15px}
+.dscroll{flex:1;overflow-y:auto;padding:8px 12px calc(20px + env(safe-area-inset-bottom))}
+#drawer details{border-bottom:1px solid var(--line)}
+#drawer summary{list-style:none;cursor:pointer;padding:13px 4px;font-size:13px;color:var(--tx);font-weight:500}
+#drawer summary::-webkit-details-marker{display:none}
+#drawer summary::before{content:'▸';display:inline-block;width:18px;color:var(--tx3)}
+#drawer details[open] summary::before{content:'▾'}
+#drawer details>div{padding:2px 0 12px}
+/* 搬进来的 #nav / #ctabs / #lbar* 自带 display:flex，会顶开 UA 对收起 details 的隐藏。
+   显式隐藏容器，作者样式才不会把「收起」变成「其实还摊着」。 */
+#drawer details:not([open])>div{display:none}
+/* 抽屉里的 #nav 还原竖排，六个视图一次露全（子栏目里不用再分三组） */
+body.mobile #drawer #nav{width:100%;flex-direction:column;align-items:stretch;
+  border:none;overflow:visible;padding:0}
+body.mobile #drawer .brand{display:none}
+body.mobile #drawer #nvcourse{display:block;margin:0 0 8px}
+body.mobile #drawer #foot{display:block;margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+body.mobile #drawer #gtabs{display:none}
+body.mobile #drawer .nv{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;
+  padding:0;overflow:visible}
+body.mobile #drawer .nv button{display:flex;flex-direction:column;gap:5px;width:100%;
+  padding:9px 2px;font-size:11px;white-space:normal;border-radius:9px}
+body.mobile #drawer .nv button::before{font-size:19px}
+body.mobile #drawer .nv button[data-v]{display:flex}
+body.mobile #drawer #ctabs,body.mobile #drawer #stabs{padding:8px 4px;
+  overflow-x:auto;background:none;border-bottom:1px solid var(--line)}
+body.mobile #drawer #lbar1,body.mobile #drawer #lbar2{flex-wrap:wrap;overflow:visible;
+  padding:6px 2px;border-bottom:none;background:none}
+body.mobile #drawer #lbar2>button{white-space:normal}
+body.mobile #drawer #lexpand,body.mobile #drawer #ltheme{display:inline-flex!important}
+body.mobile #drawer #lbar2>#gen,body.mobile #drawer #lbar2>#exp2,
+body.mobile #drawer #lbar2>#clr{display:inline-flex}
+body.mobile #drawer .symgrid{position:static;box-shadow:none;max-height:none;background:none}
 </style>
 </head>
 <body class="compact dark" data-navgrp="study">
 <div id="app">
+  <!-- 手机上唯一留在对话区外的顶栏：菜单 / 当前这一节 / 新的一节 / 停止 -->
+  <header id="topbar">
+    <button id="dOpen" aria-label="打开菜单" title="菜单：导师、课程、节、页面都在这里">☰</button>
+    <div id="dtTitle"><b id="dtCourse">高等数学</b><span id="dtSess">第 1 节</span></div>
+    <span class="sp"></span>
+    <button id="dStop" title="停止这一轮回答" aria-label="停止回答">⏹</button>
+    <button id="dNew" title="开课设置 / 新的一节" aria-label="开课设置">＋</button>
+  </header>
+  <aside id="drawer" aria-hidden="true" aria-label="功能菜单">
+    <div class="dh">无穷之境 · 菜单<button id="dClose" aria-label="关闭菜单" title="关闭">✕</button></div>
+    <div class="dscroll">
+      <details open><summary>这一节 · 导师与节奏</summary><div id="dSec"></div></details>
+      <details open><summary>页面 · 学习 / 课余 / 生态</summary><div id="dNav"></div></details>
+      <details><summary>课程与节</summary><div id="dTabs"></div></details>
+      <details><summary>课堂操作</summary><div id="dActs"></div></details>
+    </div>
+  </aside>
+  <div id="dmask" aria-hidden="true"></div>
   <nav id="nav">
     <div class="brand">
       <h1>无穷之境</h1>
@@ -1556,6 +1633,7 @@ function goView(v){
   if(v!=='lesson')closeLaunch();
   /* 手机端 css 用 data-view 决定要不要显示课程/节标签栏；顺便收起导师面板 */
   document.body.dataset.view=v;
+  closeDrawer();   /* 从抽屉里点了某个页面，选完就收起，别压着正文 */
   const lb=$('lbar1');if(lb)lb.classList.remove('mopen');
   const mc=$('mctrl');if(mc)mc.setAttribute('aria-expanded','false');
   /* 记住你待在哪一页。设置页不记：那是来配置的地方，刷新后该回到学习现场去。 */
@@ -1600,6 +1678,31 @@ document.querySelectorAll('#gtabs button').forEach(function(b){
     document.querySelectorAll('#gtabs button').forEach(function(x){x.classList.toggle('on',x===b)});
   };
 });
+/* ---------- 手机抽屉：把非对话 chrome 收进侧栏 ----------
+   只搬 DOM 节点，不复制任何状态：#nav / #ctabs / #stabs / #lbar1 / #lbar2 换父节点后，
+   原来的 onclick、每节 who/ch、LITE 过滤、renderShell 全都不用改。
+   narrow() 在 jsdom 里返回 false，41 套回归跑的仍是原结构。
+   initDrawer() 的调用放在启动行那一串里：这里不能引用 renderShell 依赖的顶层变量。 */
+function openDrawer(){document.body.classList.add('drawer');const d=$('drawer');if(d)d.setAttribute('aria-hidden','false')}
+function closeDrawer(){document.body.classList.remove('drawer');const d=$('drawer');if(d)d.setAttribute('aria-hidden','true')}
+function initDrawer(){
+  /* 只在启动时判定一次屏宽：手机旋转 / 桌面缩窗都不来回搬 DOM，
+     免得把用户正在输入的节点挪走。真换了设备宽度，刷新一次即可。 */
+  if(!narrow())return;
+  document.body.classList.add('mobile');
+  const put=function(id,box){
+    const e=document.getElementById(id),b=document.getElementById(box);
+    if(e&&b&&e.parentElement!==b)b.appendChild(e);
+  };
+  put('nav','dNav'); put('ctabs','dTabs'); put('stabs','dTabs');
+  put('lbar1','dSec'); put('lbar2','dActs');
+  onId('dOpen',openDrawer);
+  onId('dClose',closeDrawer);
+  onId('dmask',closeDrawer);
+  onId('dNew',function(){closeDrawer();openLaunch()});
+  onId('dStop',function(){const s=$('stop');if(s&&!s.disabled)s.click()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer()});
+}
 /* 侧栏当前课程卡 / 课堂那一行摘要 / 向导底部状态，都从现有状态现算，不另存 */
 function renderShell(){
   const pn={slow:'慢工细活',mid:'正常进度',fast:'主线速通'};
@@ -1610,6 +1713,9 @@ function renderShell(){
   const lc=$('lhCourse');if(lc)lc.textContent=cname(COURSE);
   const lt=$('lhTitle');if(lt)lt.textContent=cname(COURSE);
   const st=$('lhStatus');if(st)st.textContent=getP(who).n+' · '+curMode().n+' · '+(pn[PA]||'正常进度');
+  const dc=$('dtCourse'),ds=$('dtSess');
+  if(dc)dc.textContent=cname(COURSE);
+  if(ds)ds.textContent=sessLabel(CURS);
 }
 function closeLaunch(){const l=$('launch');if(l)l.hidden=true}
 function openLaunch(){renderLaunch();const l=$('launch');if(l)l.hidden=false}
@@ -2981,7 +3087,7 @@ async function ask(text,opt){
   const key=$('key').value.trim(),base=$('base').value.trim();
   if(!usePx&&(!key||!base)){alert('先到「设置」填接口地址和 API Key，或填课堂代理地址和邀请码。');return}
   pinBottom();   /* 自己发了话，就是要看回答：恢复跟随 */
-  BUSY=true;
+  BUSY=true;document.body.classList.add('busy');
   const pack=[{role:'system',content:sysMsg()+'\n\n'+ctxText()}];
   /* 只把「这一节」的对话发给导师：各节独立，新节从零开始，
      也顺带解决了「越聊越长、越聊越慢」——旧节随时点回去看，但不占上下文 */
@@ -3068,7 +3174,7 @@ async function ask(text,opt){
       myMs.pop();LS.s('msgs.'+myCourse,myMs);
     }
     return;
-  }finally{BUSY=false;if(ctrl===myCtrl)$('stop').disabled=true}
+  }finally{BUSY=false;document.body.classList.remove('busy');if(ctrl===myCtrl)$('stop').disabled=true}
 }
 function updTok(){
   /* 走代理时 token 由服务端代付，不能拿用户自己选的那家单价算「约 ¥x」 */
@@ -4002,6 +4108,7 @@ function applyLite(){
 }
 /* applySessWho 顶替原来的 renderPs()：它内部就会 renderPs，还会按「当前这一节」把导师、
    系统提示词一起摆正 —— 否则刷新后节条停在第 3 节，导师却还是上次全局选的那位。 */
+initDrawer();   /* 手机：把 5 行 chrome 搬进抽屉；桌面（含 jsdom）一行不改 */
 applyLite();
 applySessWho();renderModes();applyHabit();updTok();renderSym();syncSymToggle();renderTts();updTts();renderMic();renderVoiceName();renderShell();
 vLoad().catch(function(e){storeWarn(e,'网课库')});
