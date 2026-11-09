@@ -6,7 +6,8 @@
  *     一律先摆出 #launch，不在背后偷偷进课堂
  *   · 点「开始上课 →」＝这一节正式开课，标记写进 s.beg
  *   · 开课后伙伴与节奏固定（沿用上一轮课中锁定规则），开新的一节可重选
- *   · 没开课时 ✕ 不能跳过选择；去教材 / 切页仍可用，切回学习页向导重新摆出来
+ *   · 没开课时 ✕ 收起向导、落到「未开课」空态（选择仍必经，但退出键有反应）；
+ *     去教材 / 切页仍可用，切回学习页向导重新摆出来
  *   · 老数据没有 s.beg：有用户发言仍算课中，刷新不拿向导拦人
  */
 const fs = require('fs');
@@ -100,8 +101,12 @@ function dumpStore(wnd) {
     ok(/开始上课/.test(q('.lh-note').textContent), '底部说明写清「点开始上课才进课堂」');
 
     q('#lhClose').click();
-    ok(q('#launch').hidden === false, '✕ 不能跳过选择，向导仍摊着');
-    ok(/开始上课/.test(toastText()), '✕ 给出「先点开始上课」的提示');
+    ok(q('#launch').hidden === true, '✕ 有明确反应：收起整屏向导');
+    ok(q('#notstarted').hidden === false, '落到「未开课」空态，没选就进不了课堂');
+    ok(/已退出开课设置/.test(toastText()), '✕ 给出「点开始上课回来」的提示');
+    q('#nsGo').click();
+    ok(q('#launch').hidden === false && q('#notstarted').hidden === true,
+      '空态里唯一的路「开始上课 →」把向导摆回来');
 
     const other = qa('#lhWho .lh-card').filter(c => c.className.indexOf('on') < 0)[0];
     ok(!!other, '向导里有可选伙伴卡');

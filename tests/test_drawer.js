@@ -164,7 +164,8 @@ function boot(opts) {
     ok(q('#launch').hidden === false, '点 ＋ 打开开课向导（不另写一套选课逻辑）');
     ok(!doc.body.classList.contains('drawer'), '打开向导时抽屉收起');
     q('#lhClose').click();
-    ok(q('#launch').hidden === false, '这一节还没开课，✕ 不跳过选择');
+    ok(q('#launch').hidden === true && q('#notstarted').hidden === false,
+      '这一节还没开课：✕ 收起向导、落到「未开课」空态（选择仍必经）');
 
     /* ⏹ 是 #stop 的遥控器：没在生成时点了不炸 */
     const before = errs.length;

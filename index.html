@@ -735,6 +735,124 @@ body.dark #symbar .symgrid{background:var(--panel);border-top-color:var(--line2)
 /* 输入栏里输入框会抢宽度，按钮必须钉住不缩，否则「发送」被挤成上下两个字 */
 #chatbar .inrow #chatin{min-width:0}
 #chatsend{flex:none;white-space:nowrap}
+/* ===== 左侧「课程 → 节」树：三门教材平级，节各自收在课程下面 =====
+   顶部两行横排标签仍在 DOM 里（老测试、老事件、LITE 过滤都靠它），
+   只是主屏不再显示；手机抽屉里也换成同一棵树。 */
+#ctree{flex:1;min-height:0;overflow-y:auto;padding:6px 8px 10px;
+  border-bottom:1px solid var(--line);scrollbar-width:thin}
+#ctree .ct-h{font-size:10.5px;color:var(--tx3);padding:4px 6px 8px;letter-spacing:.5px}
+#ctree .ct-crs{margin-bottom:2px}
+#ctree .ct-c{display:flex;align-items:center;gap:6px;width:100%;border:none;background:none;
+  color:var(--tx2);font-size:12px;padding:7px 6px;border-radius:8px;text-align:left;
+  cursor:pointer;font-family:inherit}
+#ctree .ct-c:hover{background:var(--hover)}
+#ctree .ct-crs.on .ct-c{background:var(--blue-bg);color:var(--blue);font-weight:500}
+#ctree .ct-ar{width:12px;flex:none;color:var(--tx3);font-size:10px}
+#ctree .ct-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ctree .ct-n{font-size:10px;color:var(--tx3);background:var(--surface2);
+  border-radius:8px;padding:0 6px;flex:none}
+#ctree .ct-slist{padding:2px 0 6px 16px;display:flex;flex-direction:column;gap:2px}
+#ctree .ct-s{border:none;background:none;color:var(--tx3);font-size:11.5px;text-align:left;
+  padding:5px 8px;border-radius:7px;cursor:pointer;font-family:inherit;width:100%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ctree .ct-s:hover{background:var(--hover);color:var(--tx)}
+#ctree .ct-s.on{color:var(--green);background:var(--green-bg);font-weight:500}
+#ctree .ct-s.new{border:1px dashed var(--line2);color:var(--tx3);margin-top:3px}
+#stage>#ctabs,#stage>#stabs{display:none}
+/* ===== 未开课空态：✕ 退出向导后的明确落点 ===== */
+#notstarted{position:absolute;inset:0;z-index:40;background:var(--panel);
+  display:flex;align-items:center;justify-content:center;padding:24px}
+#notstarted[hidden]{display:none}
+.ns-card{max-width:400px;text-align:center;border:1px solid var(--line);
+  border-radius:16px;background:var(--surface2);padding:30px 26px}
+.ns-card .ns-ic{font-size:34px;color:var(--blue);margin-bottom:12px}
+.ns-card h2{font-size:19px;font-weight:600;margin-bottom:10px;color:var(--tx)}
+.ns-card p{font-size:12.5px;color:var(--tx3);line-height:1.9;margin-bottom:20px}
+.ns-card button{font-size:14px;padding:11px 28px;border-radius:24px}
+/* ===== 课堂偏好：输入框上方只留右下角一颗「偏好」胶囊 ===== */
+#inbar{position:relative}
+#prefopen{position:absolute;right:24px;top:-35px;z-index:20;border-radius:16px;
+  background:var(--surface2);color:var(--tx2);font-size:11.5px;padding:4px 14px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08)}
+#prefpanel{position:absolute;right:18px;bottom:calc(100% + 6px);z-index:30;
+  width:min(340px,calc(100vw - 36px));background:var(--surface2);
+  border:1px solid var(--line2);border-radius:14px;padding:16px 16px 13px;
+  box-shadow:0 12px 34px rgba(0,0,0,.3)}
+#prefpanel[hidden]{display:none}
+#prefpanel .pf-h{font-size:15px;font-weight:600;color:var(--tx)}
+#prefpanel .pf-sub{font-size:12px;color:var(--tx3);margin:4px 0 12px}
+#preftxt{width:100%;background:var(--panel);color:var(--tx);
+  border:1px solid var(--line2);border-radius:9px;padding:11px 12px;
+  font-size:13px;line-height:1.7;min-height:92px;resize:vertical}
+.pf-meter{height:3px;background:var(--line);border-radius:2px;margin-top:10px;overflow:hidden}
+#pfbar{height:100%;width:0;background:var(--blue);transition:width .15s}
+.pf-pct{text-align:right;font-size:11px;color:var(--tx3);margin-top:5px}
+.pf-foot{display:flex;align-items:center;gap:8px;margin-top:10px}
+.pf-foot span{flex:1;font-size:10.5px;color:var(--tx3)}
+.pf-foot button:disabled{opacity:.5;cursor:not-allowed}
+.pf-cmds{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+.pf-cmds summary{font-size:11.5px;color:var(--tx3)}
+/* 节奏命令条默认收起：需要时在「偏好 → 快捷节奏命令」里展开 */
+#pacebar{display:none}
+body.paceopen #pacebar{display:flex}
+/* ===== 群聊多会话：一条可横滑的历史条 ===== */
+.chs{display:flex;gap:6px;overflow-x:auto;padding:8px 24px;flex-shrink:0;
+  border-bottom:1px solid var(--line);background:var(--panel);scrollbar-width:none}
+.chs::-webkit-scrollbar{display:none}
+.chs button{flex:none;white-space:nowrap;border-radius:16px;font-size:11.5px;
+  padding:4px 11px;border:1px solid var(--line2);background:none;color:var(--tx2)}
+.chs button.on{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+/* ===== 手机对标：顶部一行 tab / 底部大胶囊 / 四个主 tab / 右下悬浮 =====
+   全部只在 body.mobile 下出现；桌面与 jsdom 一行不改。 */
+#mtabs,#mcaps,#mtabbar,#mfab{display:none}
+body.mobile #mtabs{display:flex;flex-shrink:0;border-bottom:1px solid var(--line);
+  background:var(--panel);padding:0 4px}
+body.mobile #mtabs button{flex:1;border:none;background:none;color:var(--tx3);
+  font-size:12.5px;padding:11px 2px;font-family:inherit;position:relative}
+body.mobile #mtabs button.on{color:var(--tx);font-weight:600}
+body.mobile #mtabs button.on::after{content:'';position:absolute;left:28%;right:28%;
+  bottom:2px;height:2px;background:var(--blue);border-radius:2px}
+body.mobile #mcaps{display:flex;gap:8px;flex-shrink:0;padding:8px 10px 4px;
+  background:var(--panel);border-top:1px solid var(--line)}
+body.mobile #mcaps button{flex:1;min-width:0;white-space:nowrap;border-radius:24px;
+  background:var(--surface2);border-color:var(--line);color:var(--tx2);
+  font-size:13px;padding:11px 4px;font-family:inherit}
+body.mobile #mcaps button[data-act="start"]{background:var(--blue-bg);
+  border-color:var(--blue-line);color:var(--blue);font-weight:600}
+body.mobile #mtabbar{display:flex;flex-shrink:0;background:var(--panel);
+  border-top:1px solid var(--line);padding:5px 2px calc(5px + env(safe-area-inset-bottom))}
+body.mobile #mtabbar button{flex:1;min-width:0;border:none;background:none;
+  color:var(--tx3);font-size:11px;padding:5px 2px;font-family:inherit;
+  display:flex;flex-direction:column;align-items:center;gap:3px}
+body.mobile #mtabbar button i{font-style:normal;font-size:17px;line-height:1.1}
+body.mobile #mtabbar button.on{color:var(--blue);font-weight:600}
+body.mobile #mfab{display:flex;position:absolute;right:9px;z-index:25;
+  bottom:calc(158px + env(safe-area-inset-bottom));flex-direction:column;
+  border-radius:24px;background:var(--panel);border:1px solid var(--line2);
+  box-shadow:0 5px 18px rgba(0,0,0,.22);overflow:hidden}
+body.mobile #mfab button{border:none;background:none;color:var(--tx2);
+  font-size:13px;padding:10px 13px;font-family:inherit;white-space:nowrap}
+body.mobile #mfab button+button{border-top:1px solid var(--line)}
+body.mobile #prefopen{display:none}       /* 手机上由右下悬浮胶囊里的「偏好」接管 */
+body.mobile #drawer #ctabs,body.mobile #drawer #stabs{display:none}
+body.mobile #drawer #ctree{flex:none;max-height:48vh;overflow-y:auto;
+  border-bottom:none;padding:2px 0}
+body.mobile #drawer .chs,body.mobile #drawer .chatmem{padding-left:4px;padding-right:4px}
+/* 手机再收紧：符号那一整行让位给正文（Ω 由右下悬浮胶囊接管），
+   输入框固定一行高，底部两排也压薄 —— 对话区回到 70% 以上。 */
+body.mobile #symbar{height:0;border-top:none;overflow:visible}
+body.mobile #symbar .wrap{padding:0;height:0}
+body.mobile #symbar .symrow{display:none}
+body.mobile #in{height:44px;min-height:44px;max-height:44px;resize:none}
+body.mobile #mcaps{padding:5px 8px 2px}
+body.mobile #mcaps button{padding:9px 4px;font-size:12.5px}
+body.mobile #mtabbar{padding:3px 2px calc(3px + env(safe-area-inset-bottom))}
+body.mobile #mtabbar button i{font-size:15px}
+body.mobile #mfab{bottom:calc(176px + env(safe-area-inset-bottom))}
+/* 「未开课」空态盖的是正文 + 输入栏，导航必须露在上面，
+   否则按了 ✕ 之后整屏只剩一张卡片，看着像卡死而不是退出成功。 */
+body.mobile #mtabs,body.mobile #mcaps,body.mobile #mtabbar{position:relative;z-index:41}
+body.mobile #mfab{z-index:41}
 </style>
 </head>
 <body class="compact dark" data-navgrp="study">
@@ -752,7 +870,7 @@ body.dark #symbar .symgrid{background:var(--panel);border-top-color:var(--line2)
     <div class="dscroll">
       <details open><summary>这一节 · 伙伴与节奏</summary><div id="dSec"></div></details>
       <details open><summary>页面 · 学习 / 课余 / 生态</summary><div id="dNav"></div></details>
-      <details><summary>课程与节</summary><div id="dTabs"></div></details>
+      <details open><summary>课程与节</summary><div id="dTabs"></div></details>
       <details><summary>课堂操作</summary><div id="dActs"></div></details>
     </div>
   </aside>
@@ -762,10 +880,13 @@ body.dark #symbar .symgrid{background:var(--panel);border-top-color:var(--line2)
       <h1>无穷之境</h1>
       <p>高等数学 · 自用学习站</p>
     </div>
-    <div id="nvcourse" title="点一下回到课堂；换课程在课堂上的课程标签栏">
+    <div id="nvcourse" title="点一下回到课堂；换课程、换节就在左边这棵树里">
       <div class="nh">📖 <span id="nvcname">高等数学</span><span class="cnt" id="nvcnt">1</span></div>
       <div class="ns" id="nvsess">第 1 节 · 0 条</div>
     </div>
+    <!-- 课程 → 节：三门教材平级列在左侧，每一节收纳在自己那门课下面。
+         原来顶部两行横排标签仍留在 DOM 里（老测试 / 老事件都靠它），只是不再占主屏。 -->
+    <div id="ctree" aria-label="课程与节"></div>
     <!-- #foot 是 <nav> 的直接子元素，不在 .nv 里：margin-top:auto 才推得动下面那组图标 -->
     <div class="foot" id="foot"></div>
     <div class="nv">
@@ -785,6 +906,24 @@ body.dark #symbar .symgrid{background:var(--panel);border-top-color:var(--line2)
   </nav>
 
   <div id="stage">
+    <!-- 手机顶部一行 tab：正文之外只留薄薄一条，像阅读式 App 那样把屏幕还给内容 -->
+    <div id="mtabs">
+      <button class="on" data-go="lesson">课堂</button>
+      <button data-go="chat">群聊</button>
+      <button data-go="book">目录</button>
+      <button data-go="card">闪卡</button>
+      <button data-menu="1">更多</button>
+    </div>
+    <!-- 还没开课时的空态：点 ✕ 退出向导后能看到明确反馈，也挡住「不选就上课」。
+         唯一的出口是「开始上课 →」，点了回到向导；不是死路，也不是放行。 -->
+    <div id="notstarted" hidden>
+      <div class="ns-card">
+        <div class="ns-ic">◎</div>
+        <h2>这一节还没开课</h2>
+        <p>先选好伙伴和教学节奏，才能开始这一节。<br>这两项定下来后本节固定，开新的一节可以重新选。</p>
+        <button class="pri" id="nsGo">开始上课 →</button>
+      </div>
+    </div>
     <!-- 开课向导：一屏选完伙伴 / 节奏 / 模式 / 章节，一个主按钮。
          原来散在两排工具栏里的入口并没删，点「⋯」还能原样展开。 -->
     <div id="launch" hidden>
@@ -865,6 +1004,24 @@ body.dark #symbar .symgrid{background:var(--panel);border-top-color:var(--line2)
       </div></div>
       <div id="inbar"><div class="wrap">
         <div id="pendimg" class="pendimg" style="display:none"></div>
+        <!-- 课堂偏好：输入框上方只留右下角一颗小胶囊，点开才出整张卡片。
+             节奏命令条不删，收进「快捷节奏命令」里，需要时还能展开。 -->
+        <button class="sm" id="prefopen" title="课堂偏好：写下你希望伙伴怎样教你">偏好</button>
+        <div id="prefpanel" hidden>
+          <div class="pf-h">课堂偏好</div>
+          <div class="pf-sub">你希望伙伴怎样教你？</div>
+          <textarea id="preftxt" rows="4" maxlength="500" placeholder="例如：多用生活中的例子，每次只问一个问题。"></textarea>
+          <div class="pf-meter"><div id="pfbar"></div></div>
+          <div class="pf-pct" id="pfpct">0%</div>
+          <div class="pf-foot">
+            <button class="sm" id="pfclr">清空</button>
+            <span>从下一次发言起生效</span>
+            <button class="sm pri" id="pfsave" disabled>保存</button>
+          </div>
+          <details class="pf-cmds"><summary>快捷节奏命令（只对当前这一轮生效）</summary>
+            <button class="sm" id="pfpace">展开节奏命令条</button>
+          </details>
+        </div>
         <!-- 节奏命令：把「三个出口」变成看得见、点得到的东西。
              光写进 system prompt，学生根本不知道自己可以说「直接讲」。 -->
         <div id="pacebar" class="pacebar"><button type="button" class="plb" id="pctoggle" title="展开 / 收起节奏命令">节奏 ▾</button>
@@ -921,13 +1078,16 @@ body.dark #symbar .symgrid{background:var(--panel);border-top-color:var(--line2)
       </div>
     </section>
 
-    <!-- 群聊（课余）：原来的「自由问答」搬到这里，成员从已创立的伙伴里挑 -->
+    <!-- 群聊（课余）：每个会话单独开、单独存，与课堂 msgs.* 完全隔离 -->
     <section class="view" id="v-chat">
       <div class="bar">
         <span class="tag">群聊 · 不挂教材</span>
+        <button class="sm" id="chatnew" title="另开一个会话，旧会话留着随时切回来">＋ 新会话</button>
         <span class="sp"></span>
+        <button class="sm" id="chatdel" title="删掉当前这个会话（至少留一个）">删除本会话</button>
         <button class="sm" id="chatclr">清空群聊</button>
       </div>
+      <div id="chatsessions" class="chs"></div>
       <div class="chatmem">
         <span class="tag">群成员</span>
         <div id="chatmembers"></div>
@@ -1104,7 +1264,7 @@ body.dark #symbar .symgrid{background:var(--panel);border-top-color:var(--line2)
             中文输入法打字时按 Enter 是在选字，不会被当成发送——这点已经处理好了，不用担心打一半被送出去。<br><br>
             <b>想改自己说过的话？</b>点你那条消息右上角的「编辑」，改完点「重发」——它之后的内容会一起清掉，伙伴会拿改过的话重新回答一遍。要是只错了个符号，这比重新问一遍省事得多。<br><br>
             <b>动作描写</b>：伙伴写成 <code>*推了推眼镜*</code> 的句子是旁白，会显示成浅色小字，和它要讲的话分开。你自己也能这么写——旁白不会被朗读出来。想改在哪几个角色身上出现，就在上面这个开关里调。<br><br>
-            <b>三个出口（严不是目的，能继续学才是）</b>：输入栏上方那排「节奏」按钮是给硬规则留的出口。<br>
+            <b>三个出口（严不是目的，能继续学才是）</b>：右下角「偏好」面板里的那排节奏命令按钮是给硬规则留的出口（默认收起，点「快捷节奏命令」展开）。<br>
             ① <b>累了／赶时间</b>：点「直接讲」「只讲结论」「快点过」，这一轮伙伴就照办，下一轮自动恢复追问；<br>
             ② <b>想追问框架边界</b>：直接打断问，伙伴会先承认问题成立、再点回你忽略的前提、最后标注「这属于后面内容，本节先按当前框架用」——「一次只问一个问题」管的是伙伴，不是你的提问权；<br>
             ③ <b>什么时候下课由你说</b>：只有你点「今天结束 · 结算」或「下课小结」，才写小结并归档。中途休息、闲聊、跑题都算课间，伙伴不会单方面道别、预告明天。
@@ -1198,6 +1358,23 @@ body.dark #symbar .symgrid{background:var(--panel);border-top-color:var(--line2)
         </div>
       </div></div>
     </section>
+    <!-- 手机对标：正文下方一排大胶囊，最下面四个主 tab；右下角悬浮工具胶囊。
+         桌面 / jsdom 全部 display:none，原来的两排工具栏与抽屉一行不改。 -->
+    <div id="mcaps">
+      <button data-act="start">✦ 上课</button>
+      <button data-act="pref">⋯ 偏好</button>
+      <button data-act="tools">⋯ 工具</button>
+    </div>
+    <div id="mtabbar">
+      <button class="on" data-go="lesson"><i>✦</i>学习</button>
+      <button data-go="chat"><i>☏</i>课后</button>
+      <button data-go="book"><i>▤</i>教材</button>
+      <button data-go="set"><i>⚙</i>账户</button>
+    </div>
+    <div id="mfab">
+      <button id="mfPre" title="课堂偏好">偏好</button>
+      <button id="mfSym" title="特殊符号">Ω</button>
+    </div>
   </div>
 </div>
 
@@ -1208,6 +1385,10 @@ body.dark #symbar .symgrid{background:var(--panel);border-top-color:var(--line2)
 const P='gx.';
 const LS={g(k,d){try{const v=localStorage.getItem(P+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
           s(k,v){try{localStorage.setItem(P+k,JSON.stringify(v));return 1}catch(e){alert('本地存储写入失败（可能已满）');return 0}}};
+/* 课堂偏好：学习者自己写的一段长期要求，跟着备份走（gx. 前缀自动包含）。
+   每次提问现算 sysMsg()，所以「从下一次发言起生效」是天然成立的。 */
+let PREF=LS.g('pref','');
+const PREF_MAX=500;
 
 const IDB=(function(){
   let dbp=null;
@@ -1597,6 +1778,65 @@ function shownCourse(){
   const v=visibleCourses();
   return COURSE==='__free'&&v.length?v[0].k:COURSE;
 }
+/* ---------- 左侧「课程 → 节」树 ----------
+   三门教材平级列在左侧；点课程＝切过去并展开，点节＝切到那门课的那一次学习。
+   展开状态记在容器 dataset 上，不新增全局状态：renderCTabs 在启动早期就会跑，
+   多一个 let 会踩 TDZ（历史上 CH 就是这么把整个脚本带崩的）。
+   跨课程的节只显示用户起的名字，不调 sessAuto()——它依赖当前课程的 MS。 */
+function renderCourseTree(){
+  const box=$('ctree');if(!box)return;
+  const gs=visibleCourses(),cur=shownCourse();
+  const open=box.dataset.open||cur;
+  let h='<div class="ct-h">课程 · 节</div>';
+  gs.forEach(function(g){
+    const on=g.k===cur;
+    let arr=g.k===COURSE?SESS:(LS.g('sess.'+g.k,[])||[]);
+    /* 还没切过去过的课程没有 sess 记录：也给它一个「第 1 节 · 还没开始」，
+       否则树看起来像「这门课没有节」，与 loadSess() 进去后自动建一节的事实不符。 */
+    if(!arr.length)arr=[{id:'first:'+g.k,title:'',placeholder:true}];
+    const msgs=(LS.g('msgs.'+g.k,[])||[]).length;
+    const op=open===g.k;
+    h+='<div class="ct-crs'+(on?' on':'')+'">'
+      +'<button class="ct-c" data-c="'+esc(g.k)+'" title="'+esc(cname(g.k)+' · '+arr.length+' 节 / '+msgs+' 条对话')+'">'
+      +'<span class="ct-ar">'+(op?'▾':'▸')+'</span><span class="ct-nm">'+esc(cname(g.k))+'</span>'
+      +'<span class="ct-n">'+arr.length+'</span></button>';
+    if(op){
+      h+='<div class="ct-slist">';
+      arr.forEach(function(s,i){
+        const t=s.title||'';
+        h+='<button class="ct-s'+(on&&CURS===s.id?' on':'')+'" data-c="'+esc(g.k)+'" data-s="'+esc(s.id)+'">'
+          +esc('第 '+(i+1)+' 节'+(t?' · '+t:'')+(s.placeholder?' · 还没开始':''))+'</button>';
+      });
+      h+='<button class="ct-s new" data-new="'+esc(g.k)+'">＋ 新一节</button></div>';
+    }
+    h+='</div>';
+  });
+  box.innerHTML=h;
+  box.querySelectorAll('.ct-c').forEach(function(b){
+    b.onclick=function(){
+      box.dataset.open=b.dataset.c;
+      if(b.dataset.c!==COURSE)switchCourse(b.dataset.c);
+      renderCourseTree();renderShell();
+    };
+  });
+  box.querySelectorAll('.ct-s[data-s]').forEach(function(b){
+    b.onclick=function(){
+      box.dataset.open=b.dataset.c;
+      if(b.dataset.c!==COURSE)switchCourse(b.dataset.c);
+      /* 占位节：切过去后 loadSess() 会建真正的一节，别拿假 id 去 switchSess */
+      if(b.dataset.s.indexOf('first:')!==0)switchSess(b.dataset.s);
+      renderCourseTree();renderShell();
+      if(document.body.dataset.view&&document.body.dataset.view!=='lesson')goView('lesson');
+    };
+  });
+  box.querySelectorAll('.ct-s[data-new]').forEach(function(b){
+    b.onclick=function(){
+      box.dataset.open=b.dataset.new;
+      if(b.dataset.new!==COURSE)switchCourse(b.dataset.new);
+      newSess();renderCourseTree();
+    };
+  });
+}
 function renderCTabs(fs){
   const box=$('ctabs');if(!box)return;
   const gs=visibleCourses();
@@ -1622,6 +1862,7 @@ function renderCTabs(fs){
   box.querySelectorAll('.ctab').forEach(function(b){
     b.onclick=function(){switchCourse(b.dataset.c)};
   });
+  renderCourseTree();   /* 课程一变，左边那棵树跟着重画 */
 }
 /* ---------- 节条（课程标签下面一行）---------- */
 function renderSTabs(){
@@ -1642,6 +1883,7 @@ function renderSTabs(){
   });
   const nb=$('newsess');if(nb)nb.onclick=function(){newSess()};
   bindLongPress(box);
+  renderCourseTree();   /* 新节 / 改名 / 删节 / 切节，树上的节名都要同步 */
 }
 /* 长按（手机上等同右键）→ 改名 / 删除这一节 */
 function bindLongPress(box){
@@ -1741,12 +1983,14 @@ function goView(v){
   /* 先写 data-view 再 renderShell：手机顶栏在群聊页要显示「含你 N/4 人」，
      renderShell 得知道自己正站在哪一页。CSS 也在同一帧内取到新值。 */
   document.body.dataset.view=v;
-  syncNavGroup(v);renderShell();
+  syncNavGroup(v);renderShell();syncMobileTabs(v);
   /* 向导盖的是 #stage；点到别的页签要收掉，否则会悬在教材页上面。
      反过来：这一节还没点过「开始上课」，从教材 / 设置切回学习页时向导重新摆出来，
-     保证「先选择、再上课」不会被一个 ✕ 跳过。 */
+     保证「先选择、再上课」不会被一个 ✕ 跳过。用户刚主动按过 ✕ 的，落到「未开课」空态，
+     不再反复弹整屏向导，但课堂依旧要选完才能进。 */
   if(v!=='lesson')closeLaunch();
-  else if(!cfgLocked())openLaunch();
+  else if(!cfgLocked()&&!document.body.classList.contains('pending'))openLaunch();
+  else if(!cfgLocked())showNotStarted();
   closeDrawer();   /* 从抽屉里点了某个页面，选完就收起，别压着正文 */
   const lb=$('lbar1');if(lb)lb.classList.remove('mopen');
   const mc=$('mctrl');if(mc)mc.setAttribute('aria-expanded','false');
@@ -1809,6 +2053,7 @@ function initDrawer(){
     if(e&&b&&e.parentElement!==b)b.appendChild(e);
   };
   put('nav','dNav'); put('ctabs','dTabs'); put('stabs','dTabs');
+  put('ctree','dTabs');   /* 手机也用同一棵「课程 → 节」树，不再平铺两行标签 */
   put('lbar1','dSec'); put('lbar2','dActs');
   onId('dOpen',openDrawer);
   onId('dClose',closeDrawer);
@@ -1832,8 +2077,25 @@ function renderShell(){
   if(dc)dc.textContent=document.body.dataset.view==='chat'?'群聊':cname(shownCourse());
   if(ds)ds.textContent=document.body.dataset.view==='chat'?chatTop():sessLabel(CURS);
 }
-function closeLaunch(){const l=$('launch');if(l)l.hidden=true}
-function openLaunch(){renderLaunch();const l=$('launch');if(l)l.hidden=false}
+/* 未开课空态：✕ 退出向导后有个明确落点，但课堂被挡住，选择仍然必经。
+   只在课堂页挡 —— 切去教材 / 设置时别盖住别人的正文。 */
+function showNotStarted(){
+  const v=document.body.dataset.view;
+  /* 切去教材 / 设置等页面：空态要收起（它盖的是整个 stage），
+     同时清掉 pending —— 切回学习页时向导重新摆出来，选择依然绕不过去。 */
+  if(v&&v!=='lesson'){hideNotStarted();return}
+  const n=$('notstarted');if(n)n.hidden=false;
+  document.body.classList.add('pending');
+}
+function hideNotStarted(){
+  const n=$('notstarted');if(n)n.hidden=true;
+  document.body.classList.remove('pending');
+}
+function closeLaunch(){
+  const l=$('launch');if(l)l.hidden=true;
+  if(cfgLocked())hideNotStarted();else showNotStarted();
+}
+function openLaunch(){renderLaunch();hideNotStarted();const l=$('launch');if(l)l.hidden=false}
 function renderLaunch(){
   const wb=$('lhWho');if(!wb)return;
   const locked=cfgLocked();
@@ -1903,10 +2165,10 @@ function renderLaunchCourses(){
 onId('lhSwap',function(){const b=$('lhCourses');if(!b)return;b.hidden=!b.hidden;if(!b.hidden)renderLaunchCourses()});
 onId('lhGoBook',function(){closeLaunch();goView('book')});
 onId('lhClose',function(){
-  /* 这一节还没点过「开始上课」：选择是必经的一步，✕ 不给跳过。
-     但「去教材勾选」「更换课程」和侧栏切页仍照常可用，不把人困在向导里。 */
-  if(!cfgLocked()){toast('先选好伙伴和节奏，点「开始上课 →」进入课堂');return}
+  /* ✕ 必须有明确反应：收起向导，落到「这一节还没开课」的空态。
+     空态里唯一的路是「开始上课 →」，所以选择仍然必经，只是不再像点了没反应。 */
   closeLaunch();
+  if(!cfgLocked())toast('已退出开课设置 · 点「开始上课 →」回来选伙伴和节奏');
 });
 onId('lhTheme',function(){DARK=!DARK;LS.s('theme',DARK?'dark':'light');applyTheme()});
 onId('ltheme',function(){DARK=!DARK;LS.s('theme',DARK?'dark':'light');applyTheme()});
@@ -1928,6 +2190,60 @@ onId('lhNext',function(){
 onId('nvcourse',function(){goView('lesson')});
 onId('lexpand',function(){this.textContent=document.body.classList.toggle('expand')?'⋯ 收起':'⋯ 更多'});
 onId('pctoggle',function(){this.textContent=document.body.classList.toggle('paceopen')?'节奏 ▴':'节奏 ▾'});
+/* ---------- 课堂偏好：一张卡片 + 右下角「偏好」入口 ---------- */
+function prefDirty(){const t=$('preftxt');return !!t&&t.value!==PREF}
+function prefMeter(){
+  const t=$('preftxt');if(!t)return;
+  const p=Math.min(100,Math.round(t.value.length/PREF_MAX*100));
+  const b=$('pfbar');if(b)b.style.width=p+'%';
+  const q=$('pfpct');if(q)q.textContent=p+'%';
+  const s=$('pfsave');if(s)s.disabled=!prefDirty();
+}
+function openPref(){const p=$('prefpanel');if(p)p.hidden=false;const t=$('preftxt');if(t){t.value=PREF;prefMeter()}}
+function closePref(){const p=$('prefpanel');if(p)p.hidden=true}
+function savePref(v){
+  PREF=String(v||'').slice(0,PREF_MAX).trim();LS.s('pref',PREF);
+  const t=$('preftxt');if(t)t.value=PREF;
+  prefMeter();toast(PREF?'课堂偏好已保存 · 从下一次发言起生效':'课堂偏好已清空');
+}
+function initPrefUI(){const t=$('preftxt');if(t)t.value=PREF;prefMeter()}
+onId('prefopen',function(){const p=$('prefpanel');if(p&&p.hidden)openPref();else closePref()});
+onId('mfPre',function(){
+  /* 偏好面板挂在课堂的输入栏上：从群聊 / 教材页点悬浮按钮要先回课堂，别点了没反应 */
+  if(document.body.dataset.view&&document.body.dataset.view!=='lesson')goView('lesson');
+  openPref();
+});
+onId('mfSym',function(){
+  if(document.body.dataset.view&&document.body.dataset.view!=='lesson')goView('lesson');
+  const b=$('symtoggle');if(b)b.click();   /* 复用符号面板原逻辑 */
+});
+onId('pfsave',function(){savePref($('preftxt').value)});
+onId('pfclr',function(){savePref('')});
+onId('pfpace',function(){
+  const on=document.body.classList.toggle('paceopen');
+  const b=$('pctoggle');if(b)b.textContent=on?'节奏 ▴':'节奏 ▾';
+  toast(on?'节奏命令条已展开（输入框上方）':'节奏命令条已收起');
+});
+{const pt=$('preftxt');if(pt)pt.addEventListener('input',prefMeter)}
+/* ---------- 手机对标外壳：顶部 tab / 底部大胶囊 / 四个主 tab / 悬浮工具 ---------- */
+function syncMobileTabs(v){
+  ['mtabs','mtabbar'].forEach(function(id){
+    const box=$(id);if(!box)return;
+    box.querySelectorAll('[data-go]').forEach(function(b){b.classList.toggle('on',b.dataset.go===v)});
+  });
+}
+document.querySelectorAll('#mtabs [data-go],#mtabbar [data-go]').forEach(function(b){
+  b.onclick=function(){goView(b.dataset.go);syncMobileTabs(b.dataset.go)};
+});
+document.querySelectorAll('#mtabs [data-menu]').forEach(function(b){b.onclick=openDrawer});
+document.querySelectorAll('#mcaps [data-act]').forEach(function(b){
+  b.onclick=function(){
+    if(b.dataset.act==='start')newSess();       /* 每节必经向导：先选伙伴和节奏 */
+    else if(b.dataset.act==='pref')openPref();
+    else openDrawer();
+  };
+});
+onId('nsGo',openLaunch);
 applyTheme();
 
 /* ---------- markdown ---------- */
@@ -2838,6 +3154,7 @@ function begunSess(id){
 function markBegun(){
   const s=sessOf(CURS);
   if(s&&!s.beg){s.beg=1;saveSess()}
+  hideNotStarted();   /* 开课了就把「未开课」遮罩收掉，桌面直接提问也算走完这一步 */
 }
 function startedSess(id){
   const s=id||CURS;
@@ -3246,6 +3563,9 @@ function sysMsg(){
     /* 出口放最末：和本站「放最后＝优先级最高」的约定一致。
        它是学习者当场发出的指令，理应压过人格、纪律与本轮模式；
        放在模式之前会自相矛盾（嘴上说最高，位置却更低）。 */
+    /* 课堂偏好放在模式之后、EXIT 之前：比人格 / 模式优先，但压不过当场发出的节奏命令。 */
+    +(PREF?'\n\n【课堂偏好 · 学习者自己写的】'+PREF
+      +'\n这是学习者长期写下的课堂要求，优先级高于人格与本轮模式；若与当场发出的节奏命令冲突，以当场命令为准。':'')
     +'\n\n'+EXIT;
 }
 /* 代理返回的都是可操作的配置/额度错误，别让它们表现成一句生硬的 HTTP 状态。 */
@@ -3262,6 +3582,9 @@ function pxErr(code,j,raw){
 }
 async function ask(text,opt){
   opt=opt||{};
+  /* 手机上绕过向导直接提问：先摆回选伙伴 / 节奏，别让「每节必须先选」形同虚设。
+     只在窄屏拦，桌面与 jsdom 的既有测试路径一字不动。 */
+  if(narrow()&&!cfgLocked()){openLaunch();toast('先选好伙伴和节奏，点「开始上课 →」');return}
   const usePx=proxyOn();
   const key=$('key').value.trim(),base=$('base').value.trim();
   if(!usePx&&(!key||!base)){alert('先到「设置」填接口地址和 API Key，或填课堂代理地址和邀请码。');return}
@@ -3369,8 +3692,61 @@ const CHAT_MAX=3;
 let GCHAT=LS.g('chat',[]);if(!Array.isArray(GCHAT))GCHAT=[];
 let GMEM=LS.g('chat.members',null);
 if(!Array.isArray(GMEM))GMEM=pKeys().slice(0,2);
-function saveChat(){LS.s('chat',GCHAT)}
+function saveChat(){LS.s('chat',GCHAT);LS.s(chatLogKey(CCUR),GCHAT)}
 function saveMem(){LS.s('chat.members',GMEM)}
+/* ---------- 群聊多会话：每个会话单独开、单独存 ----------
+   gx.chat 仍是「当前会话」的镜像（老代码 / 老测试都读它），真正分家的记录放在
+   gx.chat.log.<id>；gx.chat.sessions 是会话名册，gx.chat.cur 记当前哪一个。
+   三个键都在 gx. 前缀下，自动随一键备份导出 / 恢复。 */
+let CSESS=LS.g('chat.sessions',null);
+if(!Array.isArray(CSESS)||!CSESS.length){CSESS=[{id:'c1',t:Date.now(),name:'会话 1'}];LS.s('chat.sessions',CSESS)}
+let CCUR=LS.g('chat.cur','');
+if(!CSESS.some(function(x){return x&&x.id===CCUR})){CCUR=CSESS[0].id;LS.s('chat.cur',CCUR)}
+function chatLogKey(id){return 'chat.log.'+id}
+function saveCS(){LS.s('chat.sessions',CSESS)}
+function chatCur(){return CSESS.filter(function(x){return x.id===CCUR})[0]||CSESS[0]}
+function initChatSessions(){
+  /* 老版本 / 自由问答迁移进来的 gx.chat 就是第一个会话：先落盘再读，别吞掉老记录 */
+  if(LS.g(chatLogKey(CCUR),null)===null)LS.s(chatLogKey(CCUR),GCHAT);
+  else{GCHAT=LS.g(chatLogKey(CCUR),[])||[];if(!Array.isArray(GCHAT))GCHAT=[];saveChat()}
+}
+function switchChat(id){
+  if(id===CCUR||!CSESS.some(function(x){return x.id===id}))return;
+  LS.s(chatLogKey(CCUR),GCHAT);
+  CCUR=id;LS.s('chat.cur',CCUR);
+  GCHAT=LS.g(chatLogKey(CCUR),[])||[];if(!Array.isArray(GCHAT))GCHAT=[];
+  saveChat();renderChat();
+}
+function newChat(){
+  LS.s(chatLogKey(CCUR),GCHAT);
+  const id='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,4);
+  CSESS.push({id:id,t:Date.now(),name:'会话 '+(CSESS.length+1)});
+  CCUR=id;LS.s('chat.cur',CCUR);saveCS();
+  GCHAT=[];saveChat();renderChat();
+  toast('已另开一个群聊会话 · 旧会话还留在上面的历史里');
+}
+function delChat(){
+  if(CSESS.length<=1){toast('至少留一个群聊会话');return}
+  const c=chatCur();
+  if(!confirm('删除「'+(c?c.name:'这个会话')+'」？\n\n这个会话的消息会被删掉，其他会话不受影响。'))return;
+  CSESS=CSESS.filter(function(x){return x.id!==CCUR});saveCS();
+  try{localStorage.removeItem(P+chatLogKey(CCUR))}catch(e){}
+  CCUR=CSESS[0].id;LS.s('chat.cur',CCUR);
+  GCHAT=LS.g(chatLogKey(CCUR),[])||[];if(!Array.isArray(GCHAT))GCHAT=[];
+  saveChat();renderChat();toast('会话已删除');
+}
+function renderChatSessions(){
+  const box=$('chatsessions');if(!box)return;
+  box.innerHTML='';
+  CSESS.forEach(function(c,i){
+    const b=document.createElement('button');b.type='button';
+    b.className=c.id===CCUR?'on':'';
+    b.textContent=c.name||('会话 '+(i+1));
+    b.title='切换到这个会话（记录各自分开存）';
+    b.onclick=function(){switchChat(c.id)};
+    box.appendChild(b);
+  });
+}
 /* 过滤掉已经不存在的伙伴（体验版收起后五位 / 自定义人设被删）、去重、裁到上限。
    发消息、渲染高亮、提示词一律走这里，保证「看到几个人」＝「会回几条」。 */
 function members(){
@@ -3441,7 +3817,7 @@ function addChatMsg(m){
   return d.querySelector('.body');
 }
 function renderChat(){
-  renderMembers();
+  renderMembers();renderChatSessions();
   const box=$('chatmw');if(!box)return;
   box.innerHTML='';
   GCHAT.forEach(function(m){addChatMsg(m)});
@@ -3495,7 +3871,10 @@ async function chatAsk(text){
   const sb=$('chatsend');if(sb)sb.disabled=true;
   document.body.classList.add('busy');
   try{
-    GCHAT.push({r:'user',c:text,t:Date.now()});saveChat();renderChat();
+    GCHAT.push({r:'user',c:text,t:Date.now()});
+    const cs=chatCur();   /* 会话名先用第一句提问，历史条里才认得出是哪次聊天 */
+    if(cs&&/^会话 \d+$/.test(cs.name||'')){cs.name=text.slice(0,12);saveCS()}
+    saveChat();renderChat();
     /* 串行而不是并发：一次一句话会按人数发几次请求，并发容易把额度/限流打爆 */
     for(const k of mem){
       const el=addChatMsg({r:'a',w:k,c:'<span style="color:#888780">…</span>'});
@@ -3513,10 +3892,12 @@ $('chatsend').onclick=function(){const t=$('chatin').value;$('chatin').value='';
 $('chatin').onkeydown=function(e){
   if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('chatsend').click()}
 };
+$('chatnew').onclick=function(){newChat()};
+$('chatdel').onclick=function(){delChat()};
 $('chatclr').onclick=function(){
-  if(!GCHAT.length){toast('群里还没有消息');return}
-  if(!confirm('清空群聊？\n\n这 '+GCHAT.length+' 条消息会被删掉，课堂对话、闪卡都不受影响。'))return;
-  GCHAT=[];saveChat();renderChat();toast('群聊已清空');
+  if(!GCHAT.length){toast('这个会话里还没有消息');return}
+  if(!confirm('清空当前这个会话？\n\n这 '+GCHAT.length+' 条消息会被删掉；课堂对话、闪卡和其他群聊会话都不受影响。'))return;
+  GCHAT=[];saveChat();renderChat();toast('当前会话已清空');
 };
 function updTok(){
   /* 走代理时 token 由服务端代付，不能拿用户自己选的那家单价算「约 ¥x」 */
@@ -4264,6 +4645,8 @@ $('act').onchange=function(){
 $('fsz').onchange=function(){FSZ=String(this.value);LS.s('fsz',FSZ);applyHabit()};
 $('symadef').onchange=function(){SYMA=this.value==='1'?1:0;LS.s('syma',SYMA);renderSym();applyHabit()};
 $('start').onclick=function(){
+  /* 手机点「开始今天的一课」＝点「上课」：这一节没开课就必须先过向导 */
+  if(narrow()&&!cfgLocked()){openLaunch();toast('先选好伙伴和节奏，点「开始上课 →」');return}
   const bs=[];CTX.forEach(function(id){const c=CH.filter(function(x){return x.id===id})[0];if(c&&bs.indexOf(c.file)<0)bs.push(c.file)});
   const t=CTX.map(function(id){const c=CH.filter(function(x){return x.id===id})[0];return c?c.title:''}).filter(Boolean).join('、');
   let head;
@@ -4535,9 +4918,10 @@ function applyLite(){
 }
 /* applySessWho 顶替原来的 renderPs()：它内部就会 renderPs，还会按「当前这一节」把伙伴、
    系统提示词一起摆正 —— 否则刷新后节条停在第 3 节，伙伴却还是上次全局选的那位。 */
-initDrawer();   /* 手机：把 5 行 chrome 搬进抽屉；桌面（含 jsdom）一行不改 */
+initDrawer();   /* 手机：把 chrome 与课程树搬进抽屉；桌面（含 jsdom）一行不改 */
 applyLite();
-applySessWho();renderModes();applyHabit();updTok();renderSym();syncSymToggle();renderTts();updTts();renderMic();renderVoiceName();renderShell();renderIdCard();migrateFreeChat();renderChat();
+initPrefUI();
+applySessWho();renderModes();applyHabit();updTok();renderSym();syncSymToggle();renderTts();updTts();renderMic();renderVoiceName();renderShell();renderIdCard();migrateFreeChat();initChatSessions();renderChat();renderCourseTree();
 vLoad().catch(function(e){storeWarn(e,'网课库')});
 MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();

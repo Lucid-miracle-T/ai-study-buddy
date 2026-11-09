@@ -214,8 +214,12 @@ function boot(storage, url) {
     q('#lsetup').click();
     ok(q('#launch').hidden === false, '「开课设置」能重新打开向导');
     q('#lhClose').click();
-    ok(q('#launch').hidden === false, '这一节还没开课：✕ 不跳过选择，向导仍摊着');
-    ok(/开始上课/.test((q('#toast') || {}).textContent || ''), '并提示先点「开始上课 →」');
+    ok(q('#launch').hidden === true, '这一节还没开课：✕ 收起向导（不再是点了没反应）');
+    ok(q('#notstarted').hidden === false, '退出后落到「这一节还没开课」空态，课堂被挡住');
+    ok(/已退出开课设置/.test((q('#toast') || {}).textContent || ''), '并提示点「开始上课 →」回来');
+    q('#nsGo').click();
+    ok(q('#launch').hidden === false && q('#notstarted').hidden === true,
+      '空态里点「开始上课 →」回到向导，选择仍然必经');
     q('#lhGoBook').click();
     ok(q('#launch').hidden === true && doc.body.dataset.view === 'book',
       '点「去教材勾选」跳到教材页且不带走向导');
