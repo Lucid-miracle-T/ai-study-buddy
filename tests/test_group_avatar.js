@@ -313,6 +313,33 @@ function boot(opts) {
     C.wnd.close();
   }
 
+  /* ============ 7. 手机群聊：成员区不许把对话挤没 ============ */
+  log('');
+  log('=== 7. 手机群聊：成员区收成一行，悬浮胶囊不挡消息 ===');
+  {
+    const src = HTML();
+    ok(/body\.mobile \.chatmem\{[^}]*flex-wrap:nowrap[^}]*overflow-x:auto/.test(src),
+      '手机上 .chatmem 单行横滑（原来是 3 行 185px，对话区只剩一条缝）');
+    ok(/body\.mobile #chatmembers\{flex-wrap:nowrap\}/.test(src),
+      '成员胶囊跟着单行排，不再换行堆高');
+    ok(/body\.mobile:not\(\[data-view="lesson"\]\) #mfab\{display:none\}/.test(src),
+      '「偏好 / Ω」只在课堂页露出，其他页不压在内容上');
+
+    /* jsdom 没有布局，量不了高度，但能确认「收起来」不等于「删掉」：
+       8 位伙伴的胶囊、提示文案、点击加人都得还在。 */
+    const D = boot({ width: 1024 });
+    await wait(850);
+    const dd = D.wnd.document;
+    dd.body.classList.add('mobile', 'compact');
+    dd.body.dataset.view = 'chat';
+    ok(dd.querySelectorAll('#chatmembers .memchip').length === D.wnd.eval('pKeys().length'),
+      '收成一行后成员胶囊一个没少（仍是全部伙伴）');
+    ok(!!dd.getElementById('chathint') && /含你 \d\/4 人/.test(dd.getElementById('chathint').textContent),
+      '人数提示还在（横向滑到头就能看到，顶栏也有一份）');
+    ok(D.errs.length === 0, '手机群聊没有 JS 异常：' + D.errs.join(' | '));
+    D.wnd.close();
+  }
+
   console.log(out.join('\n'));
   console.log('\n--- 异常 ---\n  ' + (errors.length ? errors.join('\n  ') : '无'));
   if (errors.length) { console.log('\n失败 ' + errors.length + ' 条'); process.exit(1); }

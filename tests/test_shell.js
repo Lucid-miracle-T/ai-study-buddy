@@ -88,7 +88,7 @@ function boot(storage, url) {
     ok(qa('#gtabs button').map(b => b.textContent).join('') === '学习课余生态',
       '标签依次是 学习 / 课余 / 生态');
     const vs = qa('.nv button').map(b => b.dataset.v).sort().join(',');
-    ok(vs === 'book,card,chat,lesson,prog,set,vid', '七个视图入口都还在（群聊是第七个）：' + vs);
+    ok(vs === 'book,card,chat,lesson,prog,set,store,vid', '八个视图入口都还在（新增书城）：' + vs);
     ok(qa('.nv button').every(b => !!b.dataset.g && !!b.dataset.ic),
       '每个视图都带分组与图标（图标走 CSS ::before，不污染按钮文字）');
     ok(q('.nv button').textContent === '上课', '按钮文字没被图标撑坏，仍是「上课」');

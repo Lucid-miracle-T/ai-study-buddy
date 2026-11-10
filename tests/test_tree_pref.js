@@ -119,14 +119,15 @@ function boot(opts) {
          CH=window.__idb.slice();updateCourses();`);
     await wait(40);
     const crs = qa('#ctree .ct-crs');
-    ok(crs.length === 3, '树里三门教材平级并列，实际 ' + crs.length);
+    ok(crs.length === 4, '树里四本书平级并列（三本教材 + 原创讲义），实际 ' + crs.length);
     const names = qa('#ctree .ct-nm').map(x => x.textContent);
     log('课程名: ' + JSON.stringify(names));
     ok(names.some(n => n.indexOf('高等数学') >= 0) && names.some(n => n.indexOf('解析几何') >= 0)
-      && names.some(n => n.indexOf('C语言') >= 0), '三个课程名都在树上');
+      && names.some(n => n.indexOf('C语言') >= 0) && names.some(n => n.indexOf('变化与累积') >= 0),
+      '四个课程名都在树上');
     ok(qa('#ctree .ct-s[data-s]').length >= 1, '展开的那门课下面挂着它的节');
     ok(qa('#ctree .ct-s.new').length === 1, '展开的课有「＋ 新一节」');
-    ok(qa('#ctabs .ctab').length === 3, '原来的课程标签 DOM 仍在（没删功能）');
+    ok(qa('#ctabs .ctab').length === 4, '原来的课程标签 DOM 仍在（没删功能）');
 
     const k2 = qa('#ctree .ct-c')[1].dataset.c;
     qa('#ctree .ct-c')[1].click();

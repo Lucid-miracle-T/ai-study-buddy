@@ -190,7 +190,7 @@ function boot(url, realBook) {
     });
     ok(realCalls.length === 0, '没有去抓那 9 个注定 404 的真教材（实际发了 ' + realCalls.length + ' 个请求）');
     ok(A.ev('CH.length') === SAMPLE_SECTIONS, '体验版照样有两册讲义可上：' + A.ev('CH.length'));
-    ok(A.ev('PACKS.length') === 1, '真教材包仍然只列一本（体验版裁剪没受影响）');
+    ok(A.ev('PACKS.length') === 2, '体验版只剩高数 + 原创讲义（裁剪没受影响）');
     ok(A.tabs().some(t => /免费讲义/.test(t)), '体验版课程标签里有免费讲义：' + A.tabs().join(' | '));
   }
 

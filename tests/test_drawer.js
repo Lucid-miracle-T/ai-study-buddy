@@ -6,7 +6,7 @@
  * 实现约束（都要在这里守住）：
  *   - 只搬 DOM 节点（#nav / #ctabs / #stabs / #lbar1 / #lbar2 换父节点），不复制状态
  *   - 桌面 / jsdom（innerWidth=1024）一行不改：body.mobile 不存在，原结构原样
- *   - #foot 仍是 #nav 的直接子元素（test_foot.js / test_shell.js 的老根因）
+ *   - #foot / #nvcourse 归到「这一节」子栏目，不再夹在页面列表中间
  *   - 七个视图（含课余群聊）、LITE 过滤、每节独立状态、向导、原工具栏控件全部仍在
  *   - 抽屉里点页面要自动收起；遮罩 / Esc / 关闭按钮都能关
  *   - 顶栏的「停止」「＋」是遥控器，点它＝点原来的按钮，不另写一套逻辑
@@ -117,12 +117,14 @@ function boot(opts) {
       '收起的子栏目真的隐藏内容（否则原节点的 display:flex 会顶开 UA 隐藏）');
 
     const foot = q('#foot');
-    ok(!!foot && foot.parentElement.id === 'nav' && !q('.nv #foot'),
-      '#foot 仍是 #nav 的直接子元素（搬的是 #nav，不是拆开它）');
+    ok(!!foot && foot.parentElement.id === 'dSec' && !q('.nv #foot'),
+      '手机上 #foot 归到「这一节」子栏目，不夹在页面列表中间');
+    ok(q('#nvcourse') && q('#nvcourse').parentElement.id === 'dSec',
+      '「当前 第 N 节」也归到「这一节」里，页面列表只剩三个空间分组');
     const vs = qa('.nv button').map(b => b.dataset.v).sort().join(',');
-    ok(vs === 'book,card,chat,lesson,prog,set,vid', '七个视图入口都还在（课余多了群聊）：' + vs);
+    ok(vs === 'book,card,chat,lesson,prog,set,store,vid', '八个视图入口都还在（课余群聊 / 学习书城）：' + vs);
     ok(/body\.mobile #drawer \.nv button\[data-v\]\{display:flex\}/.test(src),
-      '抽屉里取消三标签分组隐藏，六个入口一次露全');
+      '抽屉里取消三标签分组隐藏，八个入口一次露全');
     ok(!/body\.mobile #drawer \.nv button\[data-v\]\{display:flex!important\}/.test(src),
       '这条规则不带 !important —— 否则会顶掉 LITE 的内联 display:none');
 

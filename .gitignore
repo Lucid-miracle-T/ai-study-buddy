@@ -21,3 +21,8 @@ preview-*.png
 .DS_Store
 Thumbs.db
 .vscode/
+
+# 测试日志（run_all.js 的输出）与工作区本地数据
+run_all.log
+.workbuddy/
+*.genie

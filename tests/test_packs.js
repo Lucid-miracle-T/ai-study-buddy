@@ -68,7 +68,7 @@ function installIDB(win) {
   log('=== 1. 包定义 ===');
   const packs = ev('PACKS.map(p=>({key:p.key,name:p.name,dir:p.dir,n:p.files.length}))');
   log(JSON.stringify(packs));
-  ok(packs.length === 3, '三个内置包（高数 / 线代 / C语言）');
+  ok(packs.length === 4, '四个内置包（高数 / 线代 / C语言 / 原创讲义）');
   ok(packs[0].name.indexOf('高等数学') >= 0, '高数包名正确');
   ok(packs[1].name.indexOf('线性代数') >= 0, '线代包名正确');
   ok(packs[2].name.indexOf('C语言') >= 0, 'C语言包名正确');
@@ -93,7 +93,7 @@ function installIDB(win) {
   await wait(50);
   const tabs = [...doc.querySelectorAll('#ctabs .ctab')].map(b => b.textContent);
   log('标签: ' + JSON.stringify(tabs));
-  ok(tabs.length === 3, '标签数 3：三门教材课并列（自由问答已搬到课余群聊），实际 ' + tabs.length);
+  ok(tabs.length === 4, '标签数 4：三本书 + 原创讲义并列（自由问答已搬到课余群聊），实际 ' + tabs.length);
   ok(tabs.some(t => t.indexOf('解析几何与线性代数') >= 0), '线代作为并列的课程标签出现');
   ok(tabs.some(t => t.indexOf('高等数学') >= 0), '高数作为一个标签出现');
   ok(tabs.some(t => t.indexOf('C语言') >= 0), 'C语言作为一个标签出现');

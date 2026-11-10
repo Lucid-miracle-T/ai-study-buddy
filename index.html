@@ -244,6 +244,43 @@ input.ck{width:auto;flex-shrink:0}
 #reader h3{font-size:15px;margin:16px 0 6px}
 #reader p{margin:0 0 10px;line-height:1.85}
 #reader .meta{font-size:12px;color:var(--tx3);border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:16px}
+/* 阅读器里的表格：浏览器默认样式既没边框也没内边距，在 640px 阅读栏里会挤成一团，
+   中文还会被逐字拆行（「反三角函数」拆成「反三角函」+「数」）。
+   第一列不折行（多半是术语短词），其余列正常换行；宽表可横向滚动，不撑破正文宽度。 */
+#rw table{border-collapse:collapse;margin:14px 0;font-size:.93em;display:block;
+  overflow-x:auto;max-width:100%}
+#rw th,#rw td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+#rw th{background:var(--surface2);font-weight:600;white-space:nowrap}
+#rw td:first-child{white-space:nowrap}
+#rw tbody tr:nth-child(even) td{background:rgba(0,0,0,.018)}
+body.dark #rw tbody tr:nth-child(even) td{background:rgba(255,255,255,.032)}
+/* 书城：卡片网格。封面用纯色块 + 首字，不引图片资源（断网 / 部署空档也画得出来） */
+#stlist{flex:1;overflow-y:auto;padding:18px 24px 40px;display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;align-content:start}
+.stcard{display:flex;gap:12px;border:1px solid var(--line);border-radius:12px;
+  background:var(--panel);padding:14px;min-width:0;align-items:flex-start}
+.stcard.shelf{border-color:var(--blue-line)}
+.stcv{width:54px;height:76px;border-radius:7px;flex:none;display:flex;align-items:center;
+  justify-content:center;font-size:21px;font-weight:600;color:#fff}
+.stmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.stt{font-size:13.5px;font-weight:600;color:var(--tx);line-height:1.45;
+  display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.stbadge{font-size:10.5px;font-weight:400;border-radius:9px;padding:1px 7px;
+  background:var(--green-bg);color:var(--green);flex:none}
+.stsub{font-size:11.5px;color:var(--blue);line-height:1.5}
+.stmeta{font-size:11px;color:var(--tx3);line-height:1.5}
+.stabout{font-size:12px;color:var(--tx2);line-height:1.75}
+.sttags{display:flex;gap:5px;flex-wrap:wrap;margin-top:1px}
+.sttags span{font-size:10.5px;background:var(--hover);color:var(--tx3);border-radius:5px;padding:1px 7px}
+.stacts{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+.stacts .sm{flex:none;white-space:nowrap}
+.sttoc{max-height:220px;overflow-y:auto;border-top:1px dashed var(--line2);margin-top:6px;
+  padding-top:6px;font-size:11.5px;color:var(--tx2);line-height:1.95}
+.sttoc div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sttoc .n{color:var(--tx3);margin-right:6px}
+.stnote{font-size:11px;color:var(--green)}
+#stcnt{white-space:nowrap;flex:none}
+body.mobile #stlist{grid-template-columns:1fr;padding:12px 12px 96px}
 /* flashcard view */
 #cards{flex:1;overflow-y:auto;padding:20px 24px}
 .cbox{max-width:560px;margin:0 auto}
@@ -354,14 +391,13 @@ summary{cursor:pointer;font-size:12px;color:var(--tx2);padding:4px 0}
 #nav{width:200px}
 .brand{padding:14px 14px 10px}
 .brand h1{font-size:14px}
-#nvcourse{margin:10px 10px 4px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;
-  background:var(--surface2);cursor:pointer;flex-shrink:0}
+/* 当前这一节：一条细带子，只作「我在哪 + 点回课堂」，不与课程树抢标题位 */
+#nvcourse{margin:8px 10px 2px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;
+  background:var(--surface2);cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;gap:6px;font-size:11px;line-height:1.4}
 #nvcourse:hover{border-color:var(--blue-line)}
-#nvcourse .nh{font-size:12px;font-weight:500;color:var(--tx);display:flex;align-items:center;gap:6px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#nvcourse .nh .cnt{margin-left:auto;background:var(--blue-bg);color:var(--blue);
-  border-radius:9px;padding:0 6px;font-size:10.5px;font-weight:400;flex:none}
-#nvcourse .ns{font-size:10.5px;color:var(--tx3);margin-top:5px;line-height:1.5;
+#nvcourse .nh{color:var(--tx3);flex:none}
+#nvcourse .ns{flex:1;min-width:0;color:var(--tx);font-weight:500;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nv{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:8px 10px 4px}
 .nv button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
@@ -452,6 +488,10 @@ body.compact:not(.expand) #lbar1>#tts,
 body.compact:not(.expand) #lbar2>#gen,
 body.compact:not(.expand) #lbar2>#exp2,
 body.compact:not(.expand) #lbar2>#clr{display:none}
+/* 收起态第二排整个不占位：剩下的三颗（变闪卡 / 导出 / 清空）都归「⋯ 更多」。
+   手机抽屉里必须放回来，那里是它们唯一的入口。 */
+body.compact:not(.expand) #lbar2{display:none}
+body.mobile #drawer #lbar2{display:flex}
 /* #pbox / #mbox / #ctxchips 在 HTML 里带内联 style="display:flex"，
    普通 CSS 干不过内联样式，这三行必须 !important（手机断点那条也是这么写的）。
    加 .expand 时规则不生效，内联的 flex 自动恢复，原工具栏原样回来。 */
@@ -613,6 +653,16 @@ body.dark #rgo2{color:var(--blue)!important}
   #vdoc{padding:14px 13px;-webkit-overflow-scrolling:touch}
   #reader{padding:16px 14px;-webkit-overflow-scrolling:touch}
   #reader h1{font-size:18px}#reader h2{font-size:16px}
+  /* 阅读器表格：窄屏上表头与首列都允许折行、单元格留白收紧。
+     桌面端为了让术语不逐字拆行，给首列加了 nowrap；但在 362px 版心里，
+     一个 nowrap 的「类别（含形式）|反三角函数（$\arcsin x$ 等）」就能把表撑到 502px。
+     手机屏上宁可折行，也不要横向滚动。 */
+  #rw th,#rw td{padding:4px 6px}
+  #rw th,#rw td:first-child{white-space:normal}
+  /* 单元格里的行内公式是 inline-block，是一整块不能断的字，决定了列的最小宽度。
+     所以正文里成串的函数名要拆成几个独立的 $…$（`$\sin x$、$\cos x$`），
+     别写成 `$\sin x,\cos x$` —— 一个原子就能把整列撑到 160px。 */
+  #rw table{font-size:.9em}
   /* 设置/进度：双列改单列，宽表可横滑 */
   .grid2{grid-template-columns:1fr}
   .statc{min-width:0;flex:1 1 44%}
@@ -673,7 +723,7 @@ body.mobile.drawer #drawer{display:flex}
 body.mobile #drawer #nav{width:100%;flex-direction:column;align-items:stretch;
   border:none;overflow:visible;padding:0}
 body.mobile #drawer .brand{display:none}
-body.mobile #drawer #nvcourse{display:block;margin:0 0 8px}
+body.mobile #drawer #nvcourse{display:flex;margin:0 0 8px}
 body.mobile #drawer #foot{display:block;margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
 body.mobile #drawer #gtabs{display:none}
 body.mobile #drawer .nv{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;
@@ -812,7 +862,9 @@ body.mobile #mtabs button{flex:1;border:none;background:none;color:var(--tx3);
 body.mobile #mtabs button.on{color:var(--tx);font-weight:600}
 body.mobile #mtabs button.on::after{content:'';position:absolute;left:28%;right:28%;
   bottom:2px;height:2px;background:var(--blue);border-radius:2px}
-body.mobile #mcaps{display:flex;gap:8px;flex-shrink:0;padding:8px 10px 4px;
+/* 这一排「上课 / 偏好 / 工具」三个动作，顶栏的 ＋、悬浮的「偏好」、顶栏的 ☰ 已经各自接管，
+   再占一整行只会让底部堆三层。节点与事件都留着（老测试 / 老入口仍能点到），只是不再显示。 */
+body.mobile #mcaps{display:none;gap:8px;flex-shrink:0;padding:8px 10px 4px;
   background:var(--panel);border-top:1px solid var(--line)}
 body.mobile #mcaps button{flex:1;min-width:0;white-space:nowrap;border-radius:24px;
   background:var(--surface2);border-color:var(--line);color:var(--tx2);
@@ -848,29 +900,124 @@ body.mobile #mcaps{padding:5px 8px 2px}
 body.mobile #mcaps button{padding:9px 4px;font-size:12.5px}
 body.mobile #mtabbar{padding:3px 2px calc(3px + env(safe-area-inset-bottom))}
 body.mobile #mtabbar button i{font-size:15px}
-body.mobile #mfab{bottom:calc(176px + env(safe-area-inset-bottom))}
+body.mobile #mfab{bottom:calc(112px + env(safe-area-inset-bottom))}
 /* 「未开课」空态盖的是正文 + 输入栏，导航必须露在上面，
    否则按了 ✕ 之后整屏只剩一张卡片，看着像卡死而不是退出成功。 */
 body.mobile #mtabs,body.mobile #mcaps,body.mobile #mtabbar{position:relative;z-index:41}
 body.mobile #mfab{z-index:41}
+/* 群聊页（课余）：这个房间里没有「课」，成员区却按 3 行铺开，
+   8 位伙伴的胶囊 + 人数提示一共吃掉 185px，手机上对话区只剩一条缝。
+   收成一行横滑（胶囊与提示都不删，手指一划就到），把高度还给消息。
+   另外「偏好 / Ω」是课堂入口，点下去都会 goView('lesson')，在群聊里只是
+   一块浮在消息上的挡板，所以除课堂页外都不显示。 */
+body.mobile .chatmem{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;
+  padding-top:6px;padding-bottom:6px;scrollbar-width:none}
+body.mobile .chatmem::-webkit-scrollbar{display:none}
+body.mobile .chatmem>*{flex:none;white-space:nowrap}
+body.mobile #chatmembers{flex-wrap:nowrap}
+body.mobile:not([data-view="lesson"]) #mfab{display:none}
+/* ===== 信息架构：位置条 / 空间说明 / 全站地图 =====
+   一条明确的包含链：空间（学习 / 课余 / 生态）→ 页面 → 页面里的操作；
+   「课程 → 节 → 一次学习」是另一条独立的树，放在左侧，不与页面混在一起。
+   所有入口都保留原 DOM 与事件，只调整归属与可见性。 */
+#crumb{display:flex;align-items:center;gap:7px;flex-shrink:0;min-height:29px;
+  padding:5px 12px;border-bottom:1px solid var(--line);background:var(--panel);
+  font-size:11.5px;color:var(--tx3);white-space:nowrap;overflow:hidden}
+#crumb .cb-home,#crumb .cb-grp{color:var(--tx2)}
+#crumb .cb-sep{opacity:.55}
+#crumb .cb-cur{color:var(--tx);font-weight:600}
+#crumb .cb-sess{color:var(--tx3);overflow:hidden;text-overflow:ellipsis}
+#crumb .sp{flex:1;min-width:6px}
+#guideopen{flex:none;white-space:nowrap;border:1px solid var(--line2);background:none;
+  color:var(--tx2);border-radius:14px;padding:3px 10px;font-size:11.5px;
+  cursor:pointer;font-family:inherit}
+#guideopen:hover{border-color:var(--blue-line);color:var(--blue)}
+#guideopen.new{background:var(--blue-bg);border-color:var(--blue-line);
+  color:var(--blue);font-weight:600}
+#gtabs button{cursor:help}
+#nvcap{font-size:10.5px;color:var(--tx3);line-height:1.45;padding:0 12px 5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+/* 全站地图：用户主动打开才出现，不自动盖住开课向导 */
+#guide{position:absolute;inset:0;z-index:60;display:flex;align-items:center;
+  justify-content:center;padding:18px;background:rgba(10,12,16,.62)}
+#guide[hidden]{display:none}
+.gd-card{width:min(720px,100%);max-height:min(86vh,760px);display:flex;flex-direction:column;
+  background:var(--panel);border:1px solid var(--line2);border-radius:14px;
+  box-shadow:0 18px 50px rgba(0,0,0,.35);overflow:hidden}
+.gd-top{display:flex;align-items:center;gap:8px;padding:11px 16px;
+  border-bottom:1px solid var(--line);flex-shrink:0}
+.gd-top b{font-size:14px;color:var(--tx)}
+.gd-top .sp{flex:1}
+.gd-body{overflow-y:auto;padding:14px 18px 8px;font-size:12.5px;color:var(--tx2);line-height:1.7}
+.gd-hero{background:var(--surface2);border:1px solid var(--line);
+  border-radius:10px;padding:11px 14px;margin-bottom:6px}
+.gd-hero h2{font-size:13.5px;margin:0 0 7px;color:var(--tx)}
+.gd-steps{margin:0;padding-left:19px}
+.gd-steps li{margin:5px 0}
+.gd-steps b,.gd-row .gn{color:var(--tx)}
+.gd-steps button,.gd-row button{flex:none;border:1px solid var(--blue-line);
+  background:var(--blue-bg);color:var(--blue);border-radius:12px;
+  padding:1px 9px;font-size:11px;cursor:pointer;font-family:inherit;margin-left:6px}
+.gd-body h3{font-size:12.5px;color:var(--tx);margin:15px 0 7px;padding-bottom:5px;
+  border-bottom:1px solid var(--line)}
+.gd-grp{margin:9px 0}
+.gd-grp .gh{font-size:12px;color:var(--tx);font-weight:600}
+.gd-grp .gd{color:var(--tx3);font-size:11.5px;margin-bottom:5px}
+.gd-row{display:flex;align-items:baseline;gap:7px;padding:3px 0 3px 11px;
+  border-left:2px solid var(--line)}
+.gd-row .gi{color:var(--blue);flex:none;width:15px;text-align:center}
+.gd-row .gn{flex:none;min-width:46px;font-weight:600}
+.gd-row .gx2{flex:1;color:var(--tx3);font-size:11.5px}
+.gd-notes{padding-left:17px;margin:6px 0}
+.gd-notes li{margin:4px 0;color:var(--tx3);font-size:11.5px}
+.gd-foot{display:flex;align-items:center;gap:10px;padding:10px 16px;
+  border-top:1px solid var(--line);flex-shrink:0}
+.gd-foot .sp{flex:1}
+.gd-foot .tip{font-size:11px;color:var(--tx3)}
+/* 「知道了」不能被左边的说明挤成竖排三个字 */
+.gd-foot button{flex:none;white-space:nowrap}
+.dh #drGuide{width:auto;height:auto;padding:4px 10px;border:1px solid var(--line2);
+  background:none;color:var(--tx2);border-radius:9px;font-size:12px;
+  cursor:pointer;font-family:inherit;margin-left:auto}
+.dh #dClose{margin-left:6px}
+#nsGuide{margin-top:9px}
+/* 手机：面包屑压成一行；顶部那排 tab 与底部主 tab 重复且命名不一致 ⇒ 收掉，
+   把「全部页面」交给抽屉（带空间标题，本身就是一张全站地图）。 */
+body.mobile #crumb{padding:4px 9px;min-height:25px;gap:6px;font-size:11px}
+body.mobile #crumb .cb-home,body.mobile #crumb .cb-sess,
+body.mobile #crumb .cb-home + .cb-sep{display:none}
+body.mobile #mtabs{display:none}
+body.mobile #drawer #nvcap{display:none}
+body.mobile #guide{padding:8px}
+body.mobile .gd-card{max-height:92vh}
+body.mobile .gd-body{padding:12px 12px 6px}
+body.mobile .gd-row{flex-wrap:wrap}
+/* 手机窄：说明整行放到下面，「前往」留在标题那一行的右端，别让按钮孤零零跑到说明后面 */
+body.mobile .gd-row .gx2{order:3;flex-basis:100%;padding-left:22px}
+body.mobile .gd-row button{margin-left:auto}
+/* 抽屉里的分组标题：grid 里独占一行，把 7 个页面按空间装起来 */
+.nv .nvgh{grid-column:1/-1;font-size:10.5px;color:var(--tx3);text-align:left;
+  padding:7px 2px 3px;border-bottom:1px solid var(--line);margin-top:4px}
+.nv .nvgh b{color:var(--tx2);font-weight:600}
 </style>
 </head>
 <body class="compact dark" data-navgrp="study">
 <div id="app">
   <!-- 手机上唯一留在对话区外的顶栏：菜单 / 当前这一节 / 新的一节 / 停止 -->
   <header id="topbar">
-    <button id="dOpen" aria-label="打开菜单" title="菜单：伙伴、课程、节、页面都在这里">☰</button>
+    <button id="dOpen" aria-label="打开菜单" title="菜单：伙伴、书架、节、页面都在这里">☰</button>
     <div id="dtTitle"><b id="dtCourse">高等数学</b><span id="dtSess">第 1 节</span></div>
     <span class="sp"></span>
     <button id="dStop" title="停止这一轮回答" aria-label="停止回答">⏹</button>
+    <button id="dGuide" title="全站地图：有什么功能、怎么用" aria-label="使用指南">?</button>
     <button id="dNew" title="开课设置 / 新的一节" aria-label="开课设置">＋</button>
   </header>
   <aside id="drawer" aria-hidden="true" aria-label="功能菜单">
-    <div class="dh">无穷之境 · 菜单<button id="dClose" aria-label="关闭菜单" title="关闭">✕</button></div>
+    <div class="dh">无穷之境 · 菜单<button id="drGuide" title="全站地图 / 使用指南">? 指南</button><button id="dClose" aria-label="关闭菜单" title="关闭">✕</button></div>
     <div class="dscroll">
       <details open><summary>这一节 · 伙伴与节奏</summary><div id="dSec"></div></details>
       <details open><summary>页面 · 学习 / 课余 / 生态</summary><div id="dNav"></div></details>
-      <details open><summary>课程与节</summary><div id="dTabs"></div></details>
+      <details open><summary>书架与节</summary><div id="dTabs"></div></details>
       <details><summary>课堂操作</summary><div id="dActs"></div></details>
     </div>
   </aside>
@@ -878,41 +1025,58 @@ body.mobile #mfab{z-index:41}
   <nav id="nav">
     <div class="brand">
       <h1>无穷之境</h1>
-      <p>高等数学 · 自用学习站</p>
+      <p>按你的教材 · 一步步学</p>
     </div>
-    <div id="nvcourse" title="点一下回到课堂；换课程、换节就在左边这棵树里">
-      <div class="nh">📖 <span id="nvcname">高等数学</span><span class="cnt" id="nvcnt">1</span></div>
-      <div class="ns" id="nvsess">第 1 节 · 0 条</div>
+    <!-- 第一条线：空间 → 页面 → 页内操作。
+         空间标签紧挨着它包含的页面图标，而且放在侧栏最上面（眼睛最先到的地方），
+         不再孤零零挂在底部像个筛选器。七个按钮的 data-v/data-g 一个没动。 -->
+    <div id="gtabs">
+      <button class="on" data-g="study" title="学习空间：上课 / 书架 / 书城 / 闪卡">学习</button>
+      <button data-g="life" title="课余空间：群聊 / 网课 / 进度">课余</button>
+      <button data-g="eco" title="生态空间：设置（接口、名片、数据、语音）">生态</button>
     </div>
-    <!-- 课程 → 节：三门教材平级列在左侧，每一节收纳在自己那门课下面。
-         原来顶部两行横排标签仍留在 DOM 里（老测试 / 老事件都靠它），只是不再占主屏。 -->
-    <div id="ctree" aria-label="课程与节"></div>
-    <!-- #foot 是 <nav> 的直接子元素，不在 .nv 里：margin-top:auto 才推得动下面那组图标 -->
-    <div class="foot" id="foot"></div>
+    <div id="nvcap" aria-live="polite"></div>
     <div class="nv">
       <button class="on" data-v="lesson" data-g="study" data-ic="◎">上课</button>
-      <button data-v="book" data-g="study" data-ic="▤">教材</button>
+      <button data-v="book" data-g="study" data-ic="▤">书架</button>
+      <button data-v="store" data-g="study" data-ic="▦">书城</button>
       <button data-v="card" data-g="study" data-ic="◫">闪卡</button>
       <button data-v="chat" data-g="life" data-ic="☏">群聊</button>
       <button data-v="vid" data-g="life" data-ic="▶">网课</button>
       <button data-v="prog" data-g="life" data-ic="◷">进度</button>
       <button data-v="set" data-g="eco" data-ic="⚙">设置</button>
     </div>
-    <div id="gtabs">
-      <button class="on" data-g="study">学习</button>
-      <button data-g="life">课余</button>
-      <button data-g="eco">生态</button>
+    <!-- 第二条线：课程 → 节。三门教材平级，每一节收纳在自己那门课下面。
+         原来顶部两行横排标签仍留在 DOM 里（老测试 / 老事件都靠它），只是不再占主屏。 -->
+    <!-- 当前在哪：只写「节」，不再重复下面那棵树的课程名（课程名在树里已经高亮一次）。
+         换课程 / 换节去树里点，这里负责「点一下回到课堂」。 -->
+    <div id="nvcourse" title="当前这一节 · 点一下回到课堂">
+      <span class="nh">📍 当前</span>
+      <span class="ns" id="nvsess">第 1 节 · 0 条</span>
+      <span id="nvcname" hidden>高等数学</span>
     </div>
+    <div id="ctree" aria-label="课程与节"></div>
+    <!-- #foot 是 <nav> 的直接子元素、且是最后一个：margin-top:auto 把它压到侧栏底部 -->
+    <div class="foot" id="foot"></div>
   </nav>
 
   <div id="stage">
+    <!-- 位置条：任何一页都能看见「我在哪个空间 › 哪个页面」，右侧是常驻的全站地图入口 -->
+    <div id="crumb">
+      <span class="cb-home">无穷之境</span><span class="cb-sep">›</span>
+      <span class="cb-grp" id="cbGrp">学习</span><span class="cb-sep">›</span>
+      <span class="cb-cur" id="cbCur">上课</span>
+      <span class="cb-sess" id="cbSess"></span>
+      <span class="sp"></span>
+      <button id="guideopen" title="全站地图：有什么功能、怎么用">? 全站地图</button>
+    </div>
     <!-- 手机顶部一行 tab：正文之外只留薄薄一条，像阅读式 App 那样把屏幕还给内容 -->
     <div id="mtabs">
-      <button class="on" data-go="lesson">课堂</button>
+      <button class="on" data-go="lesson">上课</button>
       <button data-go="chat">群聊</button>
-      <button data-go="book">目录</button>
+      <button data-go="book">书架</button>
       <button data-go="card">闪卡</button>
-      <button data-menu="1">更多</button>
+      <button data-menu="1">菜单</button>
     </div>
     <!-- 还没开课时的空态：点 ✕ 退出向导后能看到明确反馈，也挡住「不选就上课」。
          唯一的出口是「开始上课 →」，点了回到向导；不是死路，也不是放行。 -->
@@ -922,6 +1086,7 @@ body.mobile #mfab{z-index:41}
         <h2>这一节还没开课</h2>
         <p>先选好伙伴和教学节奏，才能开始这一节。<br>这两项定下来后本节固定，开新的一节可以重新选。</p>
         <button class="pri" id="nsGo">开始上课 →</button>
+        <div><button class="sm" id="nsGuide">不知道从哪开始？看全站地图</button></div>
       </div>
     </div>
     <!-- 开课向导：一屏选完伙伴 / 节奏 / 模式 / 章节，一个主按钮。
@@ -930,12 +1095,13 @@ body.mobile #mfab{z-index:41}
       <div class="lh-top">
         <span class="lh-crumb">无穷之境　›　<b id="lhCourse">高等数学</b>　›　待选伙伴</span>
         <span class="sp"></span>
+        <button class="sm" id="lhGuide" title="全站地图：有什么功能、怎么用">? 使用指南</button>
         <button class="sm" id="lhTheme" title="切换深色 / 浅色">☀ 浅色</button>
         <button class="sm" id="lhClose" title="回到课堂">✕</button>
       </div>
       <div class="lh-scroll"><div class="lh-inner">
         <div class="lh-title"><h1 id="lhTitle">高等数学（第八版）上册</h1>
-          <button class="sm" id="lhSwap">更换课程</button></div>
+          <button class="sm" id="lhSwap">换一本</button></div>
         <div id="lhCourses" class="lh-courses" hidden></div>
         <div class="lh-sec">选择伙伴</div>
         <div id="lhWho" class="lh-cards"></div>
@@ -961,6 +1127,9 @@ body.mobile #mfab{z-index:41}
         <button class="sm monly" id="mctrl" aria-expanded="false" aria-controls="lbar1">伙伴 · 模式 ▾</button>
         <button class="sm" id="lsetup" title="开课设置：伙伴、节奏、模式、章节都在一屏里选">⚙ 开课设置</button>
         <span id="lsum"></span>
+        <!-- 两个最常用的动作跟着「开课设置」站一排：第二排原来只有三颗按钮、大半行是空白 -->
+        <button class="sm pri" id="start">开始今天的一课</button>
+        <button class="sm" id="close">下课小结</button>
         <button class="sm" id="ltheme" title="切换深色 / 浅色">☀</button>
         <button class="sm" id="lexpand" title="展开 / 收起原来的完整工具栏">⋯ 更多</button>
         <span class="mlabel" style="font-size:12px;color:var(--tx2)">伙伴</span>
@@ -982,14 +1151,12 @@ body.mobile #mfab{z-index:41}
         <span class="tag" id="tok">0 token</span>
         <span class="tag" id="kxst" title="数学公式渲染状态">公式加载中…</span>
         <button class="sm" id="tts" title="伙伴语音朗读开关（用系统中文音色，不耗 token）">🔇 朗读</button>
+        <button class="sm" id="stop" disabled>停止</button>
       </div>
       <div class="bar" id="lbar2" style="background:#faf9f6">
-        <button class="sm pri" id="start">开始今天的一课</button>
         <button class="sm" id="gen">把本轮变闪卡</button>
         <button class="sm" id="exp2">导出笔记</button>
-        <button class="sm" id="close">下课小结</button>
         <span class="sp"></span>
-        <button class="sm" id="stop" disabled>停止</button>
         <button class="sm" id="clr">清空会话</button>
       </div>
       <div id="msgs"><div class="wrap" id="mw"></div></div>
@@ -1048,24 +1215,26 @@ body.mobile #mfab{z-index:41}
       <input type="file" id="imgf" accept="image/*" style="display:none"></div>
     </section>
 
-    <!-- 教材 -->
+    <!-- 书架：你手上真有的书。想加书去「书城」，这里只管挑书、挑节、带进课堂。
+         下面这排载入按钮是书城的快捷方式，老用户习惯的入口一个没删。 -->
     <section class="view" id="v-book">
       <div class="bar">
         <button class="sm monly" id="btoc" title="显示 / 收起教材目录">目录</button>
         <input id="bq" placeholder="搜标题…" style="width:220px">
         <span class="sp"></span>
         <span class="tag" id="bstat">未载入</span>
+        <button class="sm" id="gostore" title="去书城挑书，或导入自己的教材">▦ 去书城</button>
         <button class="sm" id="ldfree" title="本站自编、可自由分发的两册讲义；体验版也能用">免费讲义</button>
         <button class="sm" id="dlfree" title="把两册自制讲义打包成一份 md 下载，可随意复制、修改、分发">下载讲义</button>
-        <button class="sm" id="reload">载入全部内置教材</button>
-        <button class="sm" id="ldg">仅高数</button>
-        <button class="sm" id="ldl">仅线代</button>
-        <button class="sm" id="ldc">仅 C 语言</button>
-        <button class="sm pri" id="pickfile">导入教材</button>
+        <button class="sm" id="reload">全部加入书架</button>
+        <button class="sm" id="ldg">加高数</button>
+        <button class="sm" id="ldl">加线代</button>
+        <button class="sm" id="ldc">加 C 语言</button>
+        <button class="sm pri" id="pickfile">导入自己的书</button>
         <input type="file" id="file" accept=".md,.markdown,.txt,.pdf,.epub" multiple style="display:none">
       </div>
       <div class="bar" style="background:#faf9f6;font-size:11.5px;color:var(--tx3)">
-        <span class="bookhint">支持 <b>md / txt</b>（最佳）、<b>PDF</b>、<b>EPUB</b>。
+        <span class="bookhint">书架里是你真有的书：既可以从「书城」加入，也可以自己导入。支持 <b>md / txt</b>（最佳）、<b>PDF</b>、<b>EPUB</b>。
         PDF 取的是文本层：<b>公式和上下标基本会串位</b>，理工教材建议先用 MinerU 转成 Markdown 再导入。<br>
         <b>「免费讲义」是本站自己写的</b>（非出版物摘录，MIT），随仓库分发，可自由复制、修改、转给别人；真教材受版权保护，只在本地、不随公开仓库走。</span>
         <span class="sp"></span>
@@ -1076,6 +1245,23 @@ body.mobile #mfab{z-index:41}
         <div id="blist"></div>
         <div id="reader"><div class="wrap" id="rw"><div class="empty">左边选一节。<br>勾选的段落会被带到课堂上当上下文。</div></div></div>
       </div>
+    </section>
+
+    <!-- 书城：站点能提供的书。加入书架＝把那本的正文抓进 IndexedDB，
+         之后在「书架」里选节、带进课堂；不想看就在书架页删掉。 -->
+    <section class="view" id="v-store">
+      <div class="bar">
+        <b style="font-size:12.5px">书城</b>
+        <span class="tag" id="stcnt">0 本</span>
+        <span class="sp"></span>
+        <button class="sm" id="staddall" title="把书城里还没加入的书全部加入书架">全部加入书架</button>
+        <button class="sm pri" id="stpick" title="自己的 md / txt / pdf / epub 也能加进书架">导入自己的教材</button>
+      </div>
+      <div class="bar" style="background:#faf9f6;font-size:11.5px;color:var(--tx3)">
+        <span class="bookhint">加入书架后正文存在这台设备的浏览器里，断网也能读。
+        每本书都能先「看目录」再决定；加入是可逆的，在「书架」或「设置 → 课程管理」里能删。</span>
+      </div>
+      <div id="stlist"></div>
     </section>
 
     <!-- 群聊（课余）：每个会话单独开、单独存，与课堂 msgs.* 完全隔离 -->
@@ -1317,10 +1503,10 @@ body.mobile #mfab{z-index:41}
           </div>
         </div>
         <div class="card2">
-          <h2>课程管理</h2>
-          <div class="hint">课程是从教材推出来的：载入哪本教材，课程栏就多一门课。<br>
+          <h2>书架管理</h2>
+          <div class="hint">书架里有什么书，是「加入 / 导入」决定的：书城加一本，书架就多一本。<br>
             <b>清空记录</b>只把这门课的对话、闪卡、掌握进度归零，教材和勾选的章节留着，随时能重新开课；
-            <b>删除课程</b>连教材正文一起移除，这门课从课程栏消失（内置教材之后还能再载入回来）。</div>
+            <b>移出书架</b>连正文一起移除，这本书从书架消失（书城里的书之后还能再加回来）。</div>
           <div id="courselist"></div>
         </div>
         <div class="card2">
@@ -1366,14 +1552,67 @@ body.mobile #mfab{z-index:41}
       <button data-act="tools">⋯ 工具</button>
     </div>
     <div id="mtabbar">
-      <button class="on" data-go="lesson"><i>✦</i>学习</button>
-      <button data-go="chat"><i>☏</i>课后</button>
-      <button data-go="book"><i>▤</i>教材</button>
-      <button data-go="set"><i>⚙</i>账户</button>
+      <button class="on" data-go="lesson"><i>✦</i>上课</button>
+      <button data-go="chat"><i>☏</i>群聊</button>
+      <button data-go="book"><i>▤</i>书架</button>
+      <button data-go="set"><i>⚙</i>设置</button>
     </div>
     <div id="mfab">
       <button id="mfPre" title="课堂偏好">偏好</button>
       <button id="mfSym" title="特殊符号">Ω</button>
+    </div>
+
+    <!-- 全站地图：把「空间 → 页面 → 页内操作」一次讲清楚。
+         不自动弹出，避免和开课向导叠成两层；位置条右上、向导、空态、顶栏、抽屉都有入口。 -->
+    <div id="guide" hidden aria-label="全站地图与使用指南">
+      <div class="gd-card">
+        <div class="gd-top"><b>全站地图 · 怎么用</b><span class="sp"></span><button class="sm" id="gdClose" title="关闭">✕</button></div>
+        <div class="gd-body">
+          <div class="gd-hero">
+            <h2>第一次来？三步就能上课</h2>
+            <ol class="gd-steps">
+              <li><b>填模型接口</b>：进「设置」填自己的 API Key（或填课堂代理的邀请码），保存后点「测试连接」。Key 只存在这台设备。<button data-jump="set">去设置</button></li>
+              <li><b>准备教材</b>：进「书城」看目录、加进书架，或直接「导入自己的书」上传 md / PDF / EPUB；在「书架」勾几节带进课堂。<button data-jump="store">去书城</button></li>
+              <li><b>开一节新课</b>：回「上课」，在开课向导里选伙伴与节奏，点「开始上课 →」。这两项本节固定，开新的一节可重选。<button data-jump="lesson">去上课</button></li>
+            </ol>
+          </div>
+
+          <h3>站点分三个空间，每个空间下面是页面</h3>
+          <div class="gd-grp">
+            <div class="gh">学习</div>
+            <div class="gd">一条独立的线是「一本书 → 一节 → 一次学习」，在左侧书架树里选；下面四个页面是干活的地方。</div>
+            <div class="gd-row"><span class="gi">◎</span><span class="gn">上课</span><span class="gx2">和伙伴对话、拍题追问。每节各自记着伙伴、节奏、章节与对话，互不串课。</span><button data-jump="lesson">前往</button></div>
+            <div class="gd-row"><span class="gi">▤</span><span class="gn">书架</span><span class="gx2">你手上真有的书：挑书、挑节、勾选这一节要带进课堂的段落；两册自编免费讲义可自由下载转给同学。</span><button data-jump="book">前往</button></div>
+            <div class="gd-row"><span class="gi">▦</span><span class="gn">书城</span><span class="gx2">站点能提供的书：先看简介和目录，再「加入书架」。加入后可离线读，不想要在书架里删掉。</span><button data-jump="store">前往</button></div>
+            <div class="gd-row"><span class="gi">◫</span><span class="gn">闪卡</span><span class="gx2">把本轮变闪卡；批改标出的错点自动进错题本，隔天再考，连对三次毕业。</span><button data-jump="card">前往</button></div>
+          </div>
+          <div class="gd-grp">
+            <div class="gh">课余</div>
+            <div class="gd">不挂教材的聊天、回看与统计。</div>
+            <div class="gd-row"><span class="gi">☏</span><span class="gn">群聊</span><span class="gx2">单独开会话，含你最多 4 人；发一句，每位伙伴按自己人设各回一条。</span><button data-jump="chat">前往</button></div>
+            <div class="gd-row"><span class="gi">▶</span><span class="gn">网课</span><span class="gx2">导入网课包，[mm:ss] 讲义可点开跳到对应时刻，还能对照教材做覆盖度分析。</span><button data-jump="vid">前往</button></div>
+            <div class="gd-row"><span class="gi">◷</span><span class="gn">进度</span><span class="gx2">按章节看掌握度、累计 token 与花费估算。</span><button data-jump="prog">前往</button></div>
+          </div>
+          <div class="gd-grp">
+            <div class="gh">生态</div>
+            <div class="gd">你的账号、接口与偏好，换设备前先来这里。</div>
+            <div class="gd-row"><span class="gi">⚙</span><span class="gn">设置</span><span class="gx2">模型接口 / 课堂代理、名片头像、伙伴人设、本轮模式、操作习惯、教材名、课程管理、数据备份、语音。</span><button data-jump="set">前往</button></div>
+          </div>
+
+          <h3>「上课」这一页里还藏着什么</h3>
+          <ul class="gd-notes">
+            <li><b>开课设置</b>：一屏选伙伴 / 节奏 / 模式 / 章节；每开新的一节必经，课中伙伴与节奏锁定。</li>
+            <li><b>⋯ 更多</b>：展开原来的两排完整工具栏 —— 开始今天的一课、变闪卡、导出笔记、下课小结、停止、清空会话。</li>
+            <li><b>偏好</b>：写下你希望伙伴怎样教你；里面的「快捷节奏命令」是三个出口（累了直接讲 / 随时打断追问 / 什么时候下课由你定）。</li>
+            <li><b>输入框那一排</b>：Ω 特殊符号、📷 拍题上传、🎙 语音输入；选中文字按 Ctrl+M 变行内公式。</li>
+            <li><b>一条闭环</b>：下课小结 → 把本轮变闪卡 → 错题本 → 复习队列，全在「学习」这个空间里。</li>
+          </ul>
+        </div>
+        <div class="gd-foot">
+          <span class="tip">对话、教材、闪卡、Key 都在这台设备的浏览器里；换设备用「设置 → 数据」导出 / 恢复。</span>
+          <span class="sp"></span><button class="pri" id="gdOk">知道了</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1603,6 +1842,12 @@ function msKey(){return 'msgs.'+COURSE}
 const LOCAL_KEY='__local',  LOCAL_NAME='高等数学 · 第八版上册';
 const LOCAL_KEY2='__local2', LOCAL_NAME2='解析几何与线性代数';
 const LOCAL_KEY3='__local3', LOCAL_NAME3='C语言程序设计 · 现代方法';
+/* 本站原创讲义：不是任何出版教材的摘录或改写，按知识点清单重新组织、重新讲、重新出题，
+   随仓库分发（MIT）。放在 store/ 而不是 book/ —— book/ 是版权教材的隔离区，会被 .gitignore 排除，
+   而 store/ 要能随站点发布，因为它是我们自己写的东西。 */
+const ORIGIN_KEY='__origin', ORIGIN_NAME='变化与累积 · 一元微积分（自编）';
+const ORIGIN={key:ORIGIN_KEY,name:ORIGIN_NAME,bk:'本站原创讲义（MIT，可自由复制修改分发）',
+  dir:'store/变化与累积-一元微积分/',files:['第1章 函数与极限.md'],origin:true};
 const PACKS=[
   {key:LOCAL_KEY, name:LOCAL_NAME, bk:BKDEF, dir:'book/', files:[
     '第1章_函数与极限.md','第2章_导数与微分.md','第3章_微分中值定理与导数的应用.md','第4章_不定积分.md',
@@ -1619,10 +1864,15 @@ const PACKS=[
     '第19章 程序设计.md','第20章 底层程序设计.md','第21章 标准库.md','第22章 输入_输出.md',
     '第23章 库对数值和字符数据的支持.md','第24章 错误处理.md','第25章 国际化特性.md',
     '第26章 其他库函数.md','第27章 C99对数学计算的新增支持.md','第28章 C1X新增的多线程和原子操作支持.md',
-    '附录 A-F.md']}
+    '附录 A-F.md']},
+  ORIGIN
 ];
-/* 体验版只留第一本（高数八上）；线代、C 语言仍可自己「导入教材」加进来 */
-if(LITE)PACKS.length=1;
+/* 体验版：高数（原书入口）+ 原创讲义。原书正文在 Pages 上取不到（book/ 被 .gitignore 排除），
+   但保留入口，用户自己导入书还能落进来；原创讲义随仓库发布，是体验版里唯一真能读到的正文。 */
+if(LITE){
+  const keep=[LOCAL_KEY,ORIGIN_KEY];
+  for(let i=PACKS.length-1;i>=0;i--)if(keep.indexOf(PACKS[i].key)<0)PACKS.splice(i,1);
+}
 /* 随仓库附带的示例讲义（book/示例/，自己写的，不以 PACKS 的形式出现）。
    为什么不塞进 PACKS：PACKS 是「这个站点部署时真带了的教材」——主站部署目录里有 book/。
    示例只该在「一份内置教材都取不到」时兜底：clone 下来的人、GitHub Pages 体验版。
@@ -1638,6 +1888,48 @@ const SAMPLE={key:SAMPLE_KEY,name:SAMPLE_NAME,bk:'本站自编讲义（非出版
 function allPacks(){return PACKS.concat([SAMPLE])}
 function packOf(f){for(const p of allPacks())if(p.files.indexOf(f)>=0)return p;return null}
 function packByKey(k){for(const p of allPacks())if(p.key===k)return p;return null}
+
+/* ---------- 书城 ----------
+   「书架」＝你手上真有的书（IndexedDB 里存着正文），「书城」＝站点能提供的书。
+   两者只靠「正文在不在」区分：不新增「我选过哪几本」这种状态，就少一个会丢、会不同步的东西。
+   加入书架＝把这本书的 md 抓进 IndexedDB（走原来那条 autoLoad 管线）；
+   移出＝书架页 / 设置页的「删除课程」，正文与记录一起清掉，语义一致。
+   书的资料集中放在这张表里：等原创讲义落地，只改这里的 title/about，界面不用动。 */
+const STORE_BOOKS=[
+  {k:LOCAL_KEY, title:LOCAL_NAME,
+   sub:'一元微积分：从极限讲到微分方程',
+   about:'先把「无限靠近」讲成一个能算的东西，再顺着导数、微分中值定理走到积分与微分方程。'
+        +'前半本重概念与推理，后半本重积分技巧与应用题的建模。',
+   tags:['微积分','大一上','计算量大'], pre:'初等函数、三角恒等式、对数与指数运算'},
+  {k:LOCAL_KEY2, title:LOCAL_NAME2,
+   sub:'行列式 → 矩阵 → 方程组 → 二次型，中间插一章空间解析几何',
+   about:'按「算 → 变 → 解 → 判」的顺序推进：先学行列式与矩阵运算，再用初等变换解线性方程组，'
+        +'然后研究向量组的线性相关性、相似对角化与二次型。第 3 章把向量运算搬到空间中，'
+        +'给后面的几何直观打底。',
+   tags:['线代','大一下','概念密集'], pre:'高中向量、平面的点法式方程'},
+  {k:LOCAL_KEY3, title:LOCAL_NAME3,
+   sub:'从类型与表达式一路写到指针、结构与标准库',
+   about:'以「程序在内存里到底发生了什么」为主线：类型与表达式讲清表示，函数与程序结构讲清组织，'
+        +'指针与数组讲清地址，结构 / 联合 / 枚举讲清自定义类型，最后落到标准库与底层程序设计。',
+   tags:['C 语言','程序设计','例子最多'], pre:'会用命令行编译、知道什么是变量'},
+  {k:ORIGIN_KEY, title:ORIGIN_NAME,
+   sub:'按知识点清单重写，不是任何教材的摘录或改写；第一章「函数与极限」已可读',
+   about:'七节，每节固定七段：要解决什么 → 读前自检 → 先讲直觉 → 正式定义 → 例题（含「先找什么」'
+        +'与「为什么不换一种做法」）→ 常见错误 → 自测（答案折叠）。每条定理附「去掉条件会怎样」的反例，'
+        +'数值例题全部脚本复算。第一章 2.5 万字、2300 余个公式全部通过 KaTeX 渲染校验。',
+   tags:['原创','MIT','自学向'], pre:'初等函数、三角恒等式、不等式与绝对值'},
+  {k:SAMPLE_KEY, title:SAMPLE_NAME,
+   sub:'本站自编的两册入门讲义，可自由复制、修改、分发',
+   about:'不是任何出版教材的摘录或改写，按 MIT 许可随仓库分发。'
+        +'定位是「先看懂再做题」：每节先给直觉，再上定义，例题写思路而不只写步骤。',
+   tags:['免费','原创','入门'], pre:'高中数学'}
+];
+function storeBook(k){return STORE_BOOKS.filter(function(b){return b.k===k})[0]||null}
+/* 这本书在不在书架上：只看 IndexedDB 里有没有它的正文 */
+function onShelf(k){
+  const p=packByKey(k);if(!p)return false;
+  return CH.some(function(c){return p.files.indexOf(c.file)>=0});
+}
 let MS=LS.g(msKey(),null);
 if(MS===null){MS=LS.g('msgs',[]);LS.s(msKey(),MS);localStorage.removeItem(P+'msgs')}
 function saveMs(){LS.s(msKey(),MS)}
@@ -1787,7 +2079,7 @@ function renderCourseTree(){
   const box=$('ctree');if(!box)return;
   const gs=visibleCourses(),cur=shownCourse();
   const open=box.dataset.open||cur;
-  let h='<div class="ct-h">课程 · 节</div>';
+  let h='<div class="ct-h">书架 · 节</div>';
   gs.forEach(function(g){
     const on=g.k===cur;
     let arr=g.k===COURSE?SESS:(LS.g('sess.'+g.k,[])||[]);
@@ -1840,7 +2132,7 @@ function renderCourseTree(){
 function renderCTabs(fs){
   const box=$('ctabs');if(!box)return;
   const gs=visibleCourses();
-  let h='<span class="lb">课程</span>';
+  let h='<span class="lb">书架</span>';
   gs.forEach(function(g){
     const files=g.f.length?g.f:[g.k];
     let ms=0,done=0;
@@ -1999,16 +2291,19 @@ function goView(v){
   if(v==='prog')renderProg();if(v==='card')renderCards();if(v==='chat')renderChat();
   /* 点「教材」就地重画一次：万一启动时被存储问题打断，这里也能把目录补上 */
   if(v==='book')try{renderBook()}catch(e){console.warn('[教材] 渲染失败',e)};
+  if(v==='store')try{renderStore()}catch(e){console.warn('[书城] 渲染失败',e)};
   if(v==='set'){fillRq(false);renderRst();renderRout()}
 }
 document.querySelectorAll('.nv button').forEach(function(b){b.onclick=function(){goView(b.dataset.v)}});
+/* 当前这一节那条带子：点它是「回到上课页」，不是切换课程（切课/切节都在树里） */
+onId('nvcourse',function(){goView('lesson')});
 
 /* ---------- 破卷式外壳：三标签导航 / 开课向导 / 一行状态条 ----------
    原则：不新增状态。向导里每一张卡都是「遥控器」，点它＝点原来那颗药丸，
    所以「每节各记各的伙伴 / 章节」「老数据回落」「体验版只给前三位」全都不用重写。
    renderShell / syncNavGroup 里用到的映射写在函数内部：这两个函数会被启动早期
    的 renderModes()/goView() 调到，不能引用后面才初始化的顶层 const（TDZ）。 */
-const NAV_G={lesson:'study',book:'study',card:'study',vid:'life',prog:'life',set:'eco'};
+const NAV_G={lesson:'study',book:'study',store:'study',card:'study',chat:'life',vid:'life',prog:'life',set:'eco'};
 const PACE_NAME={slow:'慢工细活',mid:'正常进度',fast:'主线速通'};
 const PACE_DSC={slow:'重多轮追问与习题，覆盖更细致',mid:'自洽应节奏，兼顾深度与效率',fast:'直奔核心主干，快速推进'};
 const WHO_TAG={cauchy:'严谨追问 · 定义优先',leibniz:'几何直觉 · 符号会思考',newton:'量纲与建模 · 回到现实',
@@ -2025,15 +2320,23 @@ function applyTheme(){
   if(m)m.setAttribute('content',DARK?'#141417':'#185FA5');
 }
 function syncNavGroup(v){
-  const g=({lesson:'study',book:'study',card:'study',chat:'life',vid:'life',prog:'life',set:'eco'})[v];
+  const g=({lesson:'study',book:'study',store:'study',card:'study',chat:'life',vid:'life',prog:'life',set:'eco'})[v];
   if(!g)return;
   document.body.dataset.navgrp=g;
   document.querySelectorAll('#gtabs button').forEach(function(b){b.classList.toggle('on',b.dataset.g===g)});
+  /* 标签紧挨着它所包含的图标，再用一句话说清这个空间是什么 */
+  const cap=$('nvcap');
+  if(cap)cap.textContent=({study:'学习 · 上课 / 书架 / 书城 / 闪卡',
+    life:'课余 · 群聊 / 网课 / 进度',
+    eco:'生态 · 设置：接口、名片、数据、语音'})[g]||'';
+  syncCrumb(v,g);
 }
 document.querySelectorAll('#gtabs button').forEach(function(b){
   b.onclick=function(){
-    document.body.dataset.navgrp=b.dataset.g;
-    document.querySelectorAll('#gtabs button').forEach(function(x){x.classList.toggle('on',x===b)});
+    /* 「空间」是容器，不是筛选器：点它就直接进这个空间的第一个页面。
+       否则侧栏写着「课余」、位置条还写着「学习 › 上课」，包含关系就是假的。
+       goView 会反过来把 navgrp / 标签高亮 / 位置条一起摆正，不用在这里重复设。 */
+    goView(({study:'lesson',life:'chat',eco:'set'})[b.dataset.g]||'lesson');
   };
 });
 /* ---------- 手机抽屉：把非对话 chrome 收进侧栏 ----------
@@ -2043,6 +2346,41 @@ document.querySelectorAll('#gtabs button').forEach(function(b){
    initDrawer() 的调用放在启动行那一串里：这里不能引用 renderShell 依赖的顶层变量。 */
 function openDrawer(){document.body.classList.add('drawer');const d=$('drawer');if(d)d.setAttribute('aria-hidden','false')}
 function closeDrawer(){document.body.classList.remove('drawer');const d=$('drawer');if(d)d.setAttribute('aria-hidden','true')}
+/* ---------- 全站地图 / 位置条：把「空间 → 页面 → 页内操作」讲清楚 ----------
+   刻意不自动弹全屏：开场本来就有开课向导，两层叠着只会更乱。
+   第一次用由位置条上那颗高亮「?」提示，点开一次就不再提示。 */
+function openGuide(){
+  const g=$('guide');if(g)g.hidden=false;
+  LS.s('guide.seen',1);syncGuideHint();closeDrawer();
+}
+function closeGuide(){const g=$('guide');if(g)g.hidden=true}
+function syncGuideHint(){
+  const b=$('guideopen');if(!b)return;
+  const fresh=!LS.g('guide.seen',0);
+  b.classList.toggle('new',fresh);
+  b.textContent=fresh?'? 第一次来？看全站地图':'? 全站地图';
+}
+function syncCrumb(v,g){
+  const VN={lesson:'上课',book:'书架',store:'书城',card:'闪卡',chat:'群聊',vid:'网课',prog:'进度',set:'设置'};
+  const GM={study:'学习',life:'课余',eco:'生态'};
+  const PM={lesson:'study',book:'study',store:'study',card:'study',chat:'life',vid:'life',prog:'life',set:'eco'};
+  const grp=g||PM[v]||'study';
+  const a=$('cbGrp'),b=$('cbCur');
+  if(a)a.textContent=GM[grp]||grp;
+  if(b)b.textContent=VN[v]||'上课';
+}
+onId('guideopen',openGuide);
+onId('dGuide',openGuide);
+onId('drGuide',openGuide);
+onId('lhGuide',openGuide);
+onId('nsGuide',openGuide);
+onId('gdClose',closeGuide);
+onId('gdOk',closeGuide);
+onId('guide',function(e){if(e&&e.target&&e.target.id==='guide')closeGuide()});
+document.querySelectorAll('#guide [data-jump]').forEach(function(b){
+  b.onclick=function(){closeGuide();goView(b.dataset.jump)};
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeGuide()});
 function initDrawer(){
   /* 只在启动时判定一次屏宽：手机旋转 / 桌面缩窗都不来回搬 DOM，
      免得把用户正在输入的节点挪走。真换了设备宽度，刷新一次即可。 */
@@ -2055,6 +2393,27 @@ function initDrawer(){
   put('nav','dNav'); put('ctabs','dTabs'); put('stabs','dTabs');
   put('ctree','dTabs');   /* 手机也用同一棵「课程 → 节」树，不再平铺两行标签 */
   put('lbar1','dSec'); put('lbar2','dActs');
+  /* 「当前第几节」「今天学没学」是这一节的属性，不能夹在页面列表中间。
+     倒着插到最前面，最终顺序是：当前这一节 → 今日统计 → 工具栏。 */
+  const dsec=$('dSec');
+  if(dsec)['foot','nvcourse'].forEach(function(id){
+    const e=document.getElementById(id);
+    if(e&&e.parentElement!==dsec)dsec.insertBefore(e,dsec.firstChild);
+  });
+  /* 抽屉就是手机上的「全站地图」：给原本平铺的 7 个页面加上空间标题，
+     只插 div，不动 button、不动 data-v/data-g，所以原有 onclick 与 LITE 过滤全在。 */
+  const nv=document.querySelector('#drawer .nv');
+  if(nv){
+    const NM={study:'学习空间',life:'课余空间',eco:'生态空间'};
+    const SUB={study:'上课 / 教材 / 闪卡',life:'群聊 / 网课 / 进度',eco:'设置'};
+    let last=null;
+    Array.prototype.slice.call(nv.querySelectorAll('button[data-g]')).forEach(function(b){
+      const g=b.dataset.g;if(g===last)return;last=g;
+      const h=document.createElement('div');h.className='nvgh';
+      h.innerHTML='<b>'+esc(NM[g]||g)+'</b> · '+esc(SUB[g]||'');
+      nv.insertBefore(h,b);
+    });
+  }
   onId('dOpen',openDrawer);
   onId('dClose',closeDrawer);
   onId('dmask',closeDrawer);
@@ -2067,7 +2426,8 @@ function renderShell(){
   syncLockUI();   /* 药丸 / 下拉的锁定态跟着「这一节有没有开课」走 */
   const pn={slow:'慢工细活',mid:'正常进度',fast:'主线速通'};
   const cn=$('nvcname');if(cn)cn.textContent=cname(shownCourse());
-  const cs=$('nvsess');if(cs)cs.textContent=sessLabel(CURS)+' · '+MS.filter(function(m){return sid(m)===CURS}).length+' 条';
+  const cs=$('nvsess');
+  if(cs)cs.textContent='第 '+(sessIdx(CURS)+1)+' 节 · '+MS.filter(function(m){return sid(m)===CURS}).length+' 条';
   const cc=$('nvcnt');if(cc)cc.textContent=String(SESS.length);
   const sum=$('lsum');if(sum)sum.textContent=getP(who).n+' · '+curMode().n+' · '+(pn[PA]||'正常进度')+' · '+CTX.length+' 章';
   const lc=$('lhCourse');if(lc)lc.textContent=cname(shownCourse());
@@ -2076,6 +2436,11 @@ function renderShell(){
   const dc=$('dtCourse'),ds=$('dtSess');
   if(dc)dc.textContent=document.body.dataset.view==='chat'?'群聊':cname(shownCourse());
   if(ds)ds.textContent=document.body.dataset.view==='chat'?chatTop():sessLabel(CURS);
+  /* 位置条补上另一条线：课程 → 节。桌面可见，手机收起（顶栏已有课程 / 节）。
+     这里只写「第 N 节」不写自动标题：节名是拿第一句提问起的，挂在面包屑右边会把
+     「我在哪」这条主线冲散；完整节名在侧栏课程卡和顶栏里都能看到。 */
+  const cbs=$('cbSess');
+  if(cbs)cbs.textContent=' · '+cname(shownCourse())+' · 第 '+(sessIdx(CURS)+1)+' 节';
 }
 /* 未开课空态：✕ 退出向导后有个明确落点，但课堂被挡住，选择仍然必经。
    只在课堂页挡 —— 切去教材 / 设置时别盖住别人的正文。 */
@@ -2519,8 +2884,8 @@ function renderCourseMgmt(){
     b1.onclick=function(){clearCourse(g)};
     bts.appendChild(b1);
     if(files.length){
-      const b2=document.createElement('button');b2.className='sm dgr';b2.textContent='删除课程';
-      b2.title='连教材正文一起移除，这门课从课程栏消失';
+      const b2=document.createElement('button');b2.className='sm dgr';b2.textContent='移出书架';
+      b2.title='连正文一起移除，这本书从书架消失';
       b2.onclick=function(){dropCourse(g)};
       bts.appendChild(b2);
     }else{
@@ -2547,7 +2912,7 @@ async function dropCourse(g){
   const files=g.f.slice();
   if(!files.length)return;
   const s=cstat(g.k,files),built=allPacks().some(function(p){return p.key===g.k});
-  if(!confirm('删除课程「'+cname(g.k)+'」？\n\n会删掉：教材 '+files.length+' 册（'+s.sec+' 节）、对话 '+s.ms+' 条、闪卡 '+s.cd+' 张、掌握进度 '+s.done+' 节。课程会从课程栏消失。'
+  if(!confirm('移出书架「'+cname(g.k)+'」？\n\n会删掉：教材 '+files.length+' 册（'+s.sec+' 节）、对话 '+s.ms+' 条、闪卡 '+s.cd+' 张、掌握进度 '+s.done+' 节。课程会从课程栏消失。'
     +(built?'\n\n这是内置教材，之后点「载入全部内置教材」（或对应的「仅高数 / 仅线代 / 仅 C 语言」）还能载入回来。':'')
     +'\n\n删掉的记录不可恢复，重要的话先在下面导出一份。'))return;
   for(const c of await IDB.all())if(files.indexOf(c.file)>=0)await IDB.del(c.id);
@@ -2563,7 +2928,7 @@ async function dropCourse(g){
     loadCourseData();MS=LS.g(msKey(),[])||[];reloadMsgs();
   }
   renderBook();renderCards&&renderCards();
-  toast('已删除课程「'+cname(g.k)+'」');
+  toast('已移出书架「'+cname(g.k)+'」');
 }
 /* 载入某个内置教材包（默认全部） */
 async function autoLoad(btn,pk){
@@ -2631,7 +2996,7 @@ async function autoLoad(btn,pk){
       ? (pk
           ? '已载入 '+n+' 册自制免费讲义，进「教材」勾一节就能开课'
           : '仓库不带教材正文，已放两册自制免费讲义；想换成自己的点「导入教材」')
-      : '已载入 '+n+' 个分册'+(packs.length>1?'（全部内置教材）':''));
+      : '已载入 '+n+' 个分册'+(packs.length>1?'（书城里的书全部加入书架）':''));
     /* 从课程标签栏点「载入」时，自动切到刚载入的那门课 */
     if(!sample&&btn&&!switchCourse(packs[packs.length-1].key))toast('到「教材」页勾选正在学的那一节');
   }
@@ -2702,6 +3067,72 @@ async function epubText(buf){
     out+=body.trim()+'\n\n';
   }
   return out.trim();
+}
+/* ---------- 书城 ----------
+   卡片状态只来自 onShelf()：正文在 IndexedDB 里＝已在书架，没有第二份状态要同步。
+   目录只列册名、不拉正文，先让人判断要不要，再决定加不加。 */
+function renderStore(){
+  const box=$('stlist');if(!box)return;
+  const books=STORE_BOOKS.filter(function(b){return !!packByKey(b.k)});
+  const cnt=$('stcnt');
+  if(cnt)cnt.textContent=books.length+' 本 · 书架里有 '+books.filter(function(b){return onShelf(b.k)}).length;
+  let h='';
+  books.forEach(function(b,i){
+    const p=packByKey(b.k), on=onShelf(b.k);
+    const hue=[212,268,142,32][i%4];
+    const cap=String(b.title).replace(/^《|》$/g,'').slice(0,1);
+    h+='<div class="stcard'+(on?' shelf':'')+'" data-k="'+esc(b.k)+'">'
+      +'<div class="stcv" style="background:hsl('+hue+',40%,46%)">'+esc(cap)+'</div>'
+      +'<div class="stmain">'
+      +'<div class="stt">'+esc(b.title)+(on?'<span class="stbadge">已在书架</span>':'')+'</div>'
+      +'<div class="stsub">'+esc(b.sub)+'</div>'
+      +'<div class="stmeta">'+p.files.length+' 册 · 前置：'+esc(b.pre)+'</div>'
+      +'<div class="stabout">'+esc(b.about)+'</div>'
+      +'<div class="sttags">'+b.tags.map(function(t){return '<span>'+esc(t)+'</span>'}).join('')+'</div>'
+      +'<div class="stacts">'
+        +'<button class="sm sttocb">看目录</button>'
+        +(on?'<button class="sm stgob" data-k="'+esc(b.k)+'">去书架读 →</button>'
+            :'<button class="sm pri stadd" data-k="'+esc(b.k)+'">加入书架</button>')
+      +'</div>'
+      +'<div class="sttoc" hidden>'+p.files.map(function(f,n){
+          return '<div><span class="n">'+String(n+1).padStart(2,'0')+'</span>'
+            +esc(f.replace(/\.md$/i,'').replace(/_/g,' '))+'</div>'}).join('')+'</div>'
+      +'</div></div>';
+  });
+  box.innerHTML=h;
+  box.querySelectorAll('.stcard').forEach(function(card){
+    const t=card.querySelector('.sttoc'),btn=card.querySelector('.sttocb');
+    if(btn&&t)btn.onclick=function(){
+      t.hidden=!t.hidden;btn.textContent=t.hidden?'看目录':'收起目录';
+    };
+  });
+  box.querySelectorAll('.stadd').forEach(function(btn){
+    btn.onclick=function(){storeAdd(btn)};
+  });
+  box.querySelectorAll('.stgob').forEach(function(btn){
+    btn.onclick=function(){switchCourse(btn.dataset.k);goView('book')};
+  });
+}
+/* 加入书架＝把那本的正文抓进 IndexedDB（复用 autoLoad 那条管线）。
+   失败要分开说：站点没带这本书 / 存不下 —— 前者再点一百次也没用。 */
+async function storeAdd(btn){
+  const k=btn?btn.dataset.k:'';const p=packByKey(k);if(!p)return;
+  const wasEmpty=STORE_BOOKS.every(function(b){return !onShelf(b.k)});
+  const label=btn.textContent;
+  if(btn){btn.disabled=true;btn.textContent='正在加入…'}
+  let n=0;
+  try{n=(await autoLoad(null,p))||0}catch(e){console.warn('[书城] 加入失败',e);DBERR=DBERR||e}
+  if(btn){btn.disabled=false;btn.textContent=label}
+  if(n){
+    if(COURSE!==k)switchCourse(k);
+    renderBook();renderStore();
+    if(wasEmpty)goView('book');   /* 书架本来是空的：直接把人送到能开始读的地方 */
+    toast('已加入书架');
+  }else{
+    const t=storeBook(k);
+    toast('没取到这本书的正文：这个站点可能没带'+(t?'《'+t.title+'》':'这一本'));
+    renderStore();
+  }
 }
 function updateCourses(){
   const L=courseList(), fs=L.fs, gs=L.gs;
@@ -2783,9 +3214,9 @@ function renderBook(){
            +'<div>若反复如此：关掉其它打开本站的标签页，或检查浏览器是否禁用了本站的本地存储。</div>'
           :(LITE
             ?'<div>教材没取到。</div>'
-             +'<div style="margin-top:10px">点右上角「导入教材」，上传你自己的 md / pdf / epub 就能开始学。</div>'
+             +'<div style="margin-top:10px">点右上角「导入自己的书」，上传你自己的 md / pdf / epub 就能开始学。</div>'
             :'<div>还没有教材。</div>'
-             +'<div style="margin:12px 0"><button class="sm pri" id="ldempty">载入全部内置教材</button></div>'
+             +'<div style="margin:12px 0"><button class="sm pri" id="ldempty">全部加入书架</button></div>'
              +'<div>也可以点右上角「导入教材」，上传你自己的 md / pdf / epub。</div>')))) +'</div>';
     const eb=box.querySelector('#ldempty');
     if(eb)eb.onclick=function(){ if(DBERR){DBERR=null;location.reload()} else autoLoad(eb) };
@@ -2867,7 +3298,9 @@ function openCh(c){
   PR[c.id]=PR[c.id]===undefined?1:PR[c.id];saveCourseData();
   $('rw').innerHTML='<div class="meta">'+esc(c.file.replace('.md',''))+' · '+titleHtml(c.title)
     +' · 状态 <select class="sm2" id="prsel"><option value="0">未学</option><option value="1">在学</option><option value="2">已掌握</option></select></div>'
-    +md(c.txt.replace(/^#{1,3}\s+.*$/gm,''));
+    /* 只去掉一级标题（章名已经在上面的 meta 里），h2/h3 留着：
+       自学书靠「节 / 小标题」分层，全删掉就成一整片豆腐块，回看时找不到落点。 */
+    +md(c.txt.replace(/^#\s+.*$/gm,''));
   const s=$('prsel');s.value=String(PR[c.id]||0);
   s.onchange=function(){PR[c.id]=+s.value;saveCourseData();renderBook()};
   $('reader').scrollTop=0;
@@ -4741,6 +5174,22 @@ $('cfile').onchange=async function(e){
   const k=addCards(learnImport(await f.text()));toast('导入 '+k+' 张');e.target.value='';
 };
 $('pickfile').onclick=function(){$('file').click()};
+/* 书城：三个入口。导入复用同一个 #file，选完照样进 IndexedDB、照样落在书架上。 */
+onId('gostore',function(){goView('store')});
+onId('stpick',function(){$('file').click()});
+onId('staddall',async function(){
+  const b=this,old=b.textContent;
+  const todo=STORE_BOOKS.filter(function(x){return packByKey(x.k)&&!onShelf(x.k)});
+  if(!todo.length){toast('书城里的书都已经在书架上了');return}
+  b.disabled=true;let add=0;
+  for(let i=0;i<todo.length;i++){
+    b.textContent='加入中 '+(i+1)+'/'+todo.length+'…';
+    try{add+=((await autoLoad(null,packByKey(todo[i].k)))||0)>0?1:0}catch(e){console.warn('[书城] 批量加入失败',e)}
+  }
+  b.disabled=false;b.textContent=old;
+  renderBook();renderStore();
+  toast(add?('已加入书架 '+add+' 本'):'一本都没取到：这个站点可能没带这些书的正文');
+});
 /* 网课 */
 $('vimp').onclick=function(){$('vfile').click()};
 $('vfile').onchange=async function(){
@@ -4921,7 +5370,7 @@ function applyLite(){
 initDrawer();   /* 手机：把 chrome 与课程树搬进抽屉；桌面（含 jsdom）一行不改 */
 applyLite();
 initPrefUI();
-applySessWho();renderModes();applyHabit();updTok();renderSym();syncSymToggle();renderTts();updTts();renderMic();renderVoiceName();renderShell();renderIdCard();migrateFreeChat();initChatSessions();renderChat();renderCourseTree();
+applySessWho();renderModes();applyHabit();updTok();renderSym();syncSymToggle();renderTts();updTts();renderMic();renderVoiceName();renderShell();renderIdCard();migrateFreeChat();initChatSessions();renderChat();renderCourseTree();syncGuideHint();syncNavGroup(LS.g('view','lesson'));
 vLoad().catch(function(e){storeWarn(e,'网课库')});
 MS=MS.filter(function(m){return m&&m.c});
 reloadMsgs();
@@ -4960,8 +5409,10 @@ if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e
       /* 隔一会儿再补一次，两种情况：
          ① 一无所获 —— 多半是正撞上部署空档（沙盒在重启）或网络抖了一下；
          ② 只载到示例 —— 可能是这个仓库本来就不带教材，也可能同样是部署空档。
-            是后者的话这一轮能把真教材补上，示例会被自动清掉。 */
-      if(!LITE&&(!got||COURSE===SAMPLE_KEY)){
+            是后者的话这一轮能把真教材补上，示例会被自动清掉。
+         !CH.length 是硬门：这 1.5 秒里用户可能已经在书城点了「加入书架」，
+         那一本得留着，不能被这次补抓覆盖成「全部内置教材」。 */
+      if(!LITE&&!CH.length&&(!got||COURSE===SAMPLE_KEY)){
         await new Promise(function(r){setTimeout(r,1500)});await autoLoad(null)
       }
       renderBook();

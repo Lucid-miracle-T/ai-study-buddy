@@ -6,7 +6,7 @@
  *         自有域名 / 本地打开   → 全功能版
  *
  * 这里钉住的就是「体验版确实缩了、完整版一点没动」：
- *   1. 教材包 PACKS：体验版只剩第一本（高数八上），完整版仍是三本
+ *   1. 教材包 PACKS：体验版只剩高数 + 原创讲义，完整版四本
  *   2. 伙伴 pKeys()：体验版只给前三位（柯西/莱布尼茨/牛顿），完整版八位
  *   3. 推荐伙伴 rRank()：不能推荐出界面上选不到的人（RTYPE 里硬编码了后六位）
  *   4. 内置网课 VBUILTIN：体验版为空
@@ -75,8 +75,8 @@ async function boot(url) {
     ok(A.ev('LITE') === true, 'LITE 判定为真（域名是 github.io）');
 
     const packs = A.ev('PACKS.map(function(p){return p.key}).join(",")');
-    ok(packs === '__local', '教材包只剩第一本（高数八上）：' + packs);
-    ok(A.ev('PACKS.length') === 1, 'PACKS 长度是 1，不是 3');
+    ok(packs === '__local,__origin', '教材包只剩高数 + 原创讲义（体验版真能读到的正文）：' + packs);
+    ok(A.ev('PACKS.length') === 2, 'PACKS 长度是 2（高数 + 原创讲义），不是 4');
 
     const pk = A.ev('pKeys().join(",")');
     ok(pk === 'cauchy,leibniz,newton', '伙伴只剩前三位（柯西/莱布尼茨/牛顿）：' + pk);
@@ -128,7 +128,7 @@ async function boot(url) {
   const B = await boot('https://gaoshu-xuexi.app.workbuddy.host/');
   {
     ok(B.ev('LITE') === false, 'LITE 判定为假（不是 github.io）');
-    ok(B.ev('PACKS.length') === 3, '三本教材都在（高数 / 线代 / C 语言）：'
+    ok(B.ev('PACKS.length') === 4, '四本都在（高数 / 线代 / C 语言 / 原创讲义）：'
       + B.ev('PACKS.map(function(p){return p.key}).join(",")'));
     ok(B.ev('pKeys().length') === 8, '八位伙伴都在');
     ok(B.ev('VBUILTIN.length') === 3, '三个内置网课包都在');
@@ -140,7 +140,7 @@ async function boot(url) {
     const d = B.doc;
     ok(d.querySelector('#ldl').style.display !== 'none', '「仅线代」没被藏起来');
     ok(d.querySelector('[data-v="vid"]').style.display !== 'none', '「网课」入口没被藏起来');
-    ok(d.querySelector('#reload').textContent === '载入全部内置教材', '按钮文案照旧');
+    ok(d.querySelector('#reload').textContent === '全部加入书架', '按钮文案照旧（全部加入书架）');
   }
   log('');
   log('--- 完整版异常 ---');
