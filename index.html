@@ -294,8 +294,12 @@ body.dark #rw tbody tr:nth-child(even) td{background:rgba(255,255,255,.032)}
 .stacts .sm{flex:none;white-space:nowrap}
 .sttoc{max-height:220px;overflow-y:auto;border-top:1px dashed var(--line2);margin-top:6px;
   padding-top:6px;font-size:11.5px;color:var(--tx2);line-height:1.95}
-.sttoc div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sttoc .n{color:var(--tx3);margin-right:6px}
+.sttoc div{display:flex;align-items:baseline;gap:6px;overflow:hidden}
+/* 目录里一行有三段：序号 / 章名 / 「15 个单元 · 9 小时」。
+   章名按需截断，右边的体量不能跟着被截掉 —— 看目录的人正是冲这个来的。 */
+.sttoc .ttl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sttoc .tu{flex:none;color:var(--tx3);font-size:11px}
+.sttoc .n{color:var(--tx3)}
 .stnote{font-size:11px;color:var(--green)}
 #stcnt{white-space:nowrap;flex:none}
 /* 书城：品类筛选条。品类回答「这本书是什么」，状态回答「现在能不能读」，
@@ -2008,7 +2012,7 @@ const STORE_BOOKS=[
    about:'一章拆成 15 个左右的半小时单元：单元卡（读完你能做什么 / 前置 / 时长）→ 为什么需要它 → '
         +'定义与结论 → 例题（含「先找什么」与「为什么不换一种做法」）→ 出错点 → 自测（答案折叠）。'
         +'第 1 章「函数与极限」15 个单元 2.4 万字，第 2 章「导数与微分」16 个单元 2.4 万字，'
-        +'合计 4,800 余个公式全部通过渲染校验；定理附「条件去掉会怎样」的反例，'
+        +'合计 4,700 余个公式全部通过渲染校验；定理附「条件去掉会怎样」的反例，'
         +'例题数值全部脚本复算，按章交付，写完一章更一章。',
    tags:['原创','MIT','自学向'], pre:'初等函数、三角恒等式、不等式与绝对值'},
   {k:SAMPLE_KEY, kind:'self', state:'ready', title:SAMPLE_NAME,
@@ -2037,6 +2041,66 @@ const STORE_BOOKS=[
    tags:['速查','考前翻','带反例'], pre:'无（但要能看懂符号）'}
 ];
 function storeBook(k){return STORE_BOOKS.filter(function(b){return b.k===k})[0]||null}
+/* ---------- 书的元数据外置 ----------
+   书名、简介、进度、章清单原来全写死在这个文件里：写完一章要同时改 ORIGIN.files、
+   STORE_BOOKS 里那段字符串拼接、还有 test_store 的断言，三处漏一处就前后对不上。
+   现在以 store/<书名>/book.json 为准，启动时读一次；读不到就退回上面写死的那份，
+   书城不会因此空掉。加一章＝放一个 md + 在 book.json 的 chapters 里加一行。 */
+const BOOK_MANIFEST=ORIGIN.dir+'book.json';
+let MANIFEST=null;      /* 读到就留着：书城「看目录」要用章标题，不是文件名 */
+function fmtWan(n){
+  const w=Number(n)||0;if(!w)return '';
+  return (w>=10000?(Math.round(w/1000)/10):w)+' 万字';
+}
+function chSpan(ks){
+  const a=ks[0].no,d=ks[ks.length-1].no;
+  return a===d?('第 '+a+' 章已可读'):('第 '+a+'–'+d+' 章已可读');
+}
+function applyManifest(m){
+  if(!m||!Array.isArray(m.chapters))return false;
+  const ks=m.chapters.filter(function(c){return c&&c.file&&c.no});
+  if(!ks.length)return false;
+  MANIFEST=m;
+  /* 只扩不缩：IndexedDB 里可能还存着 book.json 没列出的章（上一版加进去的），
+     缩掉会让那章掉出这本书、变成一门单独的「单文件课」。 */
+  const listed=ks.map(function(c){return c.file});
+  ORIGIN.files=listed.concat(ORIGIN.files.filter(function(f){return listed.indexOf(f)<0}));
+  const b=storeBook(ORIGIN_KEY);
+  if(!b)return true;
+  if(m.title){b.title=m.title;ORIGIN.name=m.title}
+  if(m.kind)b.kind=m.kind;
+  if(m.state)b.state=m.state;
+  if(Array.isArray(m.tags)&&m.tags.length)b.tags=m.tags;
+  if(m.pre)b.pre=m.pre;
+  const n=ks.length,total=Number(m.totalChapters)||n;
+  if(b.state==='serial')b.prog=n+'/'+total+' 章';
+  /* 文案里的数字全部从章节表算出来，不手写：多一章少一章，卡片自己跟上 */
+  if(m.sub)b.sub=m.sub+'；'+chSpan(ks);
+  if(m.about){
+    const units=ks.reduce(function(a,c){return a+(Number(c.units)||0)},0);
+    const words=ks.reduce(function(a,c){return a+(Number(c.words)||0)},0);
+    const fs=ks.reduce(function(a,c){return a+(Number(c.formulas)||0)},0);
+    b.about=m.about+'已上线：'+ks.map(function(c){
+      return '第 '+c.no+' 章「'+c.title+'」'
+        +(c.units?c.units+' 个单元 ':'')+(c.words?fmtWan(c.words):'')
+    }).join(' · ')+' · 合计 '+units+' 个单元、'+fmtWan(words)
+      +'、'+fs.toLocaleString()+' 个公式，全部通过渲染校验。'+(m.aboutTail||'');
+  }
+  return true;
+}
+/* 超时兜底：book.json 与页面同源、正常情况下几十毫秒就回来；
+   卡住（离线、部署空档）也不能让首屏陪着等，1.5 秒后按兜底数据走。 */
+async function loadManifest(){
+  if(location.protocol==='file:')return false;
+  try{
+    const r=await Promise.race([
+      fetch(BOOK_MANIFEST,{cache:'no-store'}),
+      new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'))},1500)})
+    ]);
+    if(!r||!r.ok)return false;
+    return applyManifest(await r.json());
+  }catch(e){return false}
+}
 /* 这本书在不在书架上：只看 IndexedDB 里有没有它的正文 */
 function onShelf(k){
   const p=packByKey(k);if(!p)return false;
@@ -3219,6 +3283,22 @@ function renderStoreChips(cards){
     b.onclick=function(){STKIND=b.dataset.k;renderStore()};
   });
 }
+/* 目录：文件名兜底，有 book.json 就用它的章标题，并标出这一章多长。
+   「15 个单元 · 9 小时」比一个「第1章 函数与极限.md」有用得多 —— 看目录的人
+   真正想知道的是「这一章要花我多久」。 */
+function tocRows(p){
+  const m=(p.key===ORIGIN_KEY&&MANIFEST)?MANIFEST:null;
+  return p.files.map(function(f,n){
+    const c=m?(m.chapters||[]).filter(function(x){return x&&x.file===f})[0]:null;
+    const meta=(c&&c.units)
+      ?'<span class="tu">'+c.units+' 个单元'
+        +(c.minutes?' · '+(Math.round(c.minutes/6)/10)+' 小时':'')+'</span>'
+      :'';
+    return '<div><span class="n">'+String(n+1).padStart(2,'0')+'</span>'
+      +'<span class="ttl">'+esc(c?c.title:f.replace(/\.md$/i,'').replace(/_/g,' '))+'</span>'
+      +meta+'</div>';
+  }).join('');
+}
 function renderStore(){
   const box=$('stlist');if(!box)return;
   const cards=storeCards();
@@ -3258,9 +3338,7 @@ function renderStore(){
            +(on?'<button class="sm stgob" data-k="'+esc(b.k)+'">去书架读 →</button>'
                :'<button class="sm pri stadd" data-k="'+esc(b.k)+'">加入书架</button>'))
       +'</div>'
-      +(soon||!p?'':'<div class="sttoc" hidden>'+p.files.map(function(f,n){
-          return '<div><span class="n">'+String(n+1).padStart(2,'0')+'</span>'
-            +esc(f.replace(/\.md$/i,'').replace(/_/g,' '))+'</div>'}).join('')+'</div>')
+      +(soon||!p?'':'<div class="sttoc" hidden>'+tocRows(p)+'</div>')
       +'</div></div>';
   });
   box.innerHTML=h;
@@ -5664,6 +5742,9 @@ if(!MS.length){const e=$('sempty');if(e&&e.parentNode)e.parentNode.removeChild(e
   try{ CH=await IDB.all();CH.sort(function(a,b){return natCmp(a.id,b.id)}) }
   catch(e){ err=e;CH=[];storeWarn(e,'教材库') }
   renderChips();          /* 等教材读出来再画：勾选章节的 chip 要显示章节标题，不是原始 id */
+  /* 书的元数据先就位，再决定画哪一页：用户上次停在书城时，goView 会当场渲染卡片，
+     晚一步读 book.json 就会先闪一版旧书名旧进度。读不到就用写死的兜底，不拦启动。 */
+  await loadManifest();
   const rv=LS.g('view','lesson');
   /* 新的一节还没聊过：先把开课向导摆出来，一屏选完再进课堂。
      放在教材抓取之前、try 之外：断网 / 部署空档时也要留着这个入口，

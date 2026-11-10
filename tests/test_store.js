@@ -57,8 +57,9 @@ function boot(opts) {
     beforeParse(win) {
       installIDB(win);
       win.confirm = () => true; win.alert = () => {}; win.open = () => null;
-      /* 默认断网：启动时不会自动载入任何一本，书城应当是「一本都没加入」的样子 */
-      win.fetch = () => Promise.reject(new Error('测试不联网'));
+      /* 默认断网：启动时不会自动载入任何一本，书城应当是「一本都没加入」的样子。
+         opts.fetch 用来单独给 book.json 供数据（书的元数据外置那一节要用）。 */
+      win.fetch = opts.fetch || (() => Promise.reject(new Error('测试不联网')));
       win.URL.createObjectURL = () => 'blob:x'; win.URL.revokeObjectURL = () => {};
     }
   });
@@ -216,9 +217,58 @@ function online(win) {
     ok(d.querySelector('#nvcap').textContent.indexOf('书城') >= 0, '空间说明里列出书城');
   }
 
-  /* ============ 7. 无 JS 异常 ============ */
+  /* ============ 7. book.json：书的元数据外置 ============ */
   log('');
-  log('=== 7. 全程无 JS 异常 ===');
+  log('=== 7. 书的元数据外置：book.json 说了算，读不到退回兜底 ===');
+  const ORIGIN_DIR = path.join('store', '变化与累积-一元微积分');
+  {
+    const P = path.join(ROOT, ORIGIN_DIR, 'book.json');
+    ok(fs.existsSync(P), 'book.json 与正文放在同一册目录下');
+    const real = JSON.parse(fs.readFileSync(P, 'utf8'));
+    ok(Array.isArray(real.chapters) && real.chapters.length === 2, 'book.json 里记着两章');
+    ok(real.chapters[0].file === '第1章 函数与极限.md', '章文件名与 store/ 下的一致');
+    /* 加了 json 却没放 md：站点会静默少一章，书架点进去就是空的。这条必须在磁盘上查 */
+    real.chapters.forEach(c =>
+      ok(fs.existsSync(path.join(ROOT, ORIGIN_DIR, c.file)), '章文件真在磁盘上：' + c.file));
+    ok(Number(real.totalChapters) > real.chapters.length, '总章数写在 json 里（现在 2/7）');
+
+    /* 假装写到第 3 章：只改 json，不动 index.html，看界面跟不跟 */
+    const fake = JSON.parse(JSON.stringify(real));
+    fake.totalChapters = 8;
+    fake.chapters.push({
+      no: 3, file: '第3章 微分中值定理.md', title: '微分中值定理与导数的应用',
+      units: 14, minutes: 520, words: 23000, formulas: 2100
+    });
+    const M = boot({
+      fetch: u => String(u).indexOf('book.json') >= 0
+        ? Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(fake) })
+        : Promise.reject(new Error('测试不联网'))
+    });
+    await wait(1400);
+    const d = M.wnd.document, qa = s => [...d.querySelectorAll(s)];
+    M.wnd.goView('store');
+    const card = qa('#stlist .stcard').filter(c => c.dataset.k === '__origin')[0];
+    const ser = card.querySelector('.ststate.ser');
+    ok(/连载中 · 3\/8 章/.test(ser.textContent), '进度按 chapters 长度算：' + ser.textContent);
+    ok(/第 1–3 章已可读/.test(card.querySelector('.stsub').textContent),
+      '副标题的章范围也跟着算：' + card.querySelector('.stsub').textContent);
+    ok(/合计 45 个单元/.test(card.querySelector('.stabout').textContent),
+      '简介里的总数由章节表加总（15+16+14=45）');
+    card.querySelector('.sttocb').click();
+    const rows = [...card.querySelectorAll('.sttoc > div')];
+    ok(rows.length === 3, '目录列出三章（原来只列 p.files）');
+    ok(/微分中值定理与导数的应用/.test(rows[2].textContent), '目录用 json 的章标题，不是文件名');
+    ok(/14 个单元/.test(rows[2].textContent) && /8\.7 小时/.test(rows[2].textContent),
+      '目录顺手标出这一章多长：' + rows[2].textContent);
+    const files = M.wnd.eval('ORIGIN.files');
+    ok(files.length === 3 && files[2] === '第3章 微分中值定理.md',
+      'ORIGIN.files 由 book.json 决定，加入书架时就知道要抓哪几册');
+    ok(M.errs.length === 0, '读了 book.json 也没有 JS 异常：' + M.errs.slice(0, 2).join(' | '));
+  }
+
+  /* ============ 8. 无 JS 异常 ============ */
+  log('');
+  log('=== 8. 全程无 JS 异常 ===');
   ok(A.errs.length === 0, '桌面流程无 JS 异常：' + A.errs.slice(0, 3).join(' | '));
 
   console.log(out.join('\n'));

@@ -223,6 +223,48 @@ for (const file of chapters) {
   }
 }
 
+/* -- 7. book.json 与正文对账 --
+   书城卡片上的「几章 / 多少单元 / 多少公式」现在是从 book.json 算出来的，
+   所以 json 一旦和正文脱节，界面就会拿旧数字骗人（而且很难自己发现）。
+   这里按磁盘上的实际情况对一遍：加了 md 没登记、改了正文没更新统计，都在这儿露头。 */
+log('');
+log('【7】book.json 与正文对账');
+for (const bk of fs.readdirSync(path.join(ROOT, 'store'))) {
+  const dir = path.join(ROOT, 'store', bk);
+  if (!fs.statSync(dir).isDirectory()) continue;
+  const jf = path.join(dir, 'book.json');
+  if (!fs.existsSync(jf)) { ok(false, `${bk}：缺少 book.json`); continue; }
+  let m;
+  try { m = JSON.parse(fs.readFileSync(jf, 'utf8')); }
+  catch (e) { ok(false, `${bk}：book.json 不是合法 JSON`, e.message); continue; }
+
+  const listed = (m.chapters || []).map(c => c.file);
+  const gone = listed.filter(f => !fs.existsSync(path.join(dir, f)));
+  ok(gone.length === 0, `${bk}：json 里记的章都还在磁盘上`, gone.join('、'));
+  const onDisk = fs.readdirSync(dir).filter(f => /^第\d+章.*\.md$/.test(f));
+  const forgot = onDisk.filter(f => listed.indexOf(f) < 0);
+  ok(forgot.length === 0, `${bk}：磁盘上每一章都登记进了 book.json`, forgot.join('、'));
+
+  for (const c of m.chapters || []) {
+    const f = path.join(dir, c.file);
+    if (!fs.existsSync(f)) continue;
+    const src = fs.readFileSync(f, 'utf8');
+    const no = Number(c.no);
+    const units = (src.match(new RegExp('^## ' + no + '\\.\\d+\\s', 'gm')) || []).length;
+    const disp = (src.match(/\$\$[\s\S]+?\$\$/g) || []).length;
+    const inl = (src.replace(/\$\$[\s\S]+?\$\$/g, '').match(/\$[^$\n]+?\$/g) || []).length;
+    const tex = disp + inl;
+    const words = (src.match(/[\u4e00-\u9fa5]/g) || []).length;
+    const off = (a, b) => (b ? Math.abs(a - b) / b : (a ? 1 : 0));
+    /* 单元数是结构性的，必须一字不差；公式与字数允许小改一句话的浮动 */
+    ok(units === Number(c.units), `${c.file}：单元数 ${units}（json 写 ${c.units}）`);
+    ok(off(tex, Number(c.formulas)) <= 0.03,
+      `${c.file}：公式 ${tex}（json 写 ${c.formulas}，容差 3%）`);
+    ok(off(words, Number(c.words)) <= 0.1,
+      `${c.file}：中文字 ${words}（json 写 ${c.words}，容差 10%）`);
+  }
+}
+
 log('');
 log(bad === 0 ? '═══ 全部通过 ═══' : `═══ ${bad} 项未通过 ═══`);
 process.exit(bad === 0 ? 0 : 1);
