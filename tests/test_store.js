@@ -103,7 +103,7 @@ function online(win) {
     const q = s => d.querySelector(s), qa = s => [...d.querySelectorAll(s)];
     ok(d.body.dataset.view === 'store', '切到书城');
     const cards = qa('#stlist .stcard');
-    ok(cards.length === 5, '五张卡片：三本教材 + 原创讲义 + 两册免费讲义（实际 ' + cards.length + '）');
+    ok(cards.length === 8, '八张卡片：三本教材 + 原创讲义 + 两册免费讲义 + 三本即将上架（实际 ' + cards.length + '）');
     const c0 = cards[0];
     ok(!!c0.querySelector('.stt') && !!c0.querySelector('.stsub'), '卡片有书名和一句定位');
     ok(!!c0.querySelector('.stmeta') && /册/.test(c0.querySelector('.stmeta').textContent), '卡片标了体量（几册）');
@@ -115,6 +115,36 @@ function online(win) {
       '五张卡片都能「看目录」「加入书架」');
     ok(qa('#stlist .sttoc[hidden]').length === 5, '目录默认收起（不占屏，也不提前下载正文）');
     ok(/\d+ 本 · 书架里有 0/.test(q('#stcnt').textContent), '右上角统计：书架里有 0 本');
+  }
+
+  /* ============ 2b. 品类与状态 ============ */
+  log('');
+  log('=== 2b. 品类（kind）与状态（state）分开：可筛 / 可连载 / 可占位 ===');
+  {
+    const d = A.wnd.document;
+    const q = s => d.querySelector(s), qa = s => [...d.querySelectorAll(s)];
+    const chips = () => qa('#stkbar .stkc');
+    const names = chips().map(c => c.textContent);
+    ok(chips().length === 7, '筛选条是「全部 + 六个品类」（实际 ' + chips().length + '）');
+    ok(names.some(t => /考前突击/.test(t)) && names.some(t => /考研拔高/.test(t)),
+      '品类含「考前突击」「考研拔高」：' + names.join(' / '));
+    ok(/^全部 8/.test(names[0]), '「全部」带总数：' + names[0]);
+    const zero = chips().filter(c => c.disabled);
+    ok(zero.length === 1 && /题库 0/.test(zero[0].textContent),
+      '题库 0 本：显示但禁用，点不进空品类（实际 ' + zero.length + ' 个禁用）');
+    ok(qa('#stlist .sttags .sk').length === 8, '每张卡都标了品类（实际 ' + qa('#stlist .sttags .sk').length + '）');
+    ok(qa('#stlist .ststate.ser').length === 1 && /连载中 · 2\/7 章/.test(q('#stlist .ststate.ser').textContent),
+      '原创讲义标「连载中 · 2/7 章」：' + (q('#stlist .ststate.ser') ? q('#stlist .ststate.ser').textContent : '无'));
+    ok(qa('#stlist .stcard.soon').length === 3, '三本即将上架（实际 ' + qa('#stlist .stcard.soon').length + '）');
+    ok(qa('#stlist .stcard.soon button[disabled]').length === 3, '即将上架的书按钮禁用');
+    ok(qa('#stlist .stcard.soon .sttocb').length === 0, '没有正文的书不显示「看目录」');
+    ok(qa('#stlist .stcard.soon .stadd').length === 0, '没有正文的书不显示「加入书架」');
+    chips().filter(c => /考研拔高/.test(c.textContent))[0].click();
+    ok(qa('#stlist .stcard').length === 1, '筛「考研拔高」只剩 1 张（实际 ' + qa('#stlist .stcard').length + '）');
+    ok(qa('#stlist .stcard.soon').length === 1, '留下的正是即将上架那张');
+    ok(chips().filter(c => c.classList.contains('on'))[0].textContent.indexOf('考研拔高') >= 0, '选中的 chip 高亮');
+    chips()[0].click();
+    ok(qa('#stlist .stcard').length === 8, '点回「全部」恢复 8 张');
   }
 
   /* ============ 3. 看目录 ============ */

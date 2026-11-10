@@ -8,6 +8,8 @@
  */
 const PORT = process.env.PROBE_PORT || 9234;
 const URL = process.env.PROBE_URL || 'http://127.0.0.1:8906/index.html';
+/* 探哪一章：默认第 1 章；PROBE_FILE="第2章 导数与微分.md" 可换章 */
+const F = process.env.PROBE_FILE || '第1章 函数与极限.md';
 const fs = await import('fs');
 const os = await import('os');
 const OUT = os.tmpdir();
@@ -111,14 +113,14 @@ async function run() {
     await P.ev("switchCourse('__origin'); goView('book')");
     await sleep(900);
 
-    const list = await P.ev(`CH.filter(function(x){return x.file==='第1章 函数与极限.md'})
+    const list = await P.ev(`CH.filter(function(x){return x.file===${JSON.stringify(F)}})
       .map(function(x,i){return i+'|'+x.title})`);
     console.log('  切节数：' + (Array.isArray(list) ? list.length : list));
 
     const n = Array.isArray(list) ? list.length : 0;
     const rows = [];
     for (let i = 0; i < n; i++) {
-      const r = await P.ev(`(function(){var c=CH.filter(function(x){return x.file==='第1章 函数与极限.md'})[${i}];
+      const r = await P.ev(`(function(){var c=CH.filter(function(x){return x.file===${JSON.stringify(F)}})[${i}];
         if(!c)return 'no-ch';openCh(c);return c.title})()`);
       await sleep(i === 0 ? 1400 : 900);
       const s = await P.ev(CHECK);

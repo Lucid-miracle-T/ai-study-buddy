@@ -244,6 +244,24 @@ input.ck{width:auto;flex-shrink:0}
 #reader h3{font-size:15px;margin:16px 0 6px}
 #reader p{margin:0 0 10px;line-height:1.85}
 #reader .meta{font-size:12px;color:var(--tx3);border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:16px}
+/* 全局重置把 ul/ol 的缩进清零了，自编讲义里「为什么需要它」这类段落全是列表，
+   不清出来的话序号会紧贴正文左边缘、和文字粘在一起。 */
+#rw ul,#rw ol{margin:10px 0 12px;padding-left:1.6em}
+#rw li{margin:4px 0;line-height:1.7}
+#rw li::marker{color:var(--tx3)}
+#rw blockquote{margin:12px 0;padding:10px 12px;border-left:3px solid var(--line);
+  background:rgba(0,0,0,.022);border-radius:0 6px 6px 0;color:var(--tx2)}
+body.dark #rw blockquote{background:rgba(255,255,255,.045)}
+/* 讲义里的 ASCII 结构图（章首那张依赖关系树）走代码围栏：必须按 pre 保留换行、用等宽字体，
+   否则 marked 把每行当成同一段，树形符号会全挤成一行。窄屏让它自己横向滚，别撑破 #rw。 */
+#rw pre{margin:12px 0;padding:10px 12px;border-radius:8px;overflow-x:auto;
+  background:rgba(0,0,0,.03);color:var(--tx2);white-space:pre;
+  font:12.5px/1.62 ui-monospace,Consolas,monospace}
+body.dark #rw pre{background:rgba(255,255,255,.05)}
+#rw code{font-family:ui-monospace,Consolas,monospace;font-size:.88em;
+  background:rgba(0,0,0,.045);padding:1px 4px;border-radius:4px}
+#rw pre code{background:none;padding:0;font-size:inherit}
+body.dark #rw code{background:rgba(255,255,255,.08)}
 /* 阅读器里的表格：浏览器默认样式既没边框也没内边距，在 640px 阅读栏里会挤成一团，
    中文还会被逐字拆行（「反三角函数」拆成「反三角函」+「数」）。
    第一列不折行（多半是术语短词），其余列正常换行；宽表可横向滚动，不撑破正文宽度。 */
@@ -280,7 +298,25 @@ body.dark #rw tbody tr:nth-child(even) td{background:rgba(255,255,255,.032)}
 .sttoc .n{color:var(--tx3);margin-right:6px}
 .stnote{font-size:11px;color:var(--green)}
 #stcnt{white-space:nowrap;flex:none}
+/* 书城：品类筛选条。品类回答「这本书是什么」，状态回答「现在能不能读」，
+   两者分开——否则「即将上架」会被当成一个品类，筛选立刻自相矛盾。 */
+#stkbar{gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+#stkbar::-webkit-scrollbar{display:none}
+.stkc{font:inherit;font-size:11.5px;line-height:1.4;border:1px solid var(--line);
+  background:var(--panel);color:var(--tx2);border-radius:999px;padding:3px 10px;
+  cursor:pointer;white-space:nowrap;flex:none}
+.stkc:hover{border-color:var(--blue-line);color:var(--tx)}
+.stkc.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.stkc.zero{opacity:.42;cursor:default}
+.stkc.zero:hover{border-color:var(--line);color:var(--tx2)}
+.sttags span.sk{background:var(--blue-bg);color:var(--blue);font-weight:600}
+.ststate{font-size:10.5px;font-weight:400;border-radius:9px;padding:1px 7px;flex:none}
+.ststate.ser{background:var(--amber-bg);color:var(--amber)}
+.ststate.soon{background:var(--hover);color:var(--tx3)}
+.stcard.soon .stcv{opacity:.62}
+.stcard.soon .stabout{color:var(--tx3)}
 body.mobile #stlist{grid-template-columns:1fr;padding:12px 12px 96px}
+body.mobile #stkbar{padding:8px 12px}
 /* flashcard view */
 #cards{flex:1;overflow-y:auto;padding:20px 24px}
 .cbox{max-width:560px;margin:0 auto}
@@ -1261,6 +1297,7 @@ body.mobile .gd-row button{margin-left:auto}
         <span class="bookhint">加入书架后正文存在这台设备的浏览器里，断网也能读。
         每本书都能先「看目录」再决定；加入是可逆的，在「书架」或「设置 → 课程管理」里能删。</span>
       </div>
+      <div class="bar" id="stkbar"></div>
       <div id="stlist"></div>
     </section>
 
@@ -1847,7 +1884,7 @@ const LOCAL_KEY3='__local3', LOCAL_NAME3='C语言程序设计 · 现代方法';
    而 store/ 要能随站点发布，因为它是我们自己写的东西。 */
 const ORIGIN_KEY='__origin', ORIGIN_NAME='变化与累积 · 一元微积分（自编）';
 const ORIGIN={key:ORIGIN_KEY,name:ORIGIN_NAME,bk:'本站原创讲义（MIT，可自由复制修改分发）',
-  dir:'store/变化与累积-一元微积分/',files:['第1章 函数与极限.md'],origin:true};
+  dir:'store/变化与累积-一元微积分/',files:['第1章 函数与极限.md','第2章 导数与微分.md'],origin:true};
 const PACKS=[
   {key:LOCAL_KEY, name:LOCAL_NAME, bk:BKDEF, dir:'book/', files:[
     '第1章_函数与极限.md','第2章_导数与微分.md','第3章_微分中值定理与导数的应用.md','第4章_不定积分.md',
@@ -1895,34 +1932,69 @@ function packByKey(k){for(const p of allPacks())if(p.key===k)return p;return nul
    加入书架＝把这本书的 md 抓进 IndexedDB（走原来那条 autoLoad 管线）；
    移出＝书架页 / 设置页的「删除课程」，正文与记录一起清掉，语义一致。
    书的资料集中放在这张表里：等原创讲义落地，只改这里的 title/about，界面不用动。 */
+/* 书城的两套分类，故意分开：
+   kind  = 品类，回答「这本书是什么」，决定读者在什么场景拿它；
+   state = 状态，回答「现在能不能读」，ready / serial（连载中）/ soon（即将上架）。
+   把「即将上架」当成品类的话，选「考前突击」时它该不该出现就说不清了。 */
+const KINDS=[
+  {k:'sys',   n:'系统精讲'},
+  {k:'exam',  n:'考前突击'},
+  {k:'kaoyan',n:'考研拔高'},
+  {k:'self',  n:'自学讲义'},
+  {k:'ref',   n:'速查手册'},
+  {k:'drill', n:'题库'}
+];
+function kindName(k){const x=KINDS.filter(function(y){return y.k===k})[0];return x?x.n:''}
+let STKIND='all';   /* 当前筛的品类。不落盘：刷新回「全部」，不新增本地状态 */
 const STORE_BOOKS=[
-  {k:LOCAL_KEY, title:LOCAL_NAME,
+  {k:LOCAL_KEY, kind:'sys', state:'ready', title:LOCAL_NAME,
    sub:'一元微积分：从极限讲到微分方程',
    about:'先把「无限靠近」讲成一个能算的东西，再顺着导数、微分中值定理走到积分与微分方程。'
         +'前半本重概念与推理，后半本重积分技巧与应用题的建模。',
    tags:['微积分','大一上','计算量大'], pre:'初等函数、三角恒等式、对数与指数运算'},
-  {k:LOCAL_KEY2, title:LOCAL_NAME2,
+  {k:LOCAL_KEY2, kind:'sys', state:'ready', title:LOCAL_NAME2,
    sub:'行列式 → 矩阵 → 方程组 → 二次型，中间插一章空间解析几何',
    about:'按「算 → 变 → 解 → 判」的顺序推进：先学行列式与矩阵运算，再用初等变换解线性方程组，'
         +'然后研究向量组的线性相关性、相似对角化与二次型。第 3 章把向量运算搬到空间中，'
         +'给后面的几何直观打底。',
    tags:['线代','大一下','概念密集'], pre:'高中向量、平面的点法式方程'},
-  {k:LOCAL_KEY3, title:LOCAL_NAME3,
+  {k:LOCAL_KEY3, kind:'sys', state:'ready', title:LOCAL_NAME3,
    sub:'从类型与表达式一路写到指针、结构与标准库',
    about:'以「程序在内存里到底发生了什么」为主线：类型与表达式讲清表示，函数与程序结构讲清组织，'
         +'指针与数组讲清地址，结构 / 联合 / 枚举讲清自定义类型，最后落到标准库与底层程序设计。',
    tags:['C 语言','程序设计','例子最多'], pre:'会用命令行编译、知道什么是变量'},
-  {k:ORIGIN_KEY, title:ORIGIN_NAME,
-   sub:'按知识点清单重写，不是任何教材的摘录或改写；第一章「函数与极限」已可读',
-   about:'七节，每节固定七段：要解决什么 → 读前自检 → 先讲直觉 → 正式定义 → 例题（含「先找什么」'
-        +'与「为什么不换一种做法」）→ 常见错误 → 自测（答案折叠）。每条定理附「去掉条件会怎样」的反例，'
-        +'数值例题全部脚本复算。第一章 2.5 万字、2300 余个公式全部通过 KaTeX 渲染校验。',
+  {k:ORIGIN_KEY, kind:'self', state:'serial', prog:'2/7 章', title:ORIGIN_NAME,
+   sub:'按知识点清单重写，不是任何教材的摘录或改写；第 1–2 章已可读',
+   about:'一章拆成 15 个左右的半小时单元：单元卡（读完你能做什么 / 前置 / 时长）→ 为什么需要它 → '
+        +'定义与结论 → 例题（含「先找什么」与「为什么不换一种做法」）→ 出错点 → 自测（答案折叠）。'
+        +'第 1 章「函数与极限」15 个单元 2.4 万字，第 2 章「导数与微分」16 个单元 2.4 万字，'
+        +'合计 4,800 余个公式全部通过渲染校验；定理附「条件去掉会怎样」的反例，'
+        +'例题数值全部脚本复算，按章交付，写完一章更一章。',
    tags:['原创','MIT','自学向'], pre:'初等函数、三角恒等式、不等式与绝对值'},
-  {k:SAMPLE_KEY, title:SAMPLE_NAME,
+  {k:SAMPLE_KEY, kind:'self', state:'ready', title:SAMPLE_NAME,
    sub:'本站自编的两册入门讲义，可自由复制、修改、分发',
    about:'不是任何出版教材的摘录或改写，按 MIT 许可随仓库分发。'
         +'定位是「先看懂再做题」：每节先给直觉，再上定义，例题写思路而不只写步骤。',
-   tags:['免费','原创','入门'], pre:'高中数学'}
+   tags:['免费','原创','入门'], pre:'高中数学'},
+  /* ---- 即将上架：还没有正文，不参与「加入书架」，只在书城里占位 ---- */
+  {k:'__soon_exam', kind:'exam', state:'soon', eta:'12 月上旬', title:'期末冲刺 20 讲 · 高数上',
+   sub:'按考点重组，不按章节顺序：一块考点一块讲，讲完立刻给题',
+   about:'把上册拆成 20 个考点块：极限存在性、等价替换的边界、导数与单调性、中值定理证题、'
+        +'不定积分四类技巧、定积分几何应用。每讲固定四件：这个考点长什么样、卷子上怎么问、'
+        +'标准解法、最容易丢分的两步。配期末真题改编，不给原题。',
+   tags:['期末','考点重组','配真题'], pre:'学过一遍上册，但忘得差不多'},
+  {k:'__soon_kaoyan', kind:'kaoyan', state:'soon', eta:'2027 年 1 月', title:'真题分层精练（数一）· 极限与导数',
+   sub:'按难度分层：会做 → 做对 → 做快，同一道题三种要求',
+   about:'取数一真题里的极限与导数部分，按「基础 / 强化 / 冲刺」三层重排。'
+        +'每题标出它其实在考哪一条定理、命题人埋了哪个坑、限时多少秒算合格。'
+        +'难题给两条思路：标准解法与考场能想到的那条。',
+   tags:['考研','数一','分层'], pre:'上册过完一遍，极限四则与等价替换已能用'},
+  {k:'__soon_ref', kind:'ref', state:'soon', eta:'11 月下旬', title:'高数公式与结论速查卡',
+   sub:'只有结论，没有推导：做题卡住时翻，一页一个主题',
+   about:'极限、导数、积分、级数四块，每块一张卡：定义、常用等价无穷小、求导与积分表、'
+        +'条件与反例。每条结论都标「什么条件下才成立」，因为错用公式大多错在条件上。'
+        +'刻意不写推导——推导在讲义里，卡只负责让你确认符号没记错。',
+   tags:['速查','考前翻','带反例'], pre:'无（但要能看懂符号）'}
 ];
 function storeBook(k){return STORE_BOOKS.filter(function(b){return b.k===k})[0]||null}
 /* 这本书在不在书架上：只看 IndexedDB 里有没有它的正文 */
@@ -2829,7 +2901,9 @@ function parseFile(file,src){
   const re=/^(#{1,2})\s+(.+?)\s*$/, out=[];let cur=null,buf=[],n=0,fence=false;
   const flush=function(){if(cur){cur.txt=buf.join('\n').trim();out.push(cur)}};
   String(src).split(/\r?\n/).forEach(function(l){
-    if(/^\s*```/.test(l)){fence=!fence;return}       /* 代码围栏内不切标题 */
+    /* 代码围栏：整段原样交给 md()，别把 ``` 这两行吞掉 ——
+       吞掉之后 marked 拿到的是「一堆普通行」，章首那张依赖关系图会挤成一段。 */
+    if(/^\s*```/.test(l)){if(cur)buf.push(l);fence=!fence;return}
     if(fence){if(cur)buf.push(l);return}
     const m=re.exec(l);
     if(m){flush();cur={id:file+'#'+(n++),file:file,title:m[2].replace(/#+$/,''),level:m[1].length,txt:''};buf=[]}
@@ -3070,33 +3144,72 @@ async function epubText(buf){
 }
 /* ---------- 书城 ----------
    卡片状态只来自 onShelf()：正文在 IndexedDB 里＝已在书架，没有第二份状态要同步。
+   「即将上架」的书没有正文，只用于告诉读者后面有什么，不参与「加入书架」。
    目录只列册名、不拉正文，先让人判断要不要，再决定加不加。 */
+function storeCards(){
+  return STORE_BOOKS.filter(function(b){
+    if(packByKey(b.k))return true;
+    return b.state==='soon'&&!LITE;   /* 体验版只看得到真能读的 */
+  });
+}
+/* 品类筛选条。数量为 0 的品类照样显示但灰掉：让人知道以后会有，也点不进去。 */
+function renderStoreChips(cards){
+  const bar=$('stkbar');if(!bar)return;
+  const n={};
+  cards.forEach(function(b){n[b.kind]=(n[b.kind]||0)+1});
+  let h='<button class="stkc'+(STKIND==='all'?' on':'')+'" data-k="all">全部 '+cards.length+'</button>';
+  KINDS.forEach(function(x){
+    const c=n[x.k]||0;
+    h+='<button class="stkc'+(STKIND===x.k?' on':'')+(c?'':' zero')+'" data-k="'+x.k+'"'
+      +(c?'':' disabled')+'>'+x.n+' '+c+'</button>';
+  });
+  bar.innerHTML=h;
+  bar.querySelectorAll('.stkc').forEach(function(b){
+    b.onclick=function(){STKIND=b.dataset.k;renderStore()};
+  });
+}
 function renderStore(){
   const box=$('stlist');if(!box)return;
-  const books=STORE_BOOKS.filter(function(b){return !!packByKey(b.k)});
+  const cards=storeCards();
   const cnt=$('stcnt');
-  if(cnt)cnt.textContent=books.length+' 本 · 书架里有 '+books.filter(function(b){return onShelf(b.k)}).length;
+  if(cnt){
+    /* 只报总数与书架数：每类的数量在筛选条上已经有了，这里再报一遍会把手机顶栏挤成两行 */
+    cnt.textContent=cards.length+' 本 · 书架里有 '
+      +cards.filter(function(b){return onShelf(b.k)}).length;
+  }
+  renderStoreChips(cards);
+  const show=STKIND==='all'?cards:cards.filter(function(b){return b.kind===STKIND});
   let h='';
-  books.forEach(function(b,i){
-    const p=packByKey(b.k), on=onShelf(b.k);
-    const hue=[212,268,142,32][i%4];
+  if(!show.length)h='<div class="empty">这个品类还没有书。</div>';
+  show.forEach(function(b,i){
+    const p=packByKey(b.k), on=!!p&&onShelf(b.k), soon=b.state==='soon'&&!p;
+    const hue=[212,268,142,32,296,190][i%6];
     const cap=String(b.title).replace(/^《|》$/g,'').slice(0,1);
-    h+='<div class="stcard'+(on?' shelf':'')+'" data-k="'+esc(b.k)+'">'
+    let badge='';
+    if(on)badge+='<span class="stbadge">已在书架</span>';
+    if(soon)badge+='<span class="ststate soon">即将上架</span>';
+    else if(b.state==='serial')badge+='<span class="ststate ser">连载中'+(b.prog?' · '+b.prog:'')+'</span>';
+    h+='<div class="stcard'+(on?' shelf':'')+(soon?' soon':'')+'" data-k="'+esc(b.k)+'">'
       +'<div class="stcv" style="background:hsl('+hue+',40%,46%)">'+esc(cap)+'</div>'
       +'<div class="stmain">'
-      +'<div class="stt">'+esc(b.title)+(on?'<span class="stbadge">已在书架</span>':'')+'</div>'
+      +'<div class="stt">'+esc(b.title)+badge+'</div>'
       +'<div class="stsub">'+esc(b.sub)+'</div>'
-      +'<div class="stmeta">'+p.files.length+' 册 · 前置：'+esc(b.pre)+'</div>'
+      +'<div class="stmeta">'+(soon
+          ?'即将上架 · 预计 '+esc(b.eta||'待定')
+          :p.files.length+' 册 · 前置：'+esc(b.pre))+'</div>'
       +'<div class="stabout">'+esc(b.about)+'</div>'
-      +'<div class="sttags">'+b.tags.map(function(t){return '<span>'+esc(t)+'</span>'}).join('')+'</div>'
+      +'<div class="sttags"><span class="sk">'+esc(kindName(b.kind))+'</span>'
+        +b.tags.map(function(t){return '<span>'+esc(t)+'</span>'}).join('')+'</div>'
       +'<div class="stacts">'
-        +'<button class="sm sttocb">看目录</button>'
-        +(on?'<button class="sm stgob" data-k="'+esc(b.k)+'">去书架读 →</button>'
-            :'<button class="sm pri stadd" data-k="'+esc(b.k)+'">加入书架</button>')
+        +(soon
+          ?'<button class="sm" disabled title="章节还没写出来；写完这张卡会变成可加入">敬请期待</button>'
+          :'<button class="sm sttocb">看目录</button>'
+           +(on?'<button class="sm stgob" data-k="'+esc(b.k)+'">去书架读 →</button>'
+               :'<button class="sm pri stadd" data-k="'+esc(b.k)+'">加入书架</button>'))
       +'</div>'
-      +'<div class="sttoc" hidden>'+p.files.map(function(f,n){
+      +(soon||!p?'':'<div class="sttoc" hidden>'+p.files.map(function(f,n){
           return '<div><span class="n">'+String(n+1).padStart(2,'0')+'</span>'
-            +esc(f.replace(/\.md$/i,'').replace(/_/g,' '))+'</div>'}).join('')+'</div>'
+            +esc(f.replace(/\.md$/i,'').replace(/_/g,' '))+'</div>'}).join('')+'</div>')
       +'</div></div>';
   });
   box.innerHTML=h;
