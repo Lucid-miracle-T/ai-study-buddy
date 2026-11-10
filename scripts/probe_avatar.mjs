@@ -96,10 +96,10 @@ const LAYOUT = `(function(){
     vw:innerWidth,vh:innerHeight,
     docScrollW:document.documentElement.scrollWidth,
     chatOn:document.querySelector('#v-chat').classList.contains('on'),
-    chatlog:b('#chatlog'),chatbar:b('#chatbar'),chatmem:b('.chatmem'),
+    chatlog:b('#chatlog'),chatbar:b('#chatbar'),chsrow:b('#chsrow'),
     chatlogScrollW:log?log.scrollWidth:-1,chatlogClientW:log?log.clientWidth:-1,
-    chips:document.querySelectorAll('#chatmembers .memchip').length,
-    chipsOn:document.querySelectorAll('#chatmembers .memchip.on').length,
+    cards:document.querySelectorAll('#csWho .lh-card').length,
+    cardsOn:document.querySelectorAll('#csWho .lh-card.on').length,
     msgs:msgs,
     barInView:bar?bar.getBoundingClientRect().bottom<=innerHeight+1:null
   },null,1);
@@ -107,10 +107,10 @@ const LAYOUT = `(function(){
 
 const CAP = `(function(){
   return JSON.stringify({
-    hint:(document.querySelector('#chathint')||{}).textContent||'',
+    count:(document.querySelector('#csCount')||{}).textContent||'',
     top:(document.querySelector('#dtSess')||{}).textContent||'',
-    on:document.querySelectorAll('#chatmembers .memchip.on').length,
-    full:document.querySelectorAll('#chatmembers .memchip.full').length,
+    on:document.querySelectorAll('#csWho .lh-card.on').length,
+    full:document.querySelectorAll('#csWho .lh-card.full').length,
     CHAT_MAX:(typeof CHAT_MAX!=='undefined'?CHAT_MAX:'?'),
     toast:(document.querySelector('#toast')||{}).textContent||''
   },null,1);
@@ -152,13 +152,14 @@ async function run() {
     console.log(await P.ev(LAYOUT));
     await P.shot(OUT + '/gx-av-chat-' + cfg.vw + '.png');
 
-    /* 人数上限：默认 2 位伙伴 → 加到 3 位（含我 4 人）→ 第 4 位该被拦下 */
+    /* 人数上限：默认 2 位伙伴 → 加到 3 位（含我 4 人）→ 第 4 位该被拦下。
+       注意这一步必须在「开始群聊」之前做 —— 开场之后成员就锁了，向导也不再出现 */
     console.log('--- 群聊人数上限（含我最多 4 人）---');
     console.log('初始：' + await P.ev(CAP));
-    await P.ev("(function(){var c=document.querySelectorAll('#chatmembers .memchip');if(c[2])c[2].click()})()");
+    await P.ev("(function(){var c=document.querySelectorAll('#csWho .lh-card');if(c[2])c[2].click()})()");
     await sleep(200);
     console.log('加满 3 位伙伴后：' + await P.ev(CAP));
-    await P.ev("(function(){var c=document.querySelectorAll('#chatmembers .memchip');if(c[3])c[3].click()})()");
+    await P.ev("(function(){var c=document.querySelectorAll('#csWho .lh-card');if(c[3])c[3].click()})()");
     await sleep(200);
     console.log('再点第 4 位（应被拦）：' + await P.ev(CAP));
     await P.shot(OUT + '/gx-av-cap-' + cfg.vw + '.png');

@@ -115,7 +115,9 @@ function boot(storage, url) {
   log('=== 2. 开课向导 ===');
   {
     ok(!!q('#launch') && q('#launch').hidden === false, '新的一节还没聊过：启动时自动摆出开课向导');
-    ok(qa('.lh-go').length === 1 && !!q('#lhStart'), '整屏只有一个主按钮「开始上课」');
+    ok(qa('#launch .lh-go').length === 1 && !!q('#lhStart'), '开课向导整屏只有一个主按钮「开始上课」');
+    /* 群聊开场向导复用了同一套骨架：它的主按钮在 #csetup 里，不能算进这一屏 */
+    ok(qa('#csetup .lh-go').length === 1 && !!q('#csStart'), '群聊向导也只有「开始群聊」一个主按钮');
     const n = ev('pKeys().length');
     ok(qa('#lhWho .lh-card').length === n, '伙伴大卡数量＝可选人设数量（' + n + '）');
     ok(qa('#lhPace .lh-opt').length === 3, '教学节奏三选一');

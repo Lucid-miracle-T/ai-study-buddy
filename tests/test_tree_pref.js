@@ -187,6 +187,7 @@ function boot(opts) {
   {
     const A = boot(); const w = A.wnd, doc = w.document;
     const q = s => doc.querySelector(s), ev = s => w.eval(s);
+    const qa = s => Array.from(doc.querySelectorAll(s));
     await wait(120);
     ok(ev('CSESS.length') === 1, '启动默认一个群聊会话');
     ok(q('#chatsessions').children.length === 1, '历史条只有一个 chip');
@@ -194,12 +195,19 @@ function boot(opts) {
     ok(ev('CSESS.length') === 2 && ev('GCHAT.length') === 0, '「＋ 新会话」另开一个空会话');
     ok(q('#chatsessions').children.length === 2 && q('#chatsessions').children[1].className === 'on',
       '新会话在历史条里高亮');
+    /* 新会话没开场 ⇒ 先弹选人界面；成员要重新选，名字也可以重起 */
+    ok(ev('chatStarted()') === false && q('#csetup').hidden === false,
+      '新会话先弹出开场向导，不是直接进空聊天');
+    ok(qa('#csWho .lh-card.on').length >= 1, '向导里默认勾着上次那几位，可以改');
+    q('#csStart').click();
+    ok(ev('chatStarted()') === true && q('#csetup').hidden === true, '点「开始群聊」才进聊天');
+    ok(q('#chatsessions').children[1].textContent === '会话 2', '没起名就先叫「会话 2」');
 
     ev('document.getElementById("key").value="k";document.getElementById("base").value="https://api.test"');
     await w.eval('chatAsk("聊聊极限")');
     await wait(30);
     ok(ev('GCHAT.length') >= 3, '新会话里：我一句 + 每位伙伴各一条，实际 ' + ev('GCHAT.length'));
-    ok(/极限/.test(q('#chatsessions').children[1].textContent), '会话名取第一句提问');
+    ok(/极限/.test(q('#chatsessions').children[1].textContent), '没自命名时会话名取第一句提问');
     ok(ev('LS.g("chat.log."+CCUR,[]).length') === ev('GCHAT.length'), '当前会话消息单独落盘');
 
     q('#chatsessions').children[0].click();

@@ -183,10 +183,13 @@ function boot(opts) {
     ok(qa('#ctabs .ctab').length === 3, '课程标签栏正好 3 个');
     ok(ev('cname("__free")') === '群聊', '__free 显示名改成「群聊」');
     ok(!!q('[data-v="chat"][data-g="life"]'), '群聊按钮挂在「课余」分组');
-    ok(!!q('#v-chat') && !!q('#chatmembers') && !!q('#chatlog'), '群聊视图骨架齐全');
+    ok(!!q('#v-chat') && !!q('#chsrow') && !!q('#chatlog') && !!q('#csetup'),
+      '群聊视图骨架齐全（会话条 + 消息区 + 开场向导）');
     ev('syncNavGroup("chat")');
     ok(doc.body.dataset.navgrp === 'life', '点群聊会切到「课余」标签组');
-    ok(qa('#chatmembers .memchip').length === ev('pKeys().length'),
+    ev('goView("chat")');
+    await wait(60);
+    ok(qa('#csWho .lh-card').length === ev('pKeys().length'),
       '成员从已创立的伙伴里列出来（含自定义人设）');
     ok(errs.length === 0, '课程 / 群聊骨架没有 JS 异常：' + errs.join(' | '));
     wnd.close();
@@ -204,41 +207,50 @@ function boot(opts) {
     const qa = s => Array.from(doc.querySelectorAll(s));
 
     ok(ev('CHAT_MAX') === 3, '含我最多 4 人 → 伙伴上限 3 位');
-    ok(ev('GMEM.length') === 2, '默认两位伙伴在群里');
-    const chips = qa('#chatmembers .memchip');
-    ok(chips.filter(c => c.classList.contains('on')).length === 2, '选中的成员高亮');
-    chips[2].click();
-    ok(ev('members().length') === 3 && ev('LS.g("chat.members",[]).length') === 3,
-      '点一位加进群，选择写进 gx.chat.members');
+    ok(ev('chatStarted()') === false, '全新安装：第一间群还没开场');
+    ev('goView("chat")');
+    await wait(60);
+    ok(!!q('#csetup') && q('#csetup').hidden === false, '点进群聊先摆出开场向导，不是直接进空聊天');
+    ok(qa('#csWho .lh-card.on').length === 2, '向导默认勾上「上次那两位」');
+    ok(q('#csStart').disabled === false, '有勾选时「开始群聊」可点');
 
-    /* 满员：第 4 位伙伴加不进来，界面要说明怎么换人 */
-    qa('#chatmembers .memchip')[3].click();
-    ok(ev('members().length') === 3 && ev('LS.g("chat.members",[]).length') === 3,
-      '满 3 位后再点第 4 位伙伴被拦下，成员数不变（含我仍 4 人）');
+    /* 加一位 → 满员 → 第 4 张点不动 */
+    qa('#csWho .lh-card')[2].click();
+    ok(qa('#csWho .lh-card.on').length === 3, '点一张卡就加进群，向导里即时高亮');
+    ok(/已选 3 \/ 3/.test(q('#csCount').textContent), '计数写明「已选 3 / 3」');
+    qa('#csWho .lh-card')[3].click();
+    ok(qa('#csWho .lh-card.on').length === 3, '满 3 位后第 4 张加不进来（含我仍 4 人）');
     ok(/最多 4 人/.test((q('#toast') || {}).textContent || ''),
-      '并提示「含你最多 4 人，先移出一位」');
-    ok(qa('#chatmembers .memchip')[3].classList.contains('full'),
-      '满员时没进群的伙伴置灰');
+      '并提示「含你最多 4 人，先取消一位」');
+    ok(qa('#csWho .lh-card.full').length > 0, '满员时没选的卡置灰、点不动');
 
-    chips[2].click();
-    ok(ev('members().length') === 2, '再点一次移出群');
-    qa('#chatmembers .memchip')[3].click();
-    ok(ev('members().length') === 3, '移出一位后就能换人进来');
-    qa('#chatmembers .memchip')[3].click();
-    ok(ev('members().length') === 2, '把刚换进来的再移出');
-    qa('#chatmembers .memchip')[0].click();
-    ok(ev('members().length') === 1, '可以只剩一位');
-    qa('#chatmembers .memchip').filter(c => c.classList.contains('on'))[0].click();
-    ok(ev('members().length') === 1, '但至少留一位，最后一位移不出去');
-    ok(/含你 2\/4 人/.test(q('#chathint').textContent), '人数提示写明「含你 2/4 人」');
+    qa('#csWho .lh-card')[2].click();
+    ok(qa('#csWho .lh-card.on').length === 2, '再点一次就取消，回到两位');
+
+    /* 起名 + 开场：从这一刻起成员锁定 */
+    q('#csName').value = '线代答疑';
+    q('#csStart').click();
+    ok(ev('chatStarted()') === true, '点「开始群聊」才真正开场');
+    ok(q('#csetup').hidden === true, '开场后向导收起，露出消息区');
+    ok(ev('members().length') === 2, '成员定格为开场时选的那两位');
+    ok(ev('LS.g("chat.sessions",[])[0].name') === '线代答疑', '群名写进会话');
+    ok(ev('LS.g("chat.sessions",[])[0].beg') === true, '会话标记「已开场」');
+    ok(ev('LS.g("chat.members",[]).length') === 2,
+      '同时记成「上次的选择」，下次新建群默认勾这几位');
+    ok(/线代答疑/.test(q('#dtSess').textContent) && /含你 3\/4 人/.test(q('#dtSess').textContent),
+      '顶栏副标题换成「群名 · 含你 3/4 人」');
+
+    /* 开聊之后没有任何入口能改成员 */
+    ok(!q('#chatmembers'), '群聊页不再有常驻成员栏（整行拿掉，把高度还给消息）');
+    ok(ev('chatCur().mem.slice().join()') === ev('members().join()'),
+      '会话里存的成员就是实际会回话的人');
 
     ev('$("key").value="k";$("base").value="https://x.test/v1";$("model").value="m";');
-    ev('GMEM=["cauchy","newton"];saveMem();renderChat();');
     await ev('chatAsk("大家好")');
     await wait(80);
     ok(ev('GCHAT.length') === 3, '一句提问 + 两位伙伴各回一条 = 3 条');
     ok(ev('GCHAT[0].r') === 'user' && ev('GCHAT[0].c') === '大家好', '提问存进 gx.chat');
-    ok(ev('JSON.stringify(GCHAT.slice(1).map(function(m){return m.w}))') === '["cauchy","newton"]',
+    ok(ev('JSON.stringify(GCHAT.slice(1).map(function(m){return m.w}))') === '["cauchy","leibniz"]',
       '两条回复各自记着是哪位伙伴说的');
     ok(ev('GCHAT[1].c') === '收到啦' && ev('GCHAT[2].c') === '收到啦', 'SSE 流式内容收全了');
     ok(ev('LS.g("chat",[]).length') === 3, '群聊消息落盘，和 msgs.* 完全分开');
@@ -248,7 +260,7 @@ function boot(opts) {
     ok(cm[0].classList.contains('me') && /我/.test(cm[0].querySelector('.who').textContent),
       '自己那条带头像、靠右、写着「我」');
     ok(/柯西/.test(cm[1].querySelector('.who').textContent)
-      && /牛顿/.test(cm[2].querySelector('.who').textContent), '回复分别挂着伙伴名字');
+      && /莱布尼茨/.test(cm[2].querySelector('.who').textContent), '回复分别挂着伙伴名字（按开场选的顺序）');
     ok(cm.every(m => !!m.querySelector('.avbox .av')), '三条都有头像');
     ok(/群聊规则/.test(ev('chatSys("cauchy")')), '群聊提示词写明「只代表自己、别替别人发言」');
     q('#chatclr').click();
@@ -257,9 +269,9 @@ function boot(opts) {
     /* 上限是硬约束：哪怕运行时被塞进 5 位成员，也只按 3 位发请求 */
     let calls = 0; const f0 = wnd.fetch;
     wnd.fetch = function (u, o) { calls++; return f0(u, o); };
-    ev('GMEM=pKeys().slice(0,5);saveMem();renderChat();');
-    ok(ev('members().length') === 3, '5 位成员被裁到 3 位，界面高亮＝实际回复数');
-    ok(qa('#chatmembers .memchip.on').length === 3, '只高亮 3 位，不会「看着 5 个、回了 3 条」');
+    ev('var c=chatCur();c.mem=pKeys().slice(0,5);saveCS();renderChat();');
+    ok(ev('members().length') === 3, '5 位成员被裁到 3 位，写的人数＝实际回复数');
+    ok(/含你 4\/4 人/.test(q('#dtSess').textContent), '顶栏写「含你 4/4 人」，不会「看着 5 个、回了 3 条」');
     await ev('chatAsk("再问一句")');
     await wait(80);
     ok(calls === 3, '只发 3 次请求，不打爆额度（实际 ' + calls + ' 次）');
@@ -282,6 +294,7 @@ function boot(opts) {
     ok(A.wnd.eval('GCHAT.length') === 3, '老自由问答的 3 条记录搬进群聊');
     ok(A.wnd.eval('LS.g("chat.migrated",0)') === 1, '只搬一次，做了标记');
     ok(A.wnd.eval('(LS.g("msgs.__free",[])||[]).length') === 3, '原键保留，不删旧数据');
+    ok(A.wnd.eval('chatStarted()') === true, '迁移进来的老记录算开过场，不会被选人界面挡住历史');
     ok(A.errs.length === 0, '迁移没有 JS 异常：' + A.errs.join(' | '));
 
     const B = boot({ width: 390, url: 'https://demo.github.io/' });
@@ -289,7 +302,8 @@ function boot(opts) {
     const bd = B.wnd.document;
     ok(B.wnd.eval('LITE') === true, 'github.io 判定为体验版');
     ok(bd.querySelector('[data-v="chat"]').style.display !== 'none', '体验版课余仍保留群聊');
-    ok(bd.querySelectorAll('#chatmembers .memchip').length === 3, '体验版成员只给前三位伙伴');
+    B.wnd.eval('goView("chat")');
+    ok(bd.querySelectorAll('#csWho .lh-card').length === 3, '体验版向导里只给前三位伙伴');
     ok(B.errs.length === 0, '体验版群聊没有 JS 异常：' + B.errs.join(' | '));
     A.wnd.close(); B.wnd.close();
   }
@@ -308,34 +322,42 @@ function boot(opts) {
     ok(C.wnd.eval('(LS.g("chat.members",[])||[]).length') === 3,
       '并写回存储，下次打开不会又冒出 6 位');
     ok(C.wnd.eval('members().length') === 3, '实际回复人数与上限一致');
-    ok(cd.querySelectorAll('#chatmembers .memchip.on').length === 3, '只高亮 3 位');
+    ok(C.wnd.eval('chatStarted()') === true, '带着 gx.chat.members 的备份算开过场，不弹选人界面');
+    ok(/含你 4\/4 人/.test(C.wnd.eval('chatTop()')), '人数写 4/4，与上限一致');
     ok(C.errs.length === 0, '超额成员规范化没有 JS 异常：' + C.errs.join(' | '));
     C.wnd.close();
   }
 
-  /* ============ 7. 手机群聊：成员区不许把对话挤没 ============ */
+  /* ============ 7. 手机群聊：把高度还给对话 ============ */
   log('');
-  log('=== 7. 手机群聊：成员区收成一行，悬浮胶囊不挡消息 ===');
+  log('=== 7. 手机群聊：成员栏整个拿掉，只留一行会话条 ===');
   {
     const src = HTML();
-    ok(/body\.mobile \.chatmem\{[^}]*flex-wrap:nowrap[^}]*overflow-x:auto/.test(src),
-      '手机上 .chatmem 单行横滑（原来是 3 行 185px，对话区只剩一条缝）');
-    ok(/body\.mobile #chatmembers\{flex-wrap:nowrap\}/.test(src),
-      '成员胶囊跟着单行排，不再换行堆高');
+    /* 这一版的做法不是「把成员栏压扁」，而是把它从群聊页搬进开场向导：
+       成员开聊即锁，界面里就没有理由一直摆着谁在群里。 */
+    ok(!/id="chatmembers"/.test(src) && !/\.chatmem\{/.test(src),
+      '群聊页不再有常驻成员栏（原来手机上那条 185px 的栏整个拿掉）');
+    ok(/id="chsrow"/.test(src) && /#chsrow #chatsessions\{flex:1/.test(src),
+      '一行会话条：会话 chip 占满，新会话 / 更多按钮钉在右边');
+    ok(/#chatmenu\{position:absolute/.test(src),
+      '删除 / 清空收进「⋯」浮层，不占常驻高度');
     ok(/body\.mobile:not\(\[data-view="lesson"\]\) #mfab\{display:none\}/.test(src),
       '「偏好 / Ω」只在课堂页露出，其他页不压在内容上');
 
-    /* jsdom 没有布局，量不了高度，但能确认「收起来」不等于「删掉」：
-       8 位伙伴的胶囊、提示文案、点击加人都得还在。 */
+    /* jsdom 没有布局，量不了高度，但能确认「搬走」不等于「删掉」：
+       8 位伙伴的卡片、计数、点选都还在，只是在向导里。 */
     const D = boot({ width: 1024 });
     await wait(850);
     const dd = D.wnd.document;
     dd.body.classList.add('mobile', 'compact');
-    dd.body.dataset.view = 'chat';
-    ok(dd.querySelectorAll('#chatmembers .memchip').length === D.wnd.eval('pKeys().length'),
-      '收成一行后成员胶囊一个没少（仍是全部伙伴）');
-    ok(!!dd.getElementById('chathint') && /含你 \d\/4 人/.test(dd.getElementById('chathint').textContent),
-      '人数提示还在（横向滑到头就能看到，顶栏也有一份）');
+    D.wnd.eval('goView("chat")');
+    await wait(60);
+    ok(dd.querySelectorAll('#csWho .lh-card').length === D.wnd.eval('pKeys().length'),
+      '搬进向导后成员卡片一个没少（仍是全部伙伴）');
+    ok(/已选 \d+ \/ 3/.test(dd.getElementById('csCount').textContent),
+      '向导里照样写着已选几位 / 上限几位');
+    ok(D.wnd.eval('document.querySelector("#csetup").hidden') === false,
+      '手机上没开场时同样先弹选人界面');
     ok(D.errs.length === 0, '手机群聊没有 JS 异常：' + D.errs.join(' | '));
     D.wnd.close();
   }

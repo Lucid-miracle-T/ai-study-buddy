@@ -511,6 +511,23 @@ body[data-navgrp="eco"]   .nv button[data-g="life"]{display:none}
   padding:13px 34px;font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap;
   font-family:inherit;box-shadow:0 4px 16px rgba(0,0,0,.12)}
 .lh-go:hover{background:var(--tx);opacity:.88}
+/* ---- 群聊开场向导：骨架和开课向导共用，只换了内容 ----
+   一张卡选人（多选）、一个输入框起名、一个主按钮开场。开聊之后这份选择
+   就写进会话并锁死，想换只能开新会话 —— 所以界面上要提前说清楚。 */
+#csetup{position:absolute;inset:0;z-index:46;background:var(--panel);
+  display:flex;flex-direction:column;overflow:auto}
+#csetup[hidden]{display:none}
+.cs-lead{font-size:12.5px;color:var(--tx3);line-height:1.75;margin:-14px 0 22px;max-width:620px}
+.cs-name{width:100%;max-width:420px;font:inherit;font-size:15px;padding:9px 12px;
+  border:1.5px solid var(--line);border-radius:10px;background:var(--surface2);
+  color:var(--tx);margin-bottom:26px}
+.cs-name:focus{outline:none;border-color:var(--blue-line)}
+.lh-sec .tag{font-weight:400;margin-left:6px}
+/* 满员后没选的卡变淡且点不动：这里和开课向导不同，群聊是硬上限（每人各发一次请求） */
+.lh-card.full{opacity:.42;cursor:not-allowed}
+.lh-card.full:hover{border-color:var(--line)}
+.lh-go:disabled{opacity:.42;cursor:not-allowed}
+.lh-go:disabled:hover{opacity:.42}
 /* ---- 两排工具栏默认收成一行；点「⋯」原样展开 ---- */
 #lsum{display:none;font-size:12px;color:var(--tx2);white-space:nowrap}
 body.compact #lsum{display:inline-flex}
@@ -806,16 +823,18 @@ body.dark #symbar .symgrid{background:var(--panel);border-top-color:var(--line2)
   padding:8px 10px;background:var(--surface2)}
 .avitem .nm{flex:1;min-width:0;font-size:12.5px;color:var(--tx2);overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
-/* 群聊：课余里的多人闲聊室 */
-.chatmem{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 24px;
+/* 群聊：一行会话条 + 消息区，成员不再常驻。
+   原来「群成员」那条（8 个头像 + 提示）本身就要一行，算上外面的工具条、
+   会话条，手机上整整四行 chrome 把对话挤成一条缝。成员选择改到开场向导里
+   （#csetup），开聊即锁定 —— 界面里根本不需要一直摆着谁在群里。 */
+#chsrow{display:flex;align-items:center;gap:6px;padding:8px 24px;position:relative;
   border-bottom:1px solid var(--line);background:var(--panel);flex-shrink:0}
-#chatmembers{display:flex;gap:6px;flex-wrap:wrap}
-.memchip{display:flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:20px;
-  padding:3px 10px 3px 4px;font-size:12px;color:var(--tx2);cursor:pointer;background:none;font-family:inherit}
-.memchip.on{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
-/* 满员时没进群的伙伴变淡；仍可点，点了给「先移出一位」的 toast */
-.memchip.full:not(.on){opacity:.45}
-.memchip .av{width:24px;height:24px;font-size:12px;border-radius:8px}
+#chsrow #chatsessions{flex:1;min-width:0}
+#chsrow .sm{flex:none;white-space:nowrap}
+#chatmenu{position:absolute;right:20px;top:calc(100% - 2px);z-index:20;display:flex;gap:6px;
+  background:var(--panel);border:1px solid var(--line2);border-radius:10px;padding:6px;
+  box-shadow:0 8px 24px rgba(0,0,0,.22)}
+#chatmenu[hidden]{display:none}
 #chatlog{flex:1;overflow-y:auto;padding:20px 24px}
 #chatbar{border-top:1px solid var(--line);background:var(--panel);padding:11px 24px;flex-shrink:0}
 /* 输入栏里输入框会抢宽度，按钮必须钉住不缩，否则「发送」被挤成上下两个字 */
@@ -925,7 +944,7 @@ body.mobile #prefopen{display:none}       /* 手机上由右下悬浮胶囊里�
 body.mobile #drawer #ctabs,body.mobile #drawer #stabs{display:none}
 body.mobile #drawer #ctree{flex:none;max-height:48vh;overflow-y:auto;
   border-bottom:none;padding:2px 0}
-body.mobile #drawer .chs,body.mobile #drawer .chatmem{padding-left:4px;padding-right:4px}
+body.mobile #drawer .chs,body.mobile #drawer #chsrow{padding-left:4px;padding-right:4px}
 /* 手机再收紧：符号那一整行让位给正文（Ω 由右下悬浮胶囊接管），
    输入框固定一行高，底部两排也压薄 —— 对话区回到 70% 以上。 */
 body.mobile #symbar{height:0;border-top:none;overflow:visible}
@@ -942,15 +961,12 @@ body.mobile #mfab{bottom:calc(112px + env(safe-area-inset-bottom))}
 body.mobile #mtabs,body.mobile #mcaps,body.mobile #mtabbar{position:relative;z-index:41}
 body.mobile #mfab{z-index:41}
 /* 群聊页（课余）：这个房间里没有「课」，成员区却按 3 行铺开，
-   8 位伙伴的胶囊 + 人数提示一共吃掉 185px，手机上对话区只剩一条缝。
-   收成一行横滑（胶囊与提示都不删，手指一划就到），把高度还给消息。
+   8 位伙伴的头像 + 人数提示一共吃掉 185px，手机上对话区只剩一条缝。
+   收成一行横滑（头像与提示都不删，手指一划就到），把高度还给消息。
    另外「偏好 / Ω」是课堂入口，点下去都会 goView('lesson')，在群聊里只是
    一块浮在消息上的挡板，所以除课堂页外都不显示。 */
-body.mobile .chatmem{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;
-  padding-top:6px;padding-bottom:6px;scrollbar-width:none}
-body.mobile .chatmem::-webkit-scrollbar{display:none}
-body.mobile .chatmem>*{flex:none;white-space:nowrap}
-body.mobile #chatmembers{flex-wrap:nowrap}
+body.mobile #chsrow{padding:6px 12px 6px 9px}
+body.mobile #chatmenu{right:9px}
 body.mobile:not([data-view="lesson"]) #mfab{display:none}
 /* ===== 信息架构：位置条 / 空间说明 / 全站地图 =====
    一条明确的包含链：空间（学习 / 课余 / 生态）→ 页面 → 页面里的操作；
@@ -1155,6 +1171,31 @@ body.mobile .gd-row button{margin-left:auto}
         <button class="lh-go" id="lhStart">开始上课 →</button>
       </div>
     </div>
+    <!-- 群聊开场向导：点「群聊」或「＋ 新会话」时出现。
+         选成员 + 起名 + 一个主按钮；开场之后这份选择锁死，不再有入口能改。 -->
+    <div id="csetup" hidden>
+      <div class="lh-top">
+        <span class="lh-crumb">无穷之境　›　<b>课余</b>　›　群聊开场</span>
+        <span class="sp"></span>
+        <button class="sm" id="csTheme" title="切换深色 / 浅色">☀ 浅色</button>
+        <button class="sm" id="csClose" title="先不建群，回到群聊">✕</button>
+      </div>
+      <div class="lh-scroll"><div class="lh-inner">
+        <div class="lh-title"><h1 id="csTitle">新建一个群聊</h1></div>
+        <p class="cs-lead">起个名字，挑几位伙伴。开聊之后成员就定下来了 —— 想换人，
+          点群聊页的「＋ 新会话」重新开一间。</p>
+        <div class="lh-sec">群聊名称</div>
+        <input id="csName" class="cs-name" maxlength="16" placeholder="例：线代答疑小组">
+        <div class="lh-sec">选择群成员<span class="tag" id="csCount">已选 0 / 3</span></div>
+        <div id="csWho" class="lh-cards"></div>
+      </div></div>
+      <div class="lh-foot">
+        <span class="lh-note">含你最多 4 人（你 + 3 位伙伴）。开聊后成员与名称都固定，<br>
+          换人只能点「＋ 新会话」重新开一间。</span>
+        <span id="csStatus" class="tag"></span>
+        <button class="lh-go" id="csStart" disabled>开始群聊 →</button>
+      </div>
+    </div>
     <div id="ctabs"></div>
     <div id="stabs"></div>
     <!-- 上课 -->
@@ -1301,20 +1342,19 @@ body.mobile .gd-row button{margin-left:auto}
       <div id="stlist"></div>
     </section>
 
-    <!-- 群聊（课余）：每个会话单独开、单独存，与课堂 msgs.* 完全隔离 -->
+    <!-- 群聊（课余）：每个会话单独开、单独存，与课堂 msgs.* 完全隔离。
+         成员挂在会话上，开场即锁定 —— 所以这里没有常驻的成员条，
+         一行会话条就够了；选人、起名都在 #csetup 里做。 -->
     <section class="view" id="v-chat">
-      <div class="bar">
-        <span class="tag">群聊 · 不挂教材</span>
-        <button class="sm" id="chatnew" title="另开一个会话，旧会话留着随时切回来">＋ 新会话</button>
-        <span class="sp"></span>
-        <button class="sm" id="chatdel" title="删掉当前这个会话（至少留一个）">删除本会话</button>
-        <button class="sm" id="chatclr">清空群聊</button>
-      </div>
-      <div id="chatsessions" class="chs"></div>
-      <div class="chatmem">
-        <span class="tag">群成员</span>
-        <div id="chatmembers"></div>
-        <span class="tag" id="chathint">含你最多 4 人 · 点头像加减人</span>
+      <div id="chsrow">
+        <div id="chatsessions" class="chs"></div>
+        <button class="sm pri" id="chatnew" title="开一个新会话：重新选成员、重新起名">＋ 新会话</button>
+        <button class="sm" id="chatmore" aria-expanded="false"
+          title="删除本会话 / 清空群聊">⋯</button>
+        <div id="chatmenu" hidden>
+          <button class="sm" id="chatdel" title="删掉当前这个会话（至少留一个）">删除本会话</button>
+          <button class="sm" id="chatclr">清空群聊</button>
+        </div>
       </div>
       <div id="chatlog"><div class="wrap" id="chatmw"></div></div>
       <div id="chatbar"><div class="wrap inrow">
@@ -2355,6 +2395,10 @@ function goView(v){
   if(v!=='lesson')closeLaunch();
   else if(!cfgLocked()&&!document.body.classList.contains('pending'))openLaunch();
   else if(!cfgLocked())showNotStarted();
+  /* 点进群聊：这间房还没开场就先摆出选人界面。
+     开场之后再进来是直接看消息 —— 成员已锁，没有需要先选的东西。 */
+  if(v==='chat'&&!chatStarted())openCSetup();
+  else if(v!=='chat')closeCSetup();
   closeDrawer();   /* 从抽屉里点了某个页面，选完就收起，别压着正文 */
   const lb=$('lbar1');if(lb)lb.classList.remove('mopen');
   const mc=$('mctrl');if(mc)mc.setAttribute('aria-expanded','false');
@@ -2507,12 +2551,19 @@ function renderShell(){
   const st=$('lhStatus');if(st)st.textContent=getP(who).n+' · '+curMode().n+' · '+(pn[PA]||'正常进度')+(cfgLocked()?' · 本节已锁定':'');
   const dc=$('dtCourse'),ds=$('dtSess');
   if(dc)dc.textContent=document.body.dataset.view==='chat'?'群聊':cname(shownCourse());
-  if(ds)ds.textContent=document.body.dataset.view==='chat'?chatTop():sessLabel(CURS);
+  if(ds&&document.body.dataset.view!=='chat')ds.textContent=sessLabel(CURS);
   /* 位置条补上另一条线：课程 → 节。桌面可见，手机收起（顶栏已有课程 / 节）。
      这里只写「第 N 节」不写自动标题：节名是拿第一句提问起的，挂在面包屑右边会把
-     「我在哪」这条主线冲散；完整节名在侧栏课程卡和顶栏里都能看到。 */
+     「我在哪」这条主线冲散；完整节名在侧栏课程卡和顶栏里都能看到。
+     群聊不挂教材，别的页也不该带「第几节」—— 那是课堂的位置，跟着走到书架 / 设置里
+     只会让人以为自己还在上课。 */
   const cbs=$('cbSess');
-  if(cbs)cbs.textContent=' · '+cname(shownCourse())+' · 第 '+(sessIdx(CURS)+1)+' 节';
+  if(cbs){
+    const v=document.body.dataset.view;
+    if(v==='chat')syncChatHead();
+    else if(!v||v==='lesson')cbs.textContent=' · '+cname(shownCourse())+' · 第 '+(sessIdx(CURS)+1)+' 节';
+    else cbs.textContent='';
+  }
 }
 /* 未开课空态：✕ 退出向导后有个明确落点，但课堂被挡住，选择仍然必经。
    只在课堂页挡 —— 切去教材 / 设置时别盖住别人的正文。 */
@@ -4236,6 +4287,9 @@ async function ask(text,opt){
    所以硬上限比口头提醒管用：点第 4 位直接拦下并说明怎么换人。 */
 const CHAT_MAX=3;
 let GCHAT=LS.g('chat',[]);if(!Array.isArray(GCHAT))GCHAT=[];
+/* gx.chat.members 现在只是「上次开群时选的那几位」，用来给新建群的向导做默认勾选，
+   不是当前群的真实成员 —— 真实成员挂在会话对象上（CSESS[i].mem），开场即锁死。 */
+const HAD_MEM=Array.isArray(LS.g('chat.members',null));
 let GMEM=LS.g('chat.members',null);
 if(!Array.isArray(GMEM))GMEM=pKeys().slice(0,2);
 function saveChat(){LS.s('chat',GCHAT);LS.s(chatLogKey(CCUR),GCHAT)}
@@ -4245,16 +4299,51 @@ function saveMem(){LS.s('chat.members',GMEM)}
    gx.chat.log.<id>；gx.chat.sessions 是会话名册，gx.chat.cur 记当前哪一个。
    三个键都在 gx. 前缀下，自动随一键备份导出 / 恢复。 */
 let CSESS=LS.g('chat.sessions',null);
-if(!Array.isArray(CSESS)||!CSESS.length){CSESS=[{id:'c1',t:Date.now(),name:'会话 1'}];LS.s('chat.sessions',CSESS)}
+if(!Array.isArray(CSESS)||!CSESS.length){
+  CSESS=[{id:'c1',t:Date.now(),name:'会话 1',mem:GMEM.slice(0,CHAT_MAX)}];
+  LS.s('chat.sessions',CSESS);
+}
 let CCUR=LS.g('chat.cur','');
 if(!CSESS.some(function(x){return x&&x.id===CCUR})){CCUR=CSESS[0].id;LS.s('chat.cur',CCUR)}
 function chatLogKey(id){return 'chat.log.'+id}
 function saveCS(){LS.s('chat.sessions',CSESS)}
 function chatCur(){return CSESS.filter(function(x){return x.id===CCUR})[0]||CSESS[0]}
+/* 成员清洗：去掉已删的人设、去重、裁到上限。发消息、渲染、提示词都走这一条 */
+function cleanMem(list){
+  const out=[];
+  (Array.isArray(list)?list:[]).forEach(function(k){
+    if(out.length<CHAT_MAX&&out.indexOf(k)<0&&pKeys().indexOf(k)>=0)out.push(k);
+  });
+  return out;
+}
+/* 老会话 / 备份带回来的会话可能没有 mem 或 beg：
+   mem 补成「上次开群时那几位」，beg 按「这间房有没有用过」判断 ——
+   已经有消息、或者迁移过老记录，都算开过场，别让升级后的用户被向导挡在历史外面。 */
+function normCS(){
+  let dirty=false;
+  CSESS.forEach(function(c){
+    if(!c||typeof c!=='object')return;
+    const ok=cleanMem(c.mem);
+    const same=Array.isArray(c.mem)&&c.mem.length===ok.length
+      &&c.mem.every(function(k,i){return k===ok[i]});
+    if(!same){
+      c.mem=ok.length?ok:cleanMem(GMEM).slice(0,CHAT_MAX);
+      if(!c.mem.length)c.mem=pKeys().slice(0,1);
+      dirty=true;
+    }
+    if(typeof c.beg!=='boolean'){
+      const has=c.id===CCUR?GCHAT.length:((LS.g(chatLogKey(c.id),[])||[]).length);
+      c.beg=has>0||HAD_MEM||!!LS.g('chat.migrated',0);
+      dirty=true;
+    }
+  });
+  if(dirty)saveCS();
+}
 function initChatSessions(){
   /* 老版本 / 自由问答迁移进来的 gx.chat 就是第一个会话：先落盘再读，别吞掉老记录 */
   if(LS.g(chatLogKey(CCUR),null)===null)LS.s(chatLogKey(CCUR),GCHAT);
   else{GCHAT=LS.g(chatLogKey(CCUR),[])||[];if(!Array.isArray(GCHAT))GCHAT=[];saveChat()}
+  normCS();
 }
 function switchChat(id){
   if(id===CCUR||!CSESS.some(function(x){return x.id===id}))return;
@@ -4262,24 +4351,28 @@ function switchChat(id){
   CCUR=id;LS.s('chat.cur',CCUR);
   GCHAT=LS.g(chatLogKey(CCUR),[])||[];if(!Array.isArray(GCHAT))GCHAT=[];
   saveChat();renderChat();
+  /* 切到一间还没开过场的群（比如刚建好又切去别的会话）：照样先选人 */
+  if(!chatStarted())openCSetup();
 }
 function newChat(){
   LS.s(chatLogKey(CCUR),GCHAT);
   const id='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,4);
-  CSESS.push({id:id,t:Date.now(),name:'会话 '+(CSESS.length+1)});
+  /* 成员先沿用上次那几位，只是「勾选建议」，点「开始群聊」才生效 */
+  CSESS.push({id:id,t:Date.now(),name:'',mem:cleanMem(GMEM).slice(0,CHAT_MAX),beg:false});
   CCUR=id;LS.s('chat.cur',CCUR);saveCS();
   GCHAT=[];saveChat();renderChat();
-  toast('已另开一个群聊会话 · 旧会话还留在上面的历史里');
+  openCSetup();
 }
 function delChat(){
   if(CSESS.length<=1){toast('至少留一个群聊会话');return}
   const c=chatCur();
-  if(!confirm('删除「'+(c?c.name:'这个会话')+'」？\n\n这个会话的消息会被删掉，其他会话不受影响。'))return;
+  if(!confirm('删除「'+(c&&c.name?c.name:'这个会话')+'」？\n\n这个会话的消息会被删掉，其他会话不受影响。'))return;
   CSESS=CSESS.filter(function(x){return x.id!==CCUR});saveCS();
   try{localStorage.removeItem(P+chatLogKey(CCUR))}catch(e){}
   CCUR=CSESS[0].id;LS.s('chat.cur',CCUR);
   GCHAT=LS.g(chatLogKey(CCUR),[])||[];if(!Array.isArray(GCHAT))GCHAT=[];
   saveChat();renderChat();toast('会话已删除');
+  if(!chatStarted())openCSetup();
 }
 function renderChatSessions(){
   const box=$('chatsessions');if(!box)return;
@@ -4288,27 +4381,21 @@ function renderChatSessions(){
     const b=document.createElement('button');b.type='button';
     b.className=c.id===CCUR?'on':'';
     b.textContent=c.name||('会话 '+(i+1));
-    b.title='切换到这个会话（记录各自分开存）';
+    b.title=c.beg?'切换到这个会话（记录各自分开存）':'这个群还没开场，切过去就能选人';
     b.onclick=function(){switchChat(c.id)};
     box.appendChild(b);
   });
 }
-/* 过滤掉已经不存在的伙伴（体验版收起后五位 / 自定义人设被删）、去重、裁到上限。
-   发消息、渲染高亮、提示词一律走这里，保证「看到几个人」＝「会回几条」。 */
-function members(){
-  const out=[];
-  GMEM.forEach(function(k){
-    if(out.length<CHAT_MAX&&out.indexOf(k)<0&&pKeys().indexOf(k)>=0)out.push(k);
-  });
-  return out;
-}
-/* 手机顶栏 / 群聊提示共用这一个数字，免得加人之后一边写 3/4、一边写 4/4 */
+/* 当前这间群的成员：只读。开场那次选择写进 CSESS[i].mem 之后，没有任何入口能改它。 */
+function members(){return cleanMem(chatCur()&&chatCur().mem)}
+function chatStarted(){const c=chatCur();return !!(c&&c.beg)}
+/* 手机顶栏 / 向导底部共用这一个数字，免得写「3/4」的地方和实际回几条对不上 */
 function chatTop(){return '含你 '+(members().length+1)+'/4 人'}
-/* 旧版本或别人给的备份可能带回 4 位以上：启动时就规范化并写回，
-   否则头像高亮 5 个、实际只回 3 条，用户会以为漏了人。 */
-if(GMEM.length!==members().length||!members().length){
-  GMEM=members();
-  if(!GMEM.length)GMEM=pKeys().slice(0,1);
+/* 上次开群选的那几位，只用来给新建群的向导做默认勾选。
+   备份可能带回 4 位以上：启动就清洗并裁到上限，免得一开向导就超员。 */
+const GMEM0=cleanMem(GMEM);
+if(GMEM0.length!==GMEM.length||!GMEM.length){
+  GMEM=GMEM0.length?GMEM0:pKeys().slice(0,1);
   saveMem();
 }
 function migrateFreeChat(){
@@ -4320,37 +4407,73 @@ function migrateFreeChat(){
   });
   saveChat();LS.s('chat.migrated',1);
 }
-function renderMembers(){
-  const box=$('chatmembers');if(!box)return;
-  box.innerHTML='';
-  const mem=members(),full=mem.length>=CHAT_MAX;
-  pKeys().forEach(function(k){
-    const p=getP(k),on=mem.indexOf(k)>=0;
-    const b=document.createElement('button');b.type='button';
-    b.className='memchip'+(on?' on':(full?' full':''));
-    b.innerHTML=avHtml(k,p.n,'')+'<span>'+esc(p.n)+'</span>';
-    b.title=on?('移出群聊：'+p.n)
-      :(full?'群里含你最多 4 人（你 + 3 位伙伴），先移出一位再加人':'加入群聊：'+p.n);
-    b.onclick=function(){
-      const i=GMEM.indexOf(k);
-      if(i>=0){if(members().length<=1){toast('群里至少留一位伙伴');return}GMEM.splice(i,1)}
-      else{
-        if(members().length>=CHAT_MAX){
-          toast('群里含你最多 4 人（你 + 3 位伙伴），先移出一位再换人');return;
-        }
-        GMEM.push(k);
+/* 顶栏副标题：群名 + 人数。原来那行「群成员」栏已经删掉，
+   所以要在这里把「这是哪个群、里面几个」一并说出来。 */
+function syncChatHead(){
+  if(document.body.dataset.view!=='chat')return;
+  const c=chatCur();
+  const nm=(c&&c.name)?c.name:('会话 '+(CSESS.indexOf(c)+1));
+  const txt=chatStarted()?('「'+nm+'」 · '+chatTop()):'还没开场 · 选好伙伴再开聊';
+  const ds=$('dtSess');if(ds)ds.textContent=txt;
+  /* 位置条右边那段也换掉：群聊页本来就不该挂「高等数学 · 第 1 节」 */
+  const cs=$('cbSess');
+  if(cs)cs.textContent=' · '+(chatStarted()?('「'+nm+'」 · '+chatTop()):'还没开场');
+}
+/* ---------- 群聊开场向导 ----------
+   成员一开聊就锁死，所以向导只在「还没开场」时出现；已开场的会话没有任何
+   入口能重新选人，想换只能点「＋ 新会话」。 */
+let CSEL=[];   /* 向导里的临时勾选，点「开始群聊」才写进会话 */
+function openCSetup(){
+  const c=chatCur();if(!c)return;
+  CSEL=(c.beg?members():cleanMem(c.mem)).slice(0,CHAT_MAX);
+  if(!CSEL.length)CSEL=cleanMem(GMEM).slice(0,CHAT_MAX);
+  const n=$('csName');
+  /* 只预填用户自己起过的名字：默认名「会话 N」不算名字，留空让人直接写 */
+  if(n)n.value=(c.name&&!/^会话 \d+$/.test(c.name))?c.name:'';
+  renderCSetup();
+  const w=$('csetup');if(w)w.hidden=false;
+  if(!c.beg&&n)try{n.focus()}catch(e){}
+}
+function closeCSetup(){const w=$('csetup');if(w)w.hidden=true}
+function renderCSetup(){
+  const wb=$('csWho');if(!wb)return;
+  wb.innerHTML='';
+  pKeys().forEach(function(k,i){
+    const p=getP(k),on=CSEL.indexOf(k)>=0,full=!on&&CSEL.length>=CHAT_MAX;
+    const d=document.createElement('div');
+    d.className='lh-card'+(on?' on':'')+(full?' full':'');
+    /* 上传过头像就显示图片，没上传仍用名字首字 */
+    const av=(AVS[k]&&/^data:image\//.test(AVS[k]))
+      ?'<img src="'+AVS[k]+'" alt="">':esc(p.n.slice(0,1));
+    d.innerHTML='<span class="lh-ck">✓</span><div class="lh-av" style="background:'
+      +WHO_CLR[i%WHO_CLR.length]+'">'+av+'</div><div class="lh-nm">'
+      +esc(p.n)+'</div><div class="lh-ds">'+esc(WHO_TAG[k]||'你自己加的人设')+'</div>';
+    d.onclick=function(){
+      const j=CSEL.indexOf(k);
+      if(j>=0)CSEL.splice(j,1);
+      else if(CSEL.length>=CHAT_MAX){
+        toast('含你最多 4 人（你 + 3 位伙伴），先取消一位再加');return;
       }
-      saveMem();renderMembers();
-      toast('群成员：'+members().map(function(x){return getP(x).n}).join('、'));
+      else CSEL.push(k);
+      renderCSetup();
     };
-    box.appendChild(b);
+    wb.appendChild(d);
   });
-  const h=$('chathint');
-  if(h)h.textContent=chatTop()+' · 点头像加减人 · 每人各回一句';
-  /* 加人 / 移人时顶栏也要跟着变（只在群聊页；别的页顶栏显示的是第几节） */
-  if(document.body.dataset.view==='chat'){
-    const ds=$('dtSess');if(ds)ds.textContent=chatTop();
-  }
+  const cnt=$('csCount');if(cnt)cnt.textContent='已选 '+CSEL.length+' / '+CHAT_MAX;
+  const st=$('csStatus');if(st)st.textContent=CSEL.length?chatTop():'还没选伙伴';
+  const b=$('csStart');if(b)b.disabled=!CSEL.length;
+}
+/* 点「开始群聊」：名字与成员一起写进这个会话，beg=true ⇒ 从此锁死 */
+function startChat(){
+  const c=chatCur();if(!c)return;
+  const picked=CSEL.slice(0,CHAT_MAX);
+  if(!picked.length){toast('至少选一位伙伴进群');return}
+  const nm=String(($('csName')||{}).value||'').trim().slice(0,16);
+  c.name=nm||('会话 '+(CSESS.indexOf(c)+1));
+  c.mem=picked;c.beg=true;
+  GMEM=picked.slice();saveMem();saveCS();
+  closeCSetup();renderChat();
+  toast('群聊开场 · '+c.name+'（含你 '+(picked.length+1)+' 人）· 成员已锁定');
 }
 function addChatMsg(m){
   const d=document.createElement('div');d.className='msg'+(m.r==='user'?' me':'');
@@ -4363,11 +4486,20 @@ function addChatMsg(m){
   return d.querySelector('.body');
 }
 function renderChat(){
-  renderMembers();renderChatSessions();
+  syncChatHead();renderChatSessions();
   const box=$('chatmw');if(!box)return;
   box.innerHTML='';
+  if(!chatStarted()){
+    box.innerHTML='<div class="empty">这个群还没开场。<br>'
+      +'点上面的「＋ 新会话」选几位伙伴、起个名字，就能开聊。</div>';
+    return;
+  }
   GCHAT.forEach(function(m){addChatMsg(m)});
-  if(!GCHAT.length)box.innerHTML='<div class="empty">群里还没人说话。<br>先在上面挑几位伙伴，再发一句试试。</div>';
+  if(!GCHAT.length){
+    box.innerHTML='<div class="empty">群里还没人说话，发一句试试。<br>'
+      +'成员：'+members().map(function(k){return getP(k).n}).join('、')
+      +'（开聊后固定，想换人点「＋ 新会话」）</div>';
+  }
 }
 function chatSys(k){
   const others=members().filter(function(x){return x!==k}).map(function(x){return getP(x).n});
@@ -4412,7 +4544,8 @@ async function chatAsk(text){
   text=String(text||'').trim();
   if(!text||CHATBUSY)return;
   const mem=members();
-  if(!mem.length){toast('先在上面选至少一位伙伴进群');return}
+  if(!chatStarted()){toast('这个群还没开场：先点「＋ 新会话」选几位伙伴');return}
+  if(!mem.length){toast('这个群里没有可用的伙伴，开一个新会话重新选');return}
   CHATBUSY=true;
   const sb=$('chatsend');if(sb)sb.disabled=true;
   document.body.classList.add('busy');
@@ -4439,12 +4572,41 @@ $('chatin').onkeydown=function(e){
   if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('chatsend').click()}
 };
 $('chatnew').onclick=function(){newChat()};
-$('chatdel').onclick=function(){delChat()};
+/* 「⋯」把删除 / 清空收进一个小浮层：这两件事都不是常用操作，
+   常驻两个按钮却实打实占掉一行高度。按钮本身留在 DOM 里，事件不变。 */
+function closeChatMenu(){
+  const m=$('chatmenu');if(m)m.hidden=true;
+  const b=$('chatmore');if(b)b.setAttribute('aria-expanded','false');
+}
+$('chatmore').onclick=function(e){
+  e.stopPropagation();
+  const m=$('chatmenu');if(!m)return;
+  m.hidden=!m.hidden;
+  this.setAttribute('aria-expanded',m.hidden?'false':'true');
+};
+document.addEventListener('click',function(e){
+  const m=$('chatmenu');if(!m||m.hidden)return;
+  if(m.contains(e.target)||e.target===$('chatmore'))return;
+  closeChatMenu();
+});
+$('chatdel').onclick=function(){closeChatMenu();delChat()};
 $('chatclr').onclick=function(){
+  closeChatMenu();
   if(!GCHAT.length){toast('这个会话里还没有消息');return}
   if(!confirm('清空当前这个会话？\n\n这 '+GCHAT.length+' 条消息会被删掉；课堂对话、闪卡和其他群聊会话都不受影响。'))return;
   GCHAT=[];saveChat();renderChat();toast('当前会话已清空');
 };
+/* ---- 开场向导的两个出口 ---- */
+onId('csStart',startChat);
+onId('csTheme',function(){DARK=!DARK;LS.s('theme',DARK?'dark':'light');applyTheme()});
+onId('csClose',function(){
+  /* ✕ 不能静悄悄什么都没发生：没开场就退回空态并把路指清楚 */
+  closeCSetup();
+  if(!chatStarted()){
+    renderChat();
+    toast('已退出建群 · 点「＋ 新会话」回来选伙伴');
+  }else renderChat();
+});
 function updTok(){
   /* 走代理时 token 由服务端代付，不能拿用户自己选的那家单价算「约 ¥x」 */
   const v=proxyOn()?[0,0]:(PROV[$('prov').value]&&PROV[$('prov').value].io||[0,0]);
