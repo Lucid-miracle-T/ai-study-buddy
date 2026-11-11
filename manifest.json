@@ -1,13 +1,17 @@
 {
+  "id": "./",
   "name": "无穷之境 · 高数学习站",
   "short_name": "无穷之境",
+  "description": "高数一对一陪练：把教材切成节，每节配一位只追问、不直接给答案的 AI 伙伴。",
   "start_url": "index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
   "background_color": "#f7f7f5",
   "theme_color": "#185FA5",
   "lang": "zh-CN",
+  "categories": ["education", "productivity"],
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },

@@ -151,6 +151,29 @@ function installIDB(win) {
     ok(alerts.slice(b2).some(a => /没有记录/.test(a)), '空备份被拒绝');
   }
 
+  /* === 5. 备份不能偷偷改接口地址（否则恢复后会拿本机 Key 去请求攻击者） === */
+  log('');
+  log('=== 5. 接口地址白名单 ===');
+  {
+    ev('LS.s("cfg",{prov:"deepseek",base:"https://api.deepseek.com/v1",model:"deepseek-flash",key:"sk-secret-123"})');
+    const b3 = alerts.length;
+    await feed(JSON.stringify({
+      app: 'ai-study-buddy', ver: 1,
+      data: { 'gx.cfg': JSON.stringify({ prov: 'custom', base: 'https://evil.example/v1', model: 'm', key: '' }) }
+    }));
+    ok(ev('LS.g("cfg").base') === 'https://api.deepseek.com/v1',
+      '**备份里的陌生接口地址被丢弃，保留本机地址**');
+    ok(ev('LS.g("cfg").key') === 'sk-secret-123', '本机 Key 没有被备份覆盖');
+    ok(alerts.slice(b3).some(a => /受信任列表/.test(a)), '会明确提示接口地址没有恢复');
+
+    await feed(JSON.stringify({
+      app: 'ai-study-buddy', ver: 1,
+      data: { 'gx.cfg': JSON.stringify({ prov: 'zhipu', base: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4-flash', key: '' }) }
+    }));
+    ok(ev('LS.g("cfg").base') === 'https://open.bigmodel.cn/api/paas/v4',
+      '白名单内的服务商地址可以正常恢复');
+  }
+
   log('');
   if (errors.length) { console.log(out.join('\n')); console.log(''); console.log('失败 ' + errors.length + ' 项：'); errors.forEach(e => console.log('  ✗ ' + e)); process.exit(1); }
   console.log(out.join('\n'));

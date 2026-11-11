@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://registry.npmmirror.com https://unpkg.com https://cdnjs.cloudflare.com https://cdn.staticfile.org; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://registry.npmmirror.com https://unpkg.com https://cdnjs.cloudflare.com https://cdn.staticfile.org; img-src 'self' data: blob: https:; font-src 'self' data: https://cdn.jsdelivr.net https://registry.npmmirror.com https://unpkg.com https://cdnjs.cloudflare.com https://cdn.staticfile.org; media-src 'self' data: blob:; connect-src 'self' https: http:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>无穷之境 · 高数学习站</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20256%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%237C5CFF%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%232D6BFF%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22256%22%20height%3D%22256%22%20rx%3D%2261%22%20fill%3D%22url%28%23g%29%22%2F%3E%3Ccircle%20cx%3D%2286%22%20cy%3D%22128%22%20r%3D%2242%22%20fill%3D%22none%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%2222%22%2F%3E%3Ccircle%20cx%3D%22170%22%20cy%3D%22128%22%20r%3D%2242%22%20fill%3D%22none%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%2222%22%2F%3E%3C%2Fsvg%3E">
 <link rel="shortcut icon" href="favicon.ico">
@@ -680,6 +681,10 @@ body.dark #rgo2{color:var(--blue)!important}
   #lbar1.mopen>.mlabel{display:inline!important}
   #lbar1.mopen>.msep{display:inline-block!important}
   #lbar1.mopen>#pbox,#lbar1.mopen>#mbox,#lbar1.mopen>#ctxchips{display:flex!important;flex:1 1 100%}
+  /* 展开态要压过上方那条带 !important 的收起规则：这里权重更高 (1 id, 3 class, 1 elem) */
+  body.compact:not(.expand) #lbar1.mopen>#pbox,
+  body.compact:not(.expand) #lbar1.mopen>#mbox,
+  body.compact:not(.expand) #lbar1.mopen>#ctxchips{display:flex!important}
   #lbar1.mopen>#rgo2,#lbar1.mopen>#tts{display:inline-flex!important}
   #lbar1.mopen>#pace,#lbar1.mopen>#tok,#lbar1.mopen>#kxst{display:inline-block!important}
   /* 符号栏：手机上隐藏操作提示（Ctrl+M 在手机上也没用），把高度还给对话 */
@@ -1698,9 +1703,9 @@ body.mobile .gd-row button{margin-left:auto}
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" onerror="loadAlt(MD_SRC,0)"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js" onerror="loadAlt(DP_SRC,0)"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" integrity="sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi" crossorigin="anonymous" onerror="loadAlt(MD_SRC,0)"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js" integrity="sha384-+VfUPEb0PdtChMwmBcBmykRMDd+v6D/oFmB3rZM/puCMDYcIvF968OimRh4KQY9a" crossorigin="anonymous" onerror="loadAlt(DP_SRC,0)"></script>
 <script>
 const P='gx.';
 const LS={g(k,d){try{const v=localStorage.getItem(P+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
@@ -5612,6 +5617,26 @@ $('wipe').onclick=async function(){
    导出一份 JSON 是唯一能跨环境带走的手段。刻意不含 API Key —— 备份文件常被
    随手丢进网盘或聊天窗口，密钥不该跟着走。 */
 const BKP='ai-study-buddy';
+/* 恢复时的接口地址白名单。备份文件是可以被转发的（“把我的记录分享给你”），
+   如果里面的 gx.cfg.base 指向攻击者的服务器，恢复后下一次提问就会把本机 Key 发过去。
+   只接受三种 host：内置服务商、本机当前已保存的接口、同源地址。
+   自定义接口仍可用，但必须恢复后到「设置」里手动填一次。 */
+function trustedBase(u){
+  const s=String(u||'').trim();
+  if(!s)return false;
+  let h='';
+  try{
+    const x=new URL(s,location.href);
+    if(x.protocol!=='https:'&&x.protocol!=='http:')return false;
+    h=x.hostname.toLowerCase();
+  }catch(e){return false}
+  if(h===String(location.hostname||'').toLowerCase())return true;
+  const cur=LS.g('cfg',null);
+  if(cur&&cur.base){try{if(new URL(cur.base,location.href).hostname.toLowerCase()===h)return true}catch(e){}}
+  return Object.keys(PROV).some(function(k){
+    try{return !!PROV[k].b&&new URL(PROV[k].b,location.href).hostname.toLowerCase()===h}catch(e){return false}
+  });
+}
 /* 凭证一律不进备份：gx.key（旧写法）、gx.proxy（代理地址＋邀请码整键），
    还有 gx.cfg 里那个 key 字段——CFG 是个对象，以前只排除 gx.key，
    API Key 其实一直跟着 gx.cfg 被导出，和页面上「不含 API Key」的承诺不符。 */
@@ -5646,14 +5671,26 @@ $('impf').onchange=async function(){
   const ks=Object.keys(j.data);
   if(!ks.length){alert('备份文件里没有记录。');return}
   if(!confirm('将写入 '+ks.length+' 项记录；同名的当前记录会被备份里的覆盖（API Key、代理邀请码和教材不受影响）。继续？'))return;
-  let n=0;
+  let n=0, badBase=0;
   ks.forEach(function(k){
     if(k.indexOf(P)!==0||NOBKP.indexOf(k)>=0)return;   /* 只认本站前缀，凭证一律不动 */
     let v=j.data[k];
-    /* 备份里的 gx.cfg 已经去掉 key，恢复时把本机现有的补回去，别把人家的 Key 冲掉 */
-    if(k===P+'cfg'&&v){try{const o=JSON.parse(v),c=JSON.parse(localStorage.getItem(k)||'{}');o.key=c.key||'';v=JSON.stringify(o)}catch(e){}}
+    if(k===P+'cfg'&&v){
+      try{
+        let o=JSON.parse(v),c=JSON.parse(localStorage.getItem(k)||'{}');
+        if(!o||typeof o!=='object'||Array.isArray(o))o={};
+        if(!c||typeof c!=='object'||Array.isArray(c))c={};
+        /* 陌生接口地址一律丢弃，保留本机当前值——否则“分享备份”能偷走 Key */
+        if(o.base&&!trustedBase(o.base)){delete o.base;badBase++}
+        /* 备份里的 gx.cfg 已经去掉 key，恢复时把本机现有的补回去，别把人家的 Key 冲掉 */
+        o.key=c.key||'';
+        if(!o.base&&c.base)o.base=c.base;
+        v=JSON.stringify(o);
+      }catch(e){}
+    }
     try{localStorage.setItem(k,v);n++}catch(e){}
   });
+  if(badBase)alert('备份里的接口地址不在受信任列表，已保留本机当前的接口地址。\n\n如果这份备份确实来自你自己的另一台设备，请恢复后到「设置」里手动填写那个地址。');
   toast('已恢复 '+n+' 项记录，正在重新载入…');
   setTimeout(function(){location.reload()},700);
 };
